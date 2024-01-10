@@ -1,7 +1,7 @@
 import React from "react";
-import CircularProgress from "@mui/material/CircularProgress";
-import Box from "@mui/material/Box";
-const Home = () => {
+import CircularProgress from '@mui/material/CircularProgress';
+import Box from '@mui/material/Box';
+const Loading = () => {
     return (
         <div className="loading">
             <Box sx={{ display: "flex" }}>
@@ -11,4 +11,4 @@ const Home = () => {
     );
 };
 
-export default Home;
+export default Loading;

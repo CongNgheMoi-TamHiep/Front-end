@@ -8,18 +8,27 @@ import ContactsIcon from '@mui/icons-material/Contacts';
 import ContactsOutlined from '@mui/icons-material/ContactsOutlined';
 import LogoutIcon from '@mui/icons-material/Logout';
 import Link from 'next/link';
+import Loading from '@/components/Loading';
 import { useRouter } from 'next/navigation'
 const Layout = ({children}) => {
   const [Active, setActive] = useState('tinNhan');
+  const [isAuthenticated, setIsAuthenticated] = useState(true);
   const router = useRouter(); 
   useEffect(() => {
-    router.push(`/${Active}`)
+    if(!isAuthenticated) {
+      router.push('/login')
+    } else
+      router.push(`/${Active}`)
   }, [Active])
   const handleTinNhan = () => { 
     setActive('tinNhan'); 
   }
   const handleDanhBa = () => { 
     setActive('danhBa'); 
+  }
+  if(!isAuthenticated) {
+    router.replace('/login')
+    return <Loading/>
   }
   return (
     <div className='container'>
