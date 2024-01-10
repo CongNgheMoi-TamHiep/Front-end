@@ -12,7 +12,7 @@ const Layout = ({children}) => {
   const [currentConversation, setCurrentConversation] = useState(null);
   const handleRouteToDetailConversation = (item) => { 
     setCurrentConversation(item); 
-    router.push(`/home/tinNhan/${item.id}`)
+    router.push(`/tinNhan/${item.id}`)
   }
   console.log(currentConversation)
   return (

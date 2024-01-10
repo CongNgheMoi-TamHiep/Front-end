@@ -13,7 +13,7 @@ const Layout = ({children}) => {
   const [Active, setActive] = useState('tinNhan');
   const router = useRouter(); 
   useEffect(() => {
-    router.push(`/home/${Active}`)
+    router.push(`/${Active}`)
   }, [Active])
   const handleTinNhan = () => { 
     setActive('tinNhan'); 
