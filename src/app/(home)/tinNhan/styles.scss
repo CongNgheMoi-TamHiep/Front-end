@@ -1,0 +1,38 @@
+.tinNhan { 
+    display: flex; 
+    background-color: greenyellow;
+    width: calc(100vw - 64px);
+    height: 100%;
+    .conversations { 
+        flex: 2; 
+        background-color: red;
+        display: flex; 
+        flex-direction: column; 
+        padding-top: 64px;
+        .userConversation { 
+            display: flex; 
+            align-items: center;
+            justify-content: center;
+            background-color: blue;
+            width: 100%;
+            height: 74px;
+            border: 1px solid #000; 
+            cursor: pointer; 
+            // hover
+            &:hover {
+                opacity: 0.8; 
+            }
+            &.active { 
+                background-color: pink;
+            }
+        }
+        
+    }
+    .conversation { 
+        flex: 5; 
+        display: flex;
+        background-color: yellow;
+        justify-content: center;
+        align-items: center;
+    }
+}
