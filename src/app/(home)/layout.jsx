@@ -50,7 +50,6 @@ const Layout = ({children}) => {
         </div>
       </div>
       <div>
-        <div className="search-input"> ô search </div>
         {children}
         </div>    
     </div>
