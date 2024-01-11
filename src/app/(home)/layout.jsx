@@ -32,7 +32,7 @@ const Layout = ({children}) => {
   }
   return (
     <div className='container'>
-      <div className="layout">
+      <div className="sidebar">
         <div className="top">
           <Image className="avatar" width={48} height={48} alt="" src="https://images.pexels.com/photos/18111144/pexels-photo-18111144/free-photo-of-equipment-of-a-painter.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"/>
           <div  className={`item ${Active==='tinNhan' && 'active'}`} onClick={handleTinNhan}>
@@ -49,9 +49,10 @@ const Layout = ({children}) => {
           </div>
         </div>
       </div>
-      <div className="">
-      {children}
-      </div>    
+      <div>
+        <div className="search-input"> ô search </div>
+        {children}
+        </div>    
     </div>
   )
 }
