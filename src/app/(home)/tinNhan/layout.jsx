@@ -14,7 +14,6 @@ const Layout = ({children}) => {
     setCurrentConversation(item); 
     router.push(`/tinNhan/${item.id}`)
   }
-  console.log(currentConversation)
   return (
     <div className="tinNhan">
         <div className="conversations">

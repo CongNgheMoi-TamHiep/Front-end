@@ -16,6 +16,11 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { MuiTelInput } from 'mui-tel-input'
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import Loading from '@/components/Loading';
+import { AuthContext } from '@/context/AuthProvider';
+import { auth } from "@/firebase";
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import formatPhoneNumber from '@/utils/formatPhoneNumber';
 function Copyright(props) {
   return (
     <Typography variant="body2" color="text.secondary" align="center" {...props}>
@@ -36,19 +41,47 @@ const defaultTheme = createTheme();
 export default function SignIn() {
   const [number, setNumber] = useState('')
   const [isAuthenticated, setIsAuthenticated] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter(); 
+  const currentUser = React.useContext(AuthContext); 
+
   const handleSubmit = (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    console.log({
-      number,
-      password: data.get('password'),
-    });
-    if(isAuthenticated)
-      router.push('/');
+    // console.log({
+    //   number,
+    //   password: data.get('password'),
+    // });
+    signInWithEmailAndPassword(auth, `${formatPhoneNumber(number)}@gmail.com`, data.get('password'))
+      .then((userCredential) => {
+        const user = userCredential.user;
+        setIsAuthenticated(true);
+        router.push('/');
+      })
+      .catch((error) => {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        console.log(errorCode, errorMessage);
+      });
+    
   };
   const handleNumber = (newnumber) => {
     setNumber(newnumber)
+  }
+
+  React.useEffect(()=> { 
+    if(currentUser) 
+      setIsAuthenticated(true) 
+    else
+      setIsAuthenticated(false)
+    setIsLoading(false);
+  }, [currentUser])
+
+  if(isLoading)
+    return <Loading/>
+  if(isAuthenticated) {
+    router.push('/')
+    return <Loading/>
   }
 
   return (
