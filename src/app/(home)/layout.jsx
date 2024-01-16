@@ -1,5 +1,5 @@
 "use client"
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import './styles.scss'
 import Image from 'next/image';
 import ChatIcon from '@mui/icons-material/Chat';
@@ -10,26 +10,42 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import Link from 'next/link';
 import Loading from '@/components/Loading';
 import { useRouter } from 'next/navigation'
+import { AuthContext } from '@/context/AuthProvider';
+import { auth } from '@/firebase';
 const Layout = ({children}) => {
   const [Active, setActive] = useState('tinNhan');
   const [isAuthenticated, setIsAuthenticated] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter(); 
-  useEffect(() => {
-    if(!isAuthenticated) {
-      router.push('/login')
-    } else
-      router.push(`/${Active}`)
-  }, [Active])
+  const currentUser = useContext(AuthContext)
+
   const handleTinNhan = () => { 
     setActive('tinNhan'); 
   }
   const handleDanhBa = () => { 
     setActive('danhBa'); 
   }
-  if(!isAuthenticated) {
-    router.replace('/login')
-    return <Loading/>
+  const handleSignOut = () => {
+    auth.signOut();
+    router.push('/login'); 
   }
+  
+  useEffect(() => {
+    console.log("currenUser: "+currentUser)
+    if(currentUser)
+      setIsAuthenticated(true)
+    else
+      setIsAuthenticated(false)
+    setIsLoading(false); 
+  }, [currentUser])
+
+  if(isLoading) 
+    return <Loading/>
+  if(!isAuthenticated) 
+    return router.push('/login'); 
+  else 
+    router.push(`/${Active}`);
+
   return (
     <div className='container'>
       <div className="sidebar">
@@ -44,7 +60,7 @@ const Layout = ({children}) => {
           </div>
         </div>
         <div className="bottom">
-          <div className="item">
+          <div className="item" onClick={handleSignOut}>
             <LogoutIcon sx={{color: '#fff', fontSize: 30}}/>
           </div>
         </div>
