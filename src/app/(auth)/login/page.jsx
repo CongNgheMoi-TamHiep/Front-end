@@ -21,6 +21,8 @@ import { AuthContext } from '@/context/AuthProvider';
 import { auth } from "@/firebase";
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import formatPhoneNumber from '@/utils/formatPhoneNumber';
+import { axiosPrivate } from "@/api/axios";
+
 function Copyright(props) {
   return (
     <Typography variant="body2" color="text.secondary" align="center" {...props}>
@@ -52,8 +54,12 @@ export default function SignIn() {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, `${formatPhoneNumber(number)}@gmail.com`, data.get('password'));
       const user = userCredential.user;
-
+      console.log(user)
       setIsAuthenticated(true);
+      await axiosPrivate.post('/auth/login', {
+        accessToken: user.accessToken, 
+        refreshToken: user.refreshToken
+      }); 
       router.push('/');
     } catch (error) {
       const errorCode = error.code;

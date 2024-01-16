@@ -95,17 +95,22 @@ export default function SignUp() {
             try {
                 const usercred = await linkWithCredential(user, credential);
                 const user2 = usercred.user;
-                // Đặt thời gian sống của cookie là 1 giờ
-                var expirationDate = new Date();
-                expirationDate.setHours(expirationDate.getHours() + 1);
-                document.cookie = "accessToken=" + user2.accessToken + "; path=/; HttpOnly; Secure; SameSite=Strict; expires=" + expirationDate.toUTCString();
-                
-                // call register API to server
-                axiosPrivate.post('/auth/register', {
+                const userInfo = {
                     _id: user2.uid,
-                    name: user2.displayName,
+                    name,
                     number: user2.phoneNumber, 
                     avatar: "https://images.pexels.com/photos/14940646/pexels-photo-14940646.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
+                }
+                // call register API to server
+                await axiosPrivate.post('/auth/register', {
+                    userInfo, 
+                    accessToken: user2.accessToken, 
+                    refreshToken: user2.refreshToken
+                })
+
+                await axiosPrivate.post('/userConversations', {
+                    userId: user2.uid, 
+                    conversations: [],
                 })
 
                 setIsAuthenticated(true);
