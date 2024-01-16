@@ -30,18 +30,14 @@ const Layout = ({ children }) => {
   ]);
   const router = useRouter();
   const [currentConversation, setCurrentConversation] = useState(null);
-<<<<<<< HEAD
+
   const handleRouteToDetailConversation = (item) => {
     setCurrentConversation(item);
     router.push(`/tinNhan/${item.id}`);
   };
   console.log(currentConversation);
-=======
-  const handleRouteToDetailConversation = (item) => { 
-    setCurrentConversation(item); 
-    router.push(`/tinNhan/${item.id}`)
-  }
->>>>>>> 73e5393c27e6e0bff5dd010dd42725cc61f26a55
+
+  console.log(currentConversation);
   return (
     <div className="tinNhan">
       <div className="conversations">
