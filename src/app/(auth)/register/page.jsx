@@ -25,6 +25,8 @@ import PhoneInput from 'react-phone-input-2'
 import 'react-phone-input-2/lib/style.css'
 import formatPhoneNumber  from '@/utils/formatPhoneNumber'
 import { format } from "path";
+import axios from '@/api/axios'
+import { axiosPrivate } from "@/api/axios";
 function Copyright(props) {
     return (
         <Typography
@@ -90,15 +92,27 @@ export default function SignUp() {
             const user = result.user;
             const email = `${formatPhoneNumber(number)}@gmail.com`;
             const credential = EmailAuthProvider.credential(email, password);
-            linkWithCredential(user, credential)
-                .then((usercred) => {
-                    const user = usercred.user;
-                    setIsAuthenticated(true);
-                    console.log("Account linking success", user);
-                }).catch((error) => {
-                    console.log("Account linking error", error);
-                });
+            try {
+                const usercred = await linkWithCredential(user, credential);
+                const user2 = usercred.user;
+                // Đặt thời gian sống của cookie là 1 giờ
+                var expirationDate = new Date();
+                expirationDate.setHours(expirationDate.getHours() + 1);
+                document.cookie = "accessToken=" + user2.accessToken + "; path=/; HttpOnly; Secure; SameSite=Strict; expires=" + expirationDate.toUTCString();
+                
+                // call register API to server
+                axiosPrivate.post('/auth/register', {
+                    _id: user2.uid,
+                    name: user2.displayName,
+                    number: user2.phoneNumber, 
+                    avatar: "https://images.pexels.com/photos/14940646/pexels-photo-14940646.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
+                })
 
+                setIsAuthenticated(true);
+                console.log("Account linking success", user2);
+            } catch (error) {
+                console.log("Account linking error", error);
+            }
         } catch (error) {
             console.log(error);
         }

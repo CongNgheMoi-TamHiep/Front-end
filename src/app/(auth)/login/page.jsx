@@ -40,29 +40,26 @@ const defaultTheme = createTheme();
 
 export default function SignIn() {
   const [number, setNumber] = useState('')
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter(); 
   const currentUser = React.useContext(AuthContext); 
-
-  const handleSubmit = (event) => {
+  console.log(currentUser)
+  // sign in
+  const handleSubmit = async (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    // console.log({
-    //   number,
-    //   password: data.get('password'),
-    // });
-    signInWithEmailAndPassword(auth, `${formatPhoneNumber(number)}@gmail.com`, data.get('password'))
-      .then((userCredential) => {
-        const user = userCredential.user;
-        setIsAuthenticated(true);
-        router.push('/');
-      })
-      .catch((error) => {
-        const errorCode = error.code;
-        const errorMessage = error.message;
-        console.log(errorCode, errorMessage);
-      });
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, `${formatPhoneNumber(number)}@gmail.com`, data.get('password'));
+      const user = userCredential.user;
+
+      setIsAuthenticated(true);
+      router.push('/');
+    } catch (error) {
+      const errorCode = error.code;
+      const errorMessage = error.message;
+      console.log(errorCode, errorMessage);
+    }
     
   };
   const handleNumber = (newnumber) => {
