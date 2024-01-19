@@ -25,8 +25,7 @@ import PhoneInput from 'react-phone-input-2'
 import 'react-phone-input-2/lib/style.css'
 import formatPhoneNumber  from '@/utils/formatPhoneNumber'
 import { format } from "path";
-import axios from '@/api/axios'
-import { axiosPrivate } from "@/api/axios";
+import axiosPrivate  from "@/api/axios";
 function Copyright(props) {
     return (
         <Typography
@@ -114,7 +113,6 @@ export default function SignUp() {
                 })
 
                 setIsAuthenticated(true);
-                console.log("Account linking success", user2);
             } catch (error) {
                 console.log("Account linking error", error);
             }
