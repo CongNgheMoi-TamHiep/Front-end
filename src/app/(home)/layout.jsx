@@ -12,6 +12,8 @@ import Loading from '@/components/Loading';
 import { useRouter } from 'next/navigation'
 import { AuthContext } from '@/context/AuthProvider';
 import { auth } from '@/firebase';
+import axios from 'axios';
+import axiosPrivate from '@/api/axios';
 const Layout = ({children}) => {
   const [Active, setActive] = useState('tinNhan');
   const [isAuthenticated, setIsAuthenticated] = useState(true);
@@ -27,6 +29,7 @@ const Layout = ({children}) => {
   }
   const handleSignOut = () => {
     auth.signOut();
+    axiosPrivate.post('/auth/logout');
     router.push('/login'); 
   }
   
