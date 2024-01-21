@@ -21,9 +21,10 @@ import { AuthContext } from "@/context/AuthProvider";
 import { auth } from "@/firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import formatPhoneNumber from "@/utils/formatPhoneNumber";
-import axiosPrivate  from "@/api/axios";
+import axiosPrivate  from "@/apis/axios";
 import axios from "axios";
 import Cookie from "js-cookie";
+import authApis from "../../../apis/authApis";
 
 function Copyright(props) {
     return (
@@ -64,10 +65,14 @@ export default function SignIn() {
                 data.get("password")
             );
             const user = userCredential.user;
-            await axiosPrivate.post("/auth/login", {
+            // await axiosPrivate.post("/auth/login", {
+            //     accessToken: user.accessToken,
+            //     refreshToken: user.refreshToken,
+            // });
+            authApis.loginSession({ 
                 accessToken: user.accessToken,
-                refreshToken: user.refreshToken,
-            });
+                refreshToken: user.refreshToken
+            })
             
             setIsAuthenticated(true);
             router.push("/");
