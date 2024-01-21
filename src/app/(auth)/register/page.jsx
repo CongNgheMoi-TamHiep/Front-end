@@ -101,7 +101,12 @@ export default function SignUp() {
                     avatar: "https://images.pexels.com/photos/14940646/pexels-photo-14940646.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
                 }
                 // call register API to server
-                await axiosPrivate.post('/auth/register', {
+                // await axiosPrivate.post('/auth/register', {
+                //     userInfo, 
+                //     accessToken: user2.accessToken, 
+                //     refreshToken: user2.refreshToken
+                // })
+                authApis.registerSession({
                     userInfo, 
                     accessToken: user2.accessToken, 
                     refreshToken: user2.refreshToken
