@@ -42,9 +42,14 @@ const Layout = ({children}) => {
     setIsLoading(false);
   }, [currentUser]);
 
+  useEffect(() => { 
+    if (!isAuthenticated) return router.push("/login");
+    else if(Active)
+      router.push(`/${Active}`);
+  }, [Active, isAuthenticated]);
+
   if (isLoading) return <Loading />;
-  if (!isAuthenticated) return router.push("/login");
-  else router.push(`/${Active}`);
+
 
   return (
     <div className="container">

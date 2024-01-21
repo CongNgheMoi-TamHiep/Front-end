@@ -65,10 +65,6 @@ export default function SignIn() {
                 data.get("password")
             );
             const user = userCredential.user;
-            // await axiosPrivate.post("/auth/login", {
-            //     accessToken: user.accessToken,
-            //     refreshToken: user.refreshToken,
-            // });
             authApis.loginSession({ 
                 accessToken: user.accessToken,
                 refreshToken: user.refreshToken
@@ -92,12 +88,14 @@ export default function SignIn() {
         setIsLoading(false);
     }, [currentUser]);
 
-    if (isLoading) return <Loading />;
-    if (isAuthenticated) {
-        router.push("/");
-        return <Loading />;
-    }
+    React.useEffect(() => { 
+        if (isAuthenticated) 
+            router.push("/");
+    }, [isAuthenticated])
 
+    if (isLoading) return <Loading />;
+    if (isAuthenticated) return <Loading />;
+    
     return (
         <ThemeProvider theme={defaultTheme}>
             <Container component="main" maxWidth="xs">
@@ -171,7 +169,7 @@ export default function SignIn() {
                     </Box>
                 </Box>
                 <Copyright sx={{ mt: 8, mb: 4 }} />
-            </Container>
+                            </Container>
         </ThemeProvider>
     );
 }

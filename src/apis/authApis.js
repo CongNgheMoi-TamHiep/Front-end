@@ -7,7 +7,11 @@ const authApis = {
         return axiosPrivate.post('/auth/register', data);
     },
     logout () { 
-        return axiosPrivate.post('/auth/logout');
+        axiosPrivate.post('/auth/logout');
+    },
+
+    refresh (data) { 
+        axiosPrivate.post('/auth/refresh', data); 
     }
 }
 

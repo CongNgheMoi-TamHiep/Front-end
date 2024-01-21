@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./styles.scss";
 import DraftsIcon from "@mui/icons-material/Drafts";
 import PersonIcon from "@mui/icons-material/Person";
@@ -34,7 +34,9 @@ const Layout = ({ children }) => {
     setActive(item.id);
   };
 
-  router.push(changePageChildren(active));
+  useEffect(() => {
+    router.push(changePageChildren(active));
+  }, [active])
 
   return (
     <div className="danhBa">
