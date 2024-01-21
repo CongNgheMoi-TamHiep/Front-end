@@ -1,19 +1,21 @@
-"use client";
-import React, { useContext, useEffect, useState } from "react";
-import "./styles.scss";
-import Image from "next/image";
-import ChatIcon from "@mui/icons-material/Chat";
-import ChatOutlined from "@mui/icons-material/ChatOutlined";
-import ContactsIcon from "@mui/icons-material/Contacts";
-import ContactsOutlined from "@mui/icons-material/ContactsOutlined";
-import LogoutIcon from "@mui/icons-material/Logout";
-import Link from "next/link";
-import Loading from "@/components/Loading";
-import { useRouter } from "next/navigation";
-import { AuthContext } from "@/context/AuthProvider";
-import { auth } from "@/firebase";
-const Layout = ({ children }) => {
-  const [Active, setActive] = useState("tinNhan");
+"use client"
+import React, { useContext, useEffect, useState } from 'react'
+import './styles.scss'
+import Image from 'next/image';
+import ChatIcon from '@mui/icons-material/Chat';
+import ChatOutlined from '@mui/icons-material/ChatOutlined';
+import ContactsIcon from '@mui/icons-material/Contacts';
+import ContactsOutlined from '@mui/icons-material/ContactsOutlined';
+import LogoutIcon from '@mui/icons-material/Logout';
+import Link from 'next/link';
+import Loading from '@/components/Loading';
+import { useRouter } from 'next/navigation'
+import { AuthContext } from '@/context/AuthProvider';
+import { auth } from '@/firebase';
+import axios from 'axios';
+import axiosPrivate from '@/api/axios';
+const Layout = ({children}) => {
+  const [Active, setActive] = useState('tinNhan');
   const [isAuthenticated, setIsAuthenticated] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
@@ -27,9 +29,10 @@ const Layout = ({ children }) => {
   };
   const handleSignOut = () => {
     auth.signOut();
-    router.push("/login");
-  };
-
+    axiosPrivate.post('/auth/logout');
+    router.push('/login'); 
+  }
+  
   useEffect(() => {
     console.log("currenUser: ");
     console.log(currentUser);
