@@ -34,8 +34,6 @@ const Layout = ({children}) => {
   }
   
   useEffect(() => {
-    console.log("currenUser: ");
-    console.log(currentUser);
     if (currentUser) setIsAuthenticated(true);
     else setIsAuthenticated(false);
     setIsLoading(false);

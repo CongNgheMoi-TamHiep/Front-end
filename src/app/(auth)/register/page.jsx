@@ -25,7 +25,8 @@ import PhoneInput from 'react-phone-input-2'
 import 'react-phone-input-2/lib/style.css'
 import formatPhoneNumber  from '@/utils/formatPhoneNumber'
 import { format } from "path";
-import axiosPrivate  from "@/api/axios";
+import axiosPrivate  from "@/apis/axios";
+import authApis  from "@/apis/authApis";
 function Copyright(props) {
     return (
         <Typography
@@ -69,6 +70,11 @@ export default function SignUp() {
       setIsLoading(false);
     }, [currentUser])
 
+    useEffect(()=> { 
+        if (isAuthenticated)
+            router.push("/");
+    }, [isAuthenticated])
+
     const handleSubmit = async (event) => {
         event.preventDefault();
         try {
@@ -101,9 +107,7 @@ export default function SignUp() {
                     avatar: "https://images.pexels.com/photos/14940646/pexels-photo-14940646.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
                 }
                 // call register API to server
-                
                 authApis.register(userInfo)
-
                 await axiosPrivate.post('/userConversations', {
                     userId: user2.uid, 
                     conversations: [],
@@ -122,7 +126,6 @@ export default function SignUp() {
         return <Loading />;
     }
     if (isAuthenticated) {
-        router.push("/");
         return <Loading />;
     }
 
