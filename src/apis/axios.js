@@ -34,7 +34,7 @@ axiosPrivate.interceptors.response.use(
 
         // auto refresh Token
         console.log(error)
-        if (error.response.status === 401) {
+        if (error.response?.status === 401) {
             if( error.response.data === 'refreshTokenExpired' ) { 
                 auth.signOut();
                 authApis.logout(); 
@@ -59,7 +59,7 @@ axiosRetry(axiosPrivate, {
     },
     retryCondition: (error) => {
         return (
-            error.response.status === 401 ||
+            error.response?.status === 401 &&
             validRefresh.test(error.request.url)
         );
     },

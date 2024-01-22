@@ -2,20 +2,19 @@ import axios from "axios";
 import axiosPrivate from "./axios";
 
 const userApis = {
-    // checked
-    getAllUsers () { 
-        return axiosPrivate("/user");
+    async getAllUsers () { 
+        const users = await axiosPrivate("/user");
+        return users.data;
     },
-
-    // checked
-    getUserById (id) { 
-        return axiosPrivate(`/user/${id}`);
+    async getUserById (id) { 
+        const user = await axiosPrivate(`/user/${id}`);
+        return user.data; 
     },
     updateAnUserById (id, data) {
-        return axiosPrivate.patch(`/user/${id}`, data);
+        axiosPrivate.patch(`/user/${id}`, data);
     },
     deleteUserById (id) {
-        return axiosPrivate.delete(`/user/${id}`);
+        axiosPrivate.delete(`/user/${id}`);
     }
 }
 
