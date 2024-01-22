@@ -36,25 +36,19 @@ const Layout = ({ children }) => {
     setCurrentConversation(item);
     router.push(`/tinNhan/${item.id}`);
   };
-  console.log(currentConversation);
+  // console.log(currentConversation);
 
-  console.log(currentConversation);
+  // console.log(currentConversation);
+ 
+  useEffect(() => {
+    const fetchdata = async () => {
+      const users = await userApis.getAllUsers(); 
+      console.log(users);
+      return users; 
+    }
+    fetchdata(); 
+  }, []);
 
-  const [test, setTest] = useState();
-  const [isLoading, setIsLoading] = useState(true);
-
-  // useEffect(() => {
-  //   userApis
-  //     .getUserById("FvtiI2kdR4OTk9RVb2OFy7jCNol1")
-  //     .then((fulfilledObject) => {
-  //       setTest(fulfilledObject.data);
-  //       setIsLoading(false);
-  //     });
-  // }, [isLoading]);
-
-  // console.log(test);
-
-  console.log(userApis.getUserById("FvtiI2kdR4OTk9RVb2OFy7jCNol1"));
 
   return (
     <div className="tinNhan">
