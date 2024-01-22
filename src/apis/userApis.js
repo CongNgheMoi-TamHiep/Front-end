@@ -2,9 +2,12 @@ import axios from "axios";
 import axiosPrivate from "./axios";
 
 const userApis = {
+    // checked
     getAllUsers () { 
         return axiosPrivate("/user");
     },
+
+    // checked
     getUserById (id) { 
         return axiosPrivate(`/user/${id}`);
     },
