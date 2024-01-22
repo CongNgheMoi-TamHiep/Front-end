@@ -29,7 +29,7 @@ const Layout = ({children}) => {
     setActive("danhBa");
   };
   const handleSignOut = () => {
-    authApis.logout();
+    auth.signOut();
     router.push('/login'); 
   }
   
