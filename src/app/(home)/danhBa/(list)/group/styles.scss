@@ -1,7 +1,7 @@
 .friend {
   height: 100%;
   padding: 20px;
-    background-color: #f3f5f9;
+  background-color: #f3f5f9;
   // background-color: greenyellow;
   overflow: auto;
   h3 {
@@ -55,20 +55,20 @@
           width: 250px;
           font-size: 14px;
           font-weight: normal;
-          padding:0 5px;
           border-radius: 5px;
+          padding: 0 5px;
           border: 1px solid #d9d9d9;
-          background-color: #EAEDF0;
+          background-color: #eaedf0;
           cursor: pointer;
 
           select {
             flex: 1;
             border: none;
             background-color: transparent;
-          //   appearance: none;
+            //   appearance: none;
 
             &:focus {
-              outline: none; 
+              outline: none;
             }
           }
         }
@@ -93,7 +93,7 @@
           flex: 1;
           display: flex;
           align-items: center;
-          border-bottom: 1px solid #D0D3D6;
+          border-bottom: 1px solid #d0d3d6;
         }
 
         &:last-of-type {
