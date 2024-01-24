@@ -29,13 +29,11 @@ const Layout = ({children}) => {
     setActive("danhBa");
   };
   const handleSignOut = () => {
-    authApis.logout();
+    auth.signOut();
     router.push('/login'); 
   }
   
   useEffect(() => {
-    console.log("currenUser: ");
-    console.log(currentUser);
     if (currentUser) setIsAuthenticated(true);
     else setIsAuthenticated(false);
     setIsLoading(false);
