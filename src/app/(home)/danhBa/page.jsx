@@ -1,9 +1,7 @@
-import React from 'react'
+import React from "react";
 
 const DanhBa = () => {
-  return (
-    <div>DanhBa</div>
-  )
-}
+  return <div className="bg-gray-600">DanhBa</div>;
+};
 
-export default DanhBa
+export default DanhBa;

@@ -1,9 +1,10 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./styles.scss";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import userApis from "@/apis/userApis";
 const Layout = ({ children }) => {
   const [conversations, setConversations] = useState([
     {
@@ -35,9 +36,20 @@ const Layout = ({ children }) => {
     setCurrentConversation(item);
     router.push(`/tinNhan/${item.id}`);
   };
-  console.log(currentConversation);
+  // console.log(currentConversation);
 
-  console.log(currentConversation);
+  // console.log(currentConversation);
+ 
+  useEffect(() => {
+    const fetchdata = async () => {
+      const users = await userApis.getAllUsers(); 
+      console.log(users);
+      return users; 
+    }
+    fetchdata(); 
+  }, []);
+
+
   return (
     <div className="tinNhan">
       <div className="conversations">

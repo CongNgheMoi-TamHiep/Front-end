@@ -9,11 +9,9 @@ export const AuthContext = createContext();
 const AuthProvider = ({children}) => {
     const [currentUser, setCurrentUser] = useState(null);
     const [loading, setLoading] = useState(true);
-
+    
     useEffect(() => { 
-        // console.log("useEffect runing...")
         const unsubscribe = onAuthStateChanged(auth, (user) => {
-            console.log(user)
             setCurrentUser(user);
             setLoading(false);
         })

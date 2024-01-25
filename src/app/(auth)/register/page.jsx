@@ -25,8 +25,8 @@ import PhoneInput from 'react-phone-input-2'
 import 'react-phone-input-2/lib/style.css'
 import formatPhoneNumber  from '@/utils/formatPhoneNumber'
 import { format } from "path";
-import axios from '@/api/axios'
-import { axiosPrivate } from "@/api/axios";
+import axiosPrivate  from "@/apis/axios";
+import authApis  from "@/apis/authApis";
 function Copyright(props) {
     return (
         <Typography
@@ -70,6 +70,11 @@ export default function SignUp() {
       setIsLoading(false);
     }, [currentUser])
 
+    useEffect(()=> { 
+        if (isAuthenticated)
+            router.push("/");
+    }, [isAuthenticated])
+
     const handleSubmit = async (event) => {
         event.preventDefault();
         try {
@@ -95,21 +100,20 @@ export default function SignUp() {
             try {
                 const usercred = await linkWithCredential(user, credential);
                 const user2 = usercred.user;
-                // Đặt thời gian sống của cookie là 1 giờ
-                var expirationDate = new Date();
-                expirationDate.setHours(expirationDate.getHours() + 1);
-                document.cookie = "accessToken=" + user2.accessToken + "; path=/; HttpOnly; Secure; SameSite=Strict; expires=" + expirationDate.toUTCString();
-                
-                // call register API to server
-                axiosPrivate.post('/auth/register', {
+                const userInfo = {
                     _id: user2.uid,
-                    name: user2.displayName,
+                    name,
                     number: user2.phoneNumber, 
                     avatar: "https://images.pexels.com/photos/14940646/pexels-photo-14940646.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
+                }
+                // call register API to server
+                authApis.register(userInfo)
+                await axiosPrivate.post('/userConversations', {
+                    userId: user2.uid, 
+                    conversations: [],
                 })
 
                 setIsAuthenticated(true);
-                console.log("Account linking success", user2);
             } catch (error) {
                 console.log("Account linking error", error);
             }
@@ -122,7 +126,6 @@ export default function SignUp() {
         return <Loading />;
     }
     if (isAuthenticated) {
-        router.push("/");
         return <Loading />;
     }
 
