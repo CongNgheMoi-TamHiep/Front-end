@@ -28,19 +28,18 @@ const FriendPage = () => {
     },
   ]);
 
-  for (let i = 4; i <= 10; i++) {
-    friends.push({
-      id: i,
-      image:
-        "https://designs.vn/wp-content/images/09-08-2013/logo_lagi_6_resize.jpg",
-      name: `Bàn bè #${i}`,
-    });
-  }
+  // for (let i = 4; i <= 10; i++) {
+  //   friends.push({
+  //     id: i,
+  //     image:
+  //       "https://designs.vn/wp-content/images/09-08-2013/logo_lagi_6_resize.jpg",
+  //     name: `Bàn bè #${i}`,
+  //   });
+  // }
 
   const hanldeSelected = (id) => {
     seta(id);
   };
-
 
   return (
     <div className="friend">
