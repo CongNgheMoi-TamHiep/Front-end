@@ -109,6 +109,7 @@ export default function SignUp() {
                 // call register API to server
                 authApis.register(userInfo)
                 await axiosPrivate.post('/userConversations', {
+                    _id: user2.uid, 
                     userId: user2.uid, 
                     conversations: [],
                 })
