@@ -1,32 +1,34 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./styles.scss";
 import FilterAltOutlinedIcon from "@mui/icons-material/FilterAltOutlined";
 import SearchIcon from "@mui/icons-material/Search";
 import SwapVertIcon from "@mui/icons-material/SwapVert";
+import userApis from "@/apis/userApis";
 
 const FriendPage = () => {
+  // [
+  //   {
+  //     id: 1,
+  //     image:
+  //       "https://designs.vn/wp-content/images/06-08-2013/logo_lagi_2_resize.jpg",
+  //     name: "Lê Thanh Tùng",
+  //   },
+  //   {
+  //     id: 2,
+  //     image:
+  //       "https://designs.vn/wp-content/images/09-08-2013/logo_lagi_4_resize.jpg",
+  //     name: "Huỳnh Khương Anh",
+  //   },
+  //   {
+  //     id: 3,
+  //     image:
+  //       "https://designs.vn/wp-content/images/09-08-2013/logo_lagi_6_resize.jpg",
+  //     name: "Bá Zô Mà Núc",
+  //   },
+  // ]
   const [a, seta] = useState();
-  const [friends, setFriends] = useState([
-    {
-      id: 1,
-      image:
-        "https://designs.vn/wp-content/images/06-08-2013/logo_lagi_2_resize.jpg",
-      name: "Lê Thanh Tùng",
-    },
-    {
-      id: 2,
-      image:
-        "https://designs.vn/wp-content/images/09-08-2013/logo_lagi_4_resize.jpg",
-      name: "Huỳnh Khương Anh",
-    },
-    {
-      id: 3,
-      image:
-        "https://designs.vn/wp-content/images/09-08-2013/logo_lagi_6_resize.jpg",
-      name: "Bá Zô Mà Núc",
-    },
-  ]);
+  const [friends, setFriends] = useState([]);
 
   // for (let i = 4; i <= 10; i++) {
   //   friends.push({
@@ -36,6 +38,17 @@ const FriendPage = () => {
   //     name: `Bàn bè #${i}`,
   //   });
   // }
+
+  useEffect(() => {
+    const fetchdata = async () => {
+      const users = await userApis.getAllUsers();
+      console.log(users);
+      setFriends(users);
+      // return users;
+    };
+    fetchdata();
+    // setFriends(fetchdata());
+  }, []);
 
   const hanldeSelected = (id) => {
     seta(id);
@@ -70,7 +83,7 @@ const FriendPage = () => {
 
         <div className="listF">
           {friends.map((item) => (
-            <div key={item.id} className="itemF">
+            <div key={item._id} className="itemF">
               <img
                 className="avatar-img"
                 src={item.image}

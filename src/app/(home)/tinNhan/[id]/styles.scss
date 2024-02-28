@@ -1,0 +1,241 @@
+.conversationChat {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  // overflow-y: scroll;
+  width: 73%;
+
+  .titleHeader {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    padding: 0px 10px;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #fff;
+    border-bottom: 1px solid #e0e0e0;
+
+    .contentTitle {
+      gap: 5px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+
+      .imgCon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        .imgAvt {
+          height: 45px;
+          width: 45px;
+          padding: 0;
+          border-radius: 50%;
+          object-fit: cover;
+        }
+
+        &:hover {
+          background-color: #fff;
+        }
+      }
+
+      .nameCon {
+        gap: 2px;
+        display: flex;
+        flex-direction: column;
+        align-items: start;
+        justify-content: center;
+        .nameNhan {
+          text-align: left;
+          font-weight: bold;
+          color: #000;
+        }
+        .timeAccess {
+          gap: 5px;
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          justify-content: center;
+
+          .lastTime {
+            padding-right: 5px;
+            // border-right: 2px solid black;
+          }
+
+          .btn {
+            padding: 0px;
+          }
+        }
+      }
+    }
+
+    .btnContent {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 20px;
+      height: 50px;
+      background-color: transparent;
+    }
+  }
+
+  .containerChat {
+    display: flex;
+    flex-direction: column-reverse;
+    // justify-content: flex-end;
+    background-color: #f1efed;
+    // flex-grow: 1;
+    overflow-y: auto;
+    height: 554px;
+    max-height: 554px;
+    min-height: 400px;
+
+    scrollbar-width: none; /* For Firefox */
+    -ms-overflow-style: none;
+
+    &::-webkit-scrollbar {
+      display: none; /* For Chrome, Safari and Opera */
+    }
+  }
+
+  .chats {
+    // max-height: 554px;
+    // width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+
+    .chatContent {
+      display: flex;
+      // flex-grow: 1;
+      width: 100%;
+      // min-height: 65px;
+      // height: max-content;
+      max-height: 200px;
+      align-items: flex-start;
+      // overflow-y: auto;
+      margin-bottom: 8px;
+
+      &:last-child {
+        margin-bottom: 30px;
+      }
+
+      .imgSender {
+        width: 45px;
+        .imgAvtSender {
+          width: 35px;
+          height: 30px !important;
+          border-radius: 50%;
+          height: 100% !important;
+          object-fit: fill;
+        }
+
+        &:hover {
+          background-color: #f1efed;
+        }
+      }
+
+      .chat {
+        display: flex;
+        max-width: 80%;
+        height: max-content;
+        // height: 200px;
+        flex-direction: column;
+        padding: 10px;
+        align-items: flex-start;
+        background-color: #fff;
+        border-radius: 10px;
+        gap: 10px;
+
+        .chatName {
+          font-size: 12px;
+          color: gray;
+        }
+        .chatContext {
+          font-size: 16px;
+          text-align: left;
+        }
+
+        .chatTime {
+          font-size: 12px;
+        }
+      }
+    }
+
+    .myChat {
+      flex-direction: row-reverse;
+      padding-right: 10px;
+    }
+
+    .block {
+      height: 5px;
+    }
+  }
+
+  .sendChat {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #e0e0e0;
+    width: 100%;
+    min-height: 100px;
+    max-height: 200px;
+    flex-shrink: 0;
+
+    .itemChat {
+      flex: 1;
+      display: flex;
+      justify-content: flex-start;
+      padding-left: 5px;
+      border-bottom: 1px solid aquamarine;
+      gap: 5px;
+
+      & > Button {
+        margin: 4px 0px;
+        padding-left: 0px;
+        padding-right: 0px;
+        color: #000;
+        &:hover {
+          background-color: #e6e2e0;
+        }
+      }
+    }
+
+    .sendChatContent {
+      flex: 1;
+      display: flex;
+      max-height: 500px;
+      justify-content: flex-start;
+
+      .inputChat {
+        margin: 5px;
+        padding: 10px 5px;
+        border: none;
+        outline: none;
+        font-size: 16px;
+        width: 90%;
+      }
+
+      .btnContent {
+        display: flex;
+        justify-content: center;
+        align-items: flex-end;
+        gap: 5px;
+
+        .btnGui {
+          font-weight: 500;
+          color: aqua;
+        }
+
+        & > Button {
+          margin-bottom: 5px;
+          color: #000;
+          cursor: pointer;
+          &:hover {
+            background-color: #e6e2e0;
+          }
+        }
+      }
+    }
+  }
+}
