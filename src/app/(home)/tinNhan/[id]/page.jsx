@@ -21,7 +21,7 @@ import { AuthContext } from "@/context/AuthProvider";
 import ConversationApi from "@/apis/ConversationApi";
 import ChatApi from "@/apis/ChatApi";
 import UserConversationApi from "@/apis/userConversationApi";
-
+import { Col, Spin, Upload, UploadProps } from "antd";
 // chat = {_id: string,
 //   conversationId: string,
 //   senderInfo: {_id, avatar, name},
@@ -212,13 +212,17 @@ const lastTime = "Truy cập 1 phút trước";
 const page = ({ params }) => {
   const conversationId = params.id;
   const currentUser = React.useContext(AuthContext);
+
   const endRef = useRef();
+  const inputPhotoRef = useRef();
+
   const containerRef = useRef();
   const [text, setText] = useState("");
   const [me, setMe] = useState();
   const [userNhan, setUserNhan] = useState([]);
   const [conversation, setConversation] = useState({});
   const [chats, setChat] = useState([]);
+  const [img, setImg] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -285,6 +289,32 @@ const page = ({ params }) => {
     }
   }, [chats]);
 
+  function hanldeBtnPhotoClick() {
+    inputPhotoRef.current.click();
+  }
+
+  const handleFileChange = (event) => {
+    const files = Array.from(event.target.files);
+    files.forEach((file) => {
+      const reader = new FileReader();
+
+      reader.onloadend = () => {
+        setChat((prevChats) => [
+          ...prevChats,
+          {
+            _id: chats.length + 1,
+            conversationId,
+            senderInfo: me,
+            content: { image: reader.result },
+            createdAt: new Date(),
+          },
+        ]);
+      };
+
+      reader.readAsDataURL(file);
+    });
+  };
+
   return (
     <div className="conversationChat">
       <div className="titleHeader">
@@ -343,12 +373,15 @@ const page = ({ params }) => {
                 {item.senderInfo._id !== me?._id && (
                   <p className="chatName">{item.senderInfo.name}</p>
                 )}
-                <p className="chatContext">
-                  {
-                    item.content.text
-                    // + "afasfafffffffffaf ffsfffffafasfafff fffff afasfafffffffffaf asfafffffffffafasfafffff ffffafasfafffff ffffafasfafffffffffafasfafffffffff afasfafffffffffafasfafffffffffafasfaf ffffffffafasfafffffffffafa sfafffffffffafasfafffffffffafasfafff ffffffafasfafffffffff afasfafffffffffaf asfafffffffffafasfafffff ffffafasfafffff ffffafasfafffffffffafasfafffffffff afasfafffffffffafasfafffffffffafasfaf ffffffffafasfafffffffffafa sfafffffffffafasfafffffffffafasfafff ffffffafasfafffffffff afasfafffffffffaf asfafffffffffafasfafffff ffffafasfafffff ffffafasfafffffffffafasfafffffffff afasfafffffffffafasfafffffffffafasfaf ffffffffafasfafffffffffafa sfafffffffffafasfafffffffffafasfafff ffffffafasfafffffffff "
-                  }
-                </p>
+                {item.content.text ? (
+                  <p className="chatContext">{item.content.text}</p>
+                ) : (
+                  <img
+                    src={item.content.image}
+                    alt="Chat"
+                    className="chatImg"
+                  />
+                )}
                 {/* check hour, giờ, userSend */}
                 <p className="chatTime">
                   {new Date(item.createdAt).toLocaleTimeString([], {
@@ -359,6 +392,15 @@ const page = ({ params }) => {
               </div>
             </div>
           ))}
+          {/* {img.map((chat, index) => (
+            <img
+              key={index}
+              src={chat}
+              alt="Chat"
+              className="chatContent myChat imgChat"
+              // style={{ width: "30px" }}
+            />
+          ))} */}
           {/* <div className="block" /> */}
         </div>
         <div ref={endRef} />
@@ -370,7 +412,15 @@ const page = ({ params }) => {
             <KitesurfingIcon />
           </Button>
           <Button>
-            <PhotoSizeSelectActualOutlinedIcon />
+            <input
+              ref={inputPhotoRef}
+              style={{ display: "none" }}
+              accept="image/*,video/*"
+              type="file"
+              multiple={true}
+              onChange={handleFileChange}
+            />
+            <PhotoSizeSelectActualOutlinedIcon onClick={hanldeBtnPhotoClick} />
           </Button>
           <Button>
             <AttachmentOutlinedIcon />

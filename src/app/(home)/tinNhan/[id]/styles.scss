@@ -85,11 +85,11 @@
     flex-direction: column-reverse;
     // justify-content: flex-end;
     background-color: #f1efed;
-    // flex-grow: 1;
+    flex-grow: 1;
     overflow-y: auto;
-    height: 554px;
-    max-height: 554px;
-    min-height: 400px;
+    // height: 454px;
+    // max-height: 554px;
+    // min-height: 400px;
 
     scrollbar-width: none; /* For Firefox */
     -ms-overflow-style: none;
@@ -112,7 +112,7 @@
       width: 100%;
       // min-height: 65px;
       // height: max-content;
-      max-height: 200px;
+      // max-height: 200px;
       align-items: flex-start;
       // overflow-y: auto;
       margin-bottom: 8px;
@@ -122,13 +122,13 @@
       }
 
       .imgSender {
-        width: 45px;
+        width:45px;
         .imgAvtSender {
-          width: 35px;
+          width: 40px;
           height: 30px !important;
           border-radius: 50%;
           height: 100% !important;
-          object-fit: fill;
+          object-fit: contain;
         }
 
         &:hover {
@@ -160,6 +160,12 @@
         .chatTime {
           font-size: 12px;
         }
+      }
+
+      .chatImg {
+        max-width: 300px;
+        // width: 200px;
+        object-fit: contain;
       }
     }
 
