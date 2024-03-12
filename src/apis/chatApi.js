@@ -6,13 +6,17 @@ const ChatApi = {
     return axiosPrivate(`/chat/${id}`);
   },
 
-  sendChatSingle(newChat, memberUserId, lastMess) {
-    axiosPrivate.post(`/chat`, newChat);
-    UserConversationApi.update(
-      memberUserId,
-      newChat.conversationId,
-      lastMess
-    );
+  async sendChatSingle(newChat, memberUser) {
+    const chat = await axiosPrivate.post(`/chat`, newChat);
+    const lastMess = chat.data;
+    delete lastMess.conversationId;
+    for (let member of memberUser)
+      await UserConversationApi.update(
+        member._id,
+        newChat.conversationId,
+        lastMess
+      );
+    return chat;
   },
 };
 
