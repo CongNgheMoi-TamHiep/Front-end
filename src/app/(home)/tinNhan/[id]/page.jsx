@@ -22,6 +22,7 @@ import ConversationApi from "@/apis/ConversationApi";
 import ChatApi from "@/apis/ChatApi";
 import UserConversationApi from "@/apis/userConversationApi";
 import { Col, Spin, Upload, UploadProps } from "antd";
+import EmojiPicker from "emoji-picker-react";
 // chat = {_id: string,
 //   conversationId: string,
 //   senderInfo: {_id, avatar, name},
@@ -215,14 +216,15 @@ const page = ({ params }) => {
 
   const endRef = useRef();
   const inputPhotoRef = useRef();
-
   const containerRef = useRef();
+
   const [text, setText] = useState("");
   const [me, setMe] = useState();
   const [userNhan, setUserNhan] = useState([]);
   const [conversation, setConversation] = useState({});
   const [chats, setChat] = useState([]);
   const [img, setImg] = useState([]);
+  const [openEmoji, setOpenEmoji] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -246,14 +248,15 @@ const page = ({ params }) => {
 
       //fetch chats
       const chatReponse = await ChatApi.getChatByConversationId(conversationId);
-      console.log(
-        chatReponse.data.sort((a, b) => {
-          return new Date(a.createdAt) - new Date(b.createdAt);
-        })
-      );
+      // console.log(
+      //   chatReponse.data.sort((a, b) => {
+      //     return new Date(a.createdAt) - new Date(b.createdAt);
+      //   })
+      // );
       setChat(
         chatReponse.data.sort((a, b) => {
-          return new Date(a.createdAt) - new Date(b.createdAt);
+          return new Date(b.createdAt) - new Date(a.createdAt);
+          // return new Date(a.createdAt) - new Date(b.createdAt);
         })
       );
     };
@@ -265,6 +268,7 @@ const page = ({ params }) => {
   );
 
   const handleSend = async () => {
+    console.log(text);
     if (text == "") return;
     const chat = await ChatApi.sendChatSingle(
       {
@@ -313,6 +317,10 @@ const page = ({ params }) => {
 
       reader.readAsDataURL(file);
     });
+  };
+
+  const hanldeEmojiClick = (emojiObject, event) => {
+    setText((prev) => prev + emojiObject.emoji);
   };
 
   return (
@@ -365,16 +373,18 @@ const page = ({ params }) => {
               }`}
             >
               {item.senderInfo._id !== me?._id && (
-                <Button className="imgSender" style={{ padding: 0, margin: 0 }}>
+                <div className="imgSender" onClick="">
                   <img src={item.senderInfo.avatar} className="imgAvtSender" />
-                </Button>
+                </div>
               )}
               <div className="chat">
                 {item.senderInfo._id !== me?._id && (
                   <p className="chatName">{item.senderInfo.name}</p>
                 )}
                 {item.content.text ? (
-                  <p className="chatContext">{item.content.text}</p>
+                  <p className="chatContext" style={{ whiteSpace: "pre-wrap" }}>
+                    {item.content.text}
+                  </p>
                 ) : (
                   <img
                     src={item.content.image}
@@ -411,6 +421,13 @@ const page = ({ params }) => {
           <Button>
             <KitesurfingIcon />
           </Button>
+          <div
+            style={{
+              width: "1.5px",
+              backgroundColor: "gray",
+              margin: "7px 0",
+            }}
+          />
           <Button>
             <input
               ref={inputPhotoRef}
@@ -422,9 +439,23 @@ const page = ({ params }) => {
             />
             <PhotoSizeSelectActualOutlinedIcon onClick={hanldeBtnPhotoClick} />
           </Button>
+          <div
+            style={{
+              width: "1.5px",
+              backgroundColor: "gray",
+              margin: "7px 0",
+            }}
+          />
           <Button>
             <AttachmentOutlinedIcon />
           </Button>
+          <div
+            style={{
+              width: "1.5px",
+              backgroundColor: "gray",
+              margin: "7px 0",
+            }}
+          />
           <Button>
             <ContactEmergencyOutlinedIcon />
           </Button>
@@ -438,19 +469,33 @@ const page = ({ params }) => {
             maxRows={5}
             multiline={true}
             value={text}
-            onChange={(e) => setText(e.target.value)}
-            // ref={inputRef}
+            onChange={(e) => {
+              setText(e.target.value);
+              console.log(e.target.value);
+            }}
           />
           <div className="btnContent">
             <Button>
               <AlternateEmailIcon />
             </Button>
-            <Button>
+            <Button
+              style={{ backgroundColor: openEmoji ? "#0091E1" : "white" }}
+              onClick={() => setOpenEmoji(!openEmoji)}
+            >
               <SentimentVerySatisfiedIcon />
             </Button>
             <Button className="btnGui" onClick={() => handleSend()}>
               {text == "" ? <ThumbUpIcon sx={{ color: "black" }} /> : "Gửi"}
             </Button>
+
+            {openEmoji && (
+              <div>
+                <EmojiPicker
+                  onEmojiClick={hanldeEmojiClick}
+                  className="blockEmoji"
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>
