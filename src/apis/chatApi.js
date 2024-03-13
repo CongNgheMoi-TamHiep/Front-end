@@ -8,7 +8,7 @@ const ChatApi = {
 
   async sendChatSingle(newChat, memberUser) {
     const chat = await axiosPrivate.post(`/chat`, newChat);
-    const lastMess = chat.data;
+    const lastMess = chat;
     delete lastMess.conversationId;
     for (let member of memberUser)
       await UserConversationApi.update(
