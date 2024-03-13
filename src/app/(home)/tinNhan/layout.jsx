@@ -30,7 +30,7 @@ const Layout = ({ children }) => {
       );
       // const users = await userApis.getAllUsers();
       // const users = [];
-      setConversations(userConversations.data.conversations);
+      setConversations(userConversations.conversations);
       // console.log(currentUser, userConversations.data.conversations[0]);
     };
     fetchdata();

@@ -232,15 +232,15 @@ const page = ({ params }) => {
       const conversationResponse = await ConversationApi.getConversationById(
         conversationId
       );
-      setConversation(conversationResponse.data);
+      setConversation(conversationResponse);
       // console.log(conversationResponse.data, conversationId,currentUser);
       setMe(
-        conversationResponse.data.members.find(
+        conversationResponse.members.find(
           (value) => value._id == currentUser.uid
         )
       );
       setUserNhan(
-        conversationResponse.data.members.filter(
+        conversationResponse.members.filter(
           (value) => value._id !== currentUser.uid
         )
       );
@@ -254,7 +254,7 @@ const page = ({ params }) => {
       //   })
       // );
       setChat(
-        chatReponse.data.sort((a, b) => {
+        chatReponse.sort((a, b) => {
           return new Date(b.createdAt) - new Date(a.createdAt);
           // return new Date(a.createdAt) - new Date(b.createdAt);
         })
@@ -279,8 +279,8 @@ const page = ({ params }) => {
       conversation.members
     );
 
-    console.log(chat?.data);
-    chats.push(chat?.data);
+    console.log(chat);
+    chats.push(chat);
     setText("");
   };
 
