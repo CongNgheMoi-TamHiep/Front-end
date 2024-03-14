@@ -1,6 +1,7 @@
 import { Inter } from "next/font/google";
 import "./globals.css";
 import AuthProvider from "@/context/AuthProvider";
+import SocketProvider from '@/context/SocketProvider';
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
@@ -15,7 +16,11 @@ export default function RootLayout({ children }) {
     return (
         <html lang="en" suppressHydrationWarning>
             <body className={inter.className} suppressHydrationWarning>
-                <AuthProvider>{children}</AuthProvider>
+                <AuthProvider>
+                    <SocketProvider>
+                        {children}
+                    </SocketProvider>
+                </AuthProvider>
             </body>
         </html>
     );

@@ -1,6 +1,7 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 /* eslint-disable @next/next/no-img-element */
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import "./styles.scss";
 import { useParams, useRouter } from "next/router";
 import BookmarkBorderIcon from "@mui/icons-material/BookmarkBorder";
@@ -23,6 +24,8 @@ import ChatApi from "@/apis/ChatApi";
 import UserConversationApi from "@/apis/userConversationApi";
 import { Col, Spin, Upload, UploadProps } from "antd";
 import EmojiPicker from "emoji-picker-react";
+import {io} from "socket.io-client";
+import { SocketContext } from "@/context/SocketProvider";
 // chat = {_id: string,
 //   conversationId: string,
 //   senderInfo: {_id, avatar, name},
@@ -210,6 +213,9 @@ const chatss = [
 
 const lastTime = "Truy cập 1 phút trước";
 
+
+// socket.emit('addUser', auth.get);
+
 const page = ({ params }) => {
   const conversationId = params.id;
   const currentUser = React.useContext(AuthContext);
@@ -217,6 +223,7 @@ const page = ({ params }) => {
   const endRef = useRef();
   const inputPhotoRef = useRef();
   const containerRef = useRef();
+  const socket = useContext(SocketContext);
 
   const [text, setText] = useState("");
   const [me, setMe] = useState();
@@ -263,13 +270,35 @@ const page = ({ params }) => {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    // Xử lý sự kiện socket ở đây
+    socket.emit("joinRoom", conversationId);
+    socket.on("getMessage", (chat) => {
+      console.log(chats)
+      if(chat.createdAt !== chats[chats.length - 1]?.createdAt){
+        // console.log(chat.createdAt); 
+        // console.log(chats[chats.length - 1]?.createdAt);
+        // console.log("\n\n")
+        setChat((prevChats) => [...prevChats, chat]);
+      }
+    })
+  }, []);
+
+
   const [idUserLastChat, setIdUserLastChat] = useState(
     chats[0]?.senderInfo._id
   );
 
   const handleSend = async () => {
-    console.log(text);
     if (text == "") return;
+    socket.emit("sendMessage", {
+      conversationId, 
+      senderInfo: me,
+      content: { text },
+      createdAt: new Date(),
+    }); 
+    setText("");
+
     const chat = await ChatApi.sendChatSingle(
       {
         conversationId,
@@ -278,10 +307,9 @@ const page = ({ params }) => {
       },
       conversation.members
     );
-
-    console.log(chat);
-    chats.push(chat);
-    setText("");
+    // console.log("chat: ")
+    // console.log(chat);
+    // chats.push(chat);
   };
 
   useEffect(() => {
@@ -322,6 +350,9 @@ const page = ({ params }) => {
   const hanldeEmojiClick = (emojiObject, event) => {
     setText((prev) => prev + emojiObject.emoji);
   };
+
+
+  // console.log(chats, "chats")
 
   return (
     <div className="conversationChat">
