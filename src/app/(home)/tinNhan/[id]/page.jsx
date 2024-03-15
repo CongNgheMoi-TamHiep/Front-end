@@ -1,6 +1,7 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 /* eslint-disable @next/next/no-img-element */
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import "./styles.scss";
 import { useRouter } from "next/navigation";
 import BookmarkBorderIcon from "@mui/icons-material/BookmarkBorder";
@@ -24,202 +25,22 @@ import ChatApi from "@/apis/ChatApi";
 import UserConversationApi from "@/apis/userConversationApi";
 import { Col, Spin, Upload, UploadProps } from "antd";
 import EmojiPicker from "emoji-picker-react";
-// chat = {_id: string,
-//   conversationId: string,
-//   senderInfo: {_id, avatar, name},
-//   content: {text, image:, audio , file: }
-//   createdAt: date
-// }
-const chatss = [
-  {
-    _id: "a2",
-    conversationId: "1",
-    senderInfo: {
-      _id: "y8bYgJmzJ1hROg7PhIIXWvHw1CN2",
-      avatar:
-        "https://designs.vn/wp-content/images/09-08-2013/logo_lagi_4_resize.jpg",
-      name: "Huỳnh Khương Anh",
-    },
-    content: {
-      text: "start_it-scrollbar { &::-",
-    },
-    createdAt: "2022-10-10T10:00:00.000Z",
-  },
-  {
-    _id: "a",
-    conversationId: "1",
-    senderInfo: {
-      _id: "1",
-      avatar:
-        "https://designs.vn/wp-content/images/06-08-2013/logo_lagi_2_resize.jpg",
-      name: "Lê Thanh Tùng",
-    },
-    content: {
-      text: "vcl lun đừng làm thế mà :33",
-    },
-    createdAt: "2022-10-10T10:00:00.000Z",
-  },
-  {
-    _id: "a4",
-    conversationId: "1",
-    senderInfo: {
-      _id: "1",
-      avatar:
-        "https://designs.vn/wp-content/images/06-08-2013/logo_lagi_2_resize.jpg",
-      name: "Lê Thanh Tùng",
-    },
-    content: {
-      text: "ádlbar { display: none; /* For Chrome, Safari and Opera */",
-    },
-    createdAt: "2022-10-10T10:01:00.000Z",
-  },
-  {
-    _id: "b2",
-    conversationId: "1",
-    senderInfo: {
-      _id: "y8bYgJmzJ1hROg7PhIIXWvHw1CN2",
-      avatar:
-        "https://designs.vn/wp-content/images/09-08-2013/logo_lagi_4_resize.jpg",
-      name: "Huỳnh Khương Anh",
-    },
-    content: {
-      text: "it-scrollbar { &::-",
-    },
-    createdAt: "2022-10-10T10:00:00.000Z",
-  },
-  {
-    _id: "b3",
-    conversationId: "1",
-    senderInfo: {
-      _id: "1",
-      avatar:
-        "https://designs.vn/wp-content/images/06-08-2013/logo_lagi_2_resize.jpg",
-      name: "Lê Thanh Tùng",
-    },
-    content: {
-      text: "vcl lun đừng làm thế mà :33",
-    },
-    createdAt: "2022-10-10T10:00:00.000Z",
-  },
-  {
-    _id: "b4",
-    conversationId: "1",
-    senderInfo: {
-      _id: "1",
-      avatar:
-        "https://designs.vn/wp-content/images/06-08-2013/logo_lagi_2_resize.jpg",
-      name: "Lê Thanh Tùng",
-    },
-    content: {
-      text: "ádlbar { display: none; /* For Chrome, Safari and Opera */",
-    },
-    createdAt: "2022-10-10T10:01:00.000Z",
-  },
-  {
-    _id: "1",
-    conversationId: "1",
-    senderInfo: {
-      _id: "1",
-      avatar:
-        "https://designs.vn/wp-content/images/06-08-2013/logo_lagi_2_resize.jpg",
-      name: "Lê Thanh Tùng",
-    },
-    content: {
-      text: "abc gần rồi...",
-    },
-    createdAt: "2022-10-10T10:00:00.000Z",
-  },
-  {
-    _id: "2",
-    conversationId: "1",
-    senderInfo: {
-      _id: "y8bYgJmzJ1hROg7PhIIXWvHw1CN2",
-      avatar:
-        "https://designs.vn/wp-content/images/09-08-2013/logo_lagi_4_resize.jpg",
-      name: "Huỳnh Khương Anh",
-    },
-    content: {
-      text: "it-scrollbar { &::-",
-    },
-    createdAt: "2022-10-10T10:00:00.000Z",
-  },
-  {
-    _id: "3",
-    conversationId: "1",
-    senderInfo: {
-      _id: "1",
-      avatar:
-        "https://designs.vn/wp-content/images/06-08-2013/logo_lagi_2_resize.jpg",
-      name: "Lê Thanh Tùng",
-    },
-    content: {
-      text: "vcl lun đừng làm thế mà :33",
-    },
-    createdAt: "2022-10-10T10:00:00.000Z",
-  },
-  {
-    _id: "4",
-    conversationId: "1",
-    senderInfo: {
-      _id: "1",
-      avatar:
-        "https://designs.vn/wp-content/images/06-08-2013/logo_lagi_2_resize.jpg",
-      name: "Lê Thanh Tùng",
-    },
-    content: {
-      text: "end_ádlbar { display: none; /* For Chrome, Safari and Opera */",
-    },
-    createdAt: "2022-10-10T10:01:00.000Z",
-  },
-];
-
-// Conversation={
-//   _id: string,
-//   type: string (group/couple),
-//   members: [ {_id, name, avatar}, ... ],
-//   name: (if group)
-// }
-// const conversation = {
-//   _id: "1",
-//   type: "couple",
-//   members: [
-//     {
-//       _id: "1",
-//       name: "Lê Thanh Tùng",
-//       avatar:
-//         "https://designs.vn/wp-content/images/06-08-2013/logo_lagi_2_resize.jpg",
-//     },
-//     {
-//       _id: "2",
-//       name: "Huỳnh Khương Anh",
-//       avatar:
-//         "https://designs.vn/wp-content/images/09-08-2013/logo_lagi_4_resize.jpg",
-//     },
-//   ],
-// };
-
-// const me = {
-//   _id: "1",
-//   avatar:
-//     "https://designs.vn/wp-content/images/06-08-2013/logo_lagi_2_resize.jpg",
-//   name: "Lê Thanh Tùng",
-// };
-// const userNhan =
-//   conversation.type == "couple"
-//     ? conversation.members[0]
-//     : { name: conversation.name, avatar: conversation.avatar };
-
+import { io } from "socket.io-client";
+import { SocketContext } from "@/context/SocketProvider";
+import { useMutation } from "react-query";
 const lastTime = "Truy cập 1 phút trước";
+
+// socket.emit('addUser', auth.get);
 
 const page = ({ params }) => {
   const conversationId = params.id;
   const router = useRouter();
-  console.log(params, router.query);
   const currentUser = React.useContext(AuthContext);
 
   const endRef = useRef();
   const inputPhotoRef = useRef();
   const containerRef = useRef();
+  const socket = useContext(SocketContext);
 
   const [text, setText] = useState("");
   const [me, setMe] = useState();
@@ -228,6 +49,11 @@ const page = ({ params }) => {
   const [chats, setChat] = useState([]);
   const [img, setImg] = useState([]);
   const [openEmoji, setOpenEmoji] = useState(false);
+
+  // const { mutate: getChat } = useMutation(
+  //   "getChat",
+  //   ChatApi.getChatByConversationId(conversationId)
+  // );
 
   useEffect(() => {
     const fetchData = async () => {
@@ -264,11 +90,53 @@ const page = ({ params }) => {
       );
     };
     fetchData();
+    socket.emit("joinRoom", conversationId);
+    socket.on("getMessage", (chat) => {
+      console.log(chat);
+      console.log(chats);
+      if (chat.createdAt !== chats[chats.length - 1]?.createdAt) {
+        setChat((prevChats) => [...prevChats, chat]);
+      }
+    });
   }, []);
+
+  // useEffect(() => {
+  //   // Xử lý sự kiện socket ở đây
+  //   socket.emit("joinRoom", conversationId);
+  //   socket.on("getMessage", (chat) => {
+  //     console.log(chats);
+  //     if (chat.createdAt !== chats[chats.length - 1]?.createdAt) {
+  //       setChat((prevChats) => [...prevChats, chat]);
+  //     }
+  //   });
+  // }, []);
 
   const [idUserLastChat, setIdUserLastChat] = useState(
     chats[0]?.senderInfo._id
   );
+
+  const handleSend = async () => {
+    if (text == "") return;
+    socket.emit("sendMessage", {
+      conversationId,
+      senderInfo: me,
+      content: { text: text == "" ? "👍" : text },
+      createdAt: new Date(),
+    });
+    setText("");
+
+    const chat = await ChatApi.sendChatSingle(
+      {
+        conversationId,
+        senderInfo: me,
+        content: { text: text == "" ? "👍" : text },
+      },
+      conversation.members
+    );
+    // console.log("chat: ")
+    // console.log(chat);
+    // setChat([...chats, chat]);
+  };
 
   useEffect(() => {
     if (
@@ -278,22 +146,6 @@ const page = ({ params }) => {
       endRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [chats]);
-
-  const handleSend = async () => {
-    const chat = await ChatApi.sendChatSingle(
-      {
-        conversationId,
-        senderInfo: me,
-        content: { text: text == "" ? "👍" : text },
-      },
-      conversation.members
-    );
-
-    console.log(chat);
-    setChat([...chats, chat]);
-    console.log(chats);
-    setText("");
-  };
 
   function hanldeBtnPhotoClick() {
     inputPhotoRef.current.click();
@@ -324,6 +176,7 @@ const page = ({ params }) => {
   const hanldeEmojiClick = (emojiObject, event) => {
     setText((prev) => prev + emojiObject.emoji);
   };
+  // console.log(chats, "chats")
 
   return (
     <div className="conversationChat">
@@ -474,9 +327,15 @@ const page = ({ params }) => {
             onChange={(e) => {
               setText(e.target.value);
             }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                handleSend();
+                e.preventDefault();
+              }
+            }}
           />
           <div className="btnContent">
-            <Button>
+            <Button onClick={() => console.log(chats)}>
               <AlternateEmailIcon />
             </Button>
             <Button
