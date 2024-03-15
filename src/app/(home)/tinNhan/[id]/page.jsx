@@ -401,7 +401,7 @@ const page = ({ params }) => {
         <div className="chats">
           {chats?.map((item) => (
             <div
-              key={item._id}
+              key={item._id || item.createdAt}
               className={`chatContent ${
                 item.senderInfo._id === me?._id ? "myChat" : "yourChat"
               }`}
