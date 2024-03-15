@@ -2,7 +2,7 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
 import "./styles.scss";
-import { useParams, useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import BookmarkBorderIcon from "@mui/icons-material/BookmarkBorder";
 import { Button, IconButton, Input } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
@@ -15,6 +15,7 @@ import AttachmentOutlinedIcon from "@mui/icons-material/AttachmentOutlined";
 import ContactEmergencyOutlinedIcon from "@mui/icons-material/ContactEmergencyOutlined";
 import KitesurfingIcon from "@mui/icons-material/Kitesurfing";
 import AlternateEmailIcon from "@mui/icons-material/AlternateEmail";
+import ThumbUpOutlinedIcon from "@mui/icons-material/ThumbUpOutlined";
 import ThumbUpIcon from "@mui/icons-material/ThumbUp";
 import Divider from "@mui/material/Divider";
 import { AuthContext } from "@/context/AuthProvider";
@@ -212,6 +213,8 @@ const lastTime = "Truy cập 1 phút trước";
 
 const page = ({ params }) => {
   const conversationId = params.id;
+  const router = useRouter();
+  console.log(params, router.query);
   const currentUser = React.useContext(AuthContext);
 
   const endRef = useRef();
@@ -267,23 +270,6 @@ const page = ({ params }) => {
     chats[0]?.senderInfo._id
   );
 
-  const handleSend = async () => {
-    console.log(text);
-    if (text == "") return;
-    const chat = await ChatApi.sendChatSingle(
-      {
-        conversationId,
-        senderInfo: me,
-        content: { text },
-      },
-      conversation.members
-    );
-
-    console.log(chat);
-    chats.push(chat);
-    setText("");
-  };
-
   useEffect(() => {
     if (
       containerRef.current.scrollHeight - containerRef.current.scrollTop ===
@@ -292,6 +278,22 @@ const page = ({ params }) => {
       endRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [chats]);
+
+  const handleSend = async () => {
+    const chat = await ChatApi.sendChatSingle(
+      {
+        conversationId,
+        senderInfo: me,
+        content: { text: text == "" ? "👍" : text },
+      },
+      conversation.members
+    );
+
+    console.log(chat);
+    setChat([...chats, chat]);
+    console.log(chats);
+    setText("");
+  };
 
   function hanldeBtnPhotoClick() {
     inputPhotoRef.current.click();
@@ -373,7 +375,7 @@ const page = ({ params }) => {
               }`}
             >
               {item.senderInfo._id !== me?._id && (
-                <div className="imgSender" onClick="">
+                <div className="imgSender">
                   <img src={item.senderInfo.avatar} className="imgAvtSender" />
                 </div>
               )}
@@ -471,7 +473,6 @@ const page = ({ params }) => {
             value={text}
             onChange={(e) => {
               setText(e.target.value);
-              console.log(e.target.value);
             }}
           />
           <div className="btnContent">
@@ -484,10 +485,9 @@ const page = ({ params }) => {
             >
               <SentimentVerySatisfiedIcon />
             </Button>
-            <Button className="btnGui" onClick={() => handleSend()}>
-              {text == "" ? <ThumbUpIcon sx={{ color: "black" }} /> : "Gửi"}
+            <Button className="btnGui" onClick={handleSend}>
+              {text == "" ? <ThumbUpOutlinedIcon color="primary" /> : "Gửi"}
             </Button>
-
             {openEmoji && (
               <div>
                 <EmojiPicker

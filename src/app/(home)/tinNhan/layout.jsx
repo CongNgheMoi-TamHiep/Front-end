@@ -19,15 +19,11 @@ const Layout = ({ children }) => {
     setCurrentConversation(item);
     router.push(`/tinNhan/${item.conversationId}`);
   };
-  // console.log(currentConversation);
-
-  // console.log(currentConversation);
 
   useEffect(() => {
     const fetchdata = async () => {
-      const userConversations = await UserConversationApi.getUserConversationByUserId(
-        currentUser.uid
-      );
+      const userConversations =
+        await UserConversationApi.getUserConversationByUserId(currentUser.uid);
       // const users = await userApis.getAllUsers();
       // const users = [];
       setConversations(userConversations.conversations);
