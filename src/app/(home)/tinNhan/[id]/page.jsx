@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 /* eslint-disable @next/next/no-img-element */
 "use client";
-import React, { useContext, useEffect, useRef, useState } from "react";
+import React, { use, useContext, useEffect, useRef, useState } from "react";
 import "./styles.scss";
 import { useParams, useRouter } from "next/router";
 import BookmarkBorderIcon from "@mui/icons-material/BookmarkBorder";
@@ -230,6 +230,7 @@ const page = ({ params }) => {
   const [userNhan, setUserNhan] = useState([]);
   const [conversation, setConversation] = useState({});
   const [chats, setChat] = useState([]);
+  const [chatReceived, setChatReceived] = useState(null);
   const [img, setImg] = useState([]);
   const [openEmoji, setOpenEmoji] = useState(false);
 
@@ -270,19 +271,21 @@ const page = ({ params }) => {
     fetchData();
   }, []);
 
-  useEffect(() => {
-    // Xử lý sự kiện socket ở đây
+  useEffect(() => { 
     socket.emit("joinRoom", conversationId);
+  }, [conversationId]);
+
+  useEffect(() => {
     socket.on("getMessage", (chat) => {
-      console.log(chats)
-      if(chat.createdAt !== chats[chats.length - 1]?.createdAt){
-        // console.log(chat.createdAt); 
-        // console.log(chats[chats.length - 1]?.createdAt);
-        // console.log("\n\n")
-        setChat((prevChats) => [...prevChats, chat]);
-      }
+      setChatReceived(chat); 
     })
   }, []);
+
+  useEffect(() => {
+    if (chatReceived) {
+      setChat((prevChats) => [...prevChats, chatReceived]);
+    }
+  }, [chatReceived])
 
 
   const [idUserLastChat, setIdUserLastChat] = useState(
