@@ -3,9 +3,9 @@
 "use client";
 import React, { use, useContext, useEffect, useRef, useState } from "react";
 import "./styles.scss";
-import { useParams, useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import BookmarkBorderIcon from "@mui/icons-material/BookmarkBorder";
-import { Button, IconButton, Input } from "@mui/material";
+import { Button, IconButton, Input, Tooltip } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import LocalPhoneOutlinedIcon from "@mui/icons-material/LocalPhoneOutlined";
 import VideocamOutlinedIcon from "@mui/icons-material/VideocamOutlined";
@@ -16,6 +16,9 @@ import AttachmentOutlinedIcon from "@mui/icons-material/AttachmentOutlined";
 import ContactEmergencyOutlinedIcon from "@mui/icons-material/ContactEmergencyOutlined";
 import KitesurfingIcon from "@mui/icons-material/Kitesurfing";
 import AlternateEmailIcon from "@mui/icons-material/AlternateEmail";
+import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
+import ThumbUpOutlinedIcon from "@mui/icons-material/ThumbUpOutlined";
+import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import ThumbUpIcon from "@mui/icons-material/ThumbUp";
 import Divider from "@mui/material/Divider";
 import { AuthContext } from "@/context/AuthProvider";
@@ -24,204 +27,21 @@ import ChatApi from "@/apis/ChatApi";
 import UserConversationApi from "@/apis/userConversationApi";
 import { Col, Spin, Upload, UploadProps } from "antd";
 import EmojiPicker from "emoji-picker-react";
-import {io} from "socket.io-client";
+import { io } from "socket.io-client";
 import { SocketContext } from "@/context/SocketProvider";
-// chat = {_id: string,
-//   conversationId: string,
-//   senderInfo: {_id, avatar, name},
-//   content: {text, image:, audio , file: }
-//   createdAt: date
-// }
-const chatss = [
-  {
-    _id: "a2",
-    conversationId: "1",
-    senderInfo: {
-      _id: "y8bYgJmzJ1hROg7PhIIXWvHw1CN2",
-      avatar:
-        "https://designs.vn/wp-content/images/09-08-2013/logo_lagi_4_resize.jpg",
-      name: "Huỳnh Khương Anh",
-    },
-    content: {
-      text: "start_it-scrollbar { &::-",
-    },
-    createdAt: "2022-10-10T10:00:00.000Z",
-  },
-  {
-    _id: "a",
-    conversationId: "1",
-    senderInfo: {
-      _id: "1",
-      avatar:
-        "https://designs.vn/wp-content/images/06-08-2013/logo_lagi_2_resize.jpg",
-      name: "Lê Thanh Tùng",
-    },
-    content: {
-      text: "vcl lun đừng làm thế mà :33",
-    },
-    createdAt: "2022-10-10T10:00:00.000Z",
-  },
-  {
-    _id: "a4",
-    conversationId: "1",
-    senderInfo: {
-      _id: "1",
-      avatar:
-        "https://designs.vn/wp-content/images/06-08-2013/logo_lagi_2_resize.jpg",
-      name: "Lê Thanh Tùng",
-    },
-    content: {
-      text: "ádlbar { display: none; /* For Chrome, Safari and Opera */",
-    },
-    createdAt: "2022-10-10T10:01:00.000Z",
-  },
-  {
-    _id: "b2",
-    conversationId: "1",
-    senderInfo: {
-      _id: "y8bYgJmzJ1hROg7PhIIXWvHw1CN2",
-      avatar:
-        "https://designs.vn/wp-content/images/09-08-2013/logo_lagi_4_resize.jpg",
-      name: "Huỳnh Khương Anh",
-    },
-    content: {
-      text: "it-scrollbar { &::-",
-    },
-    createdAt: "2022-10-10T10:00:00.000Z",
-  },
-  {
-    _id: "b3",
-    conversationId: "1",
-    senderInfo: {
-      _id: "1",
-      avatar:
-        "https://designs.vn/wp-content/images/06-08-2013/logo_lagi_2_resize.jpg",
-      name: "Lê Thanh Tùng",
-    },
-    content: {
-      text: "vcl lun đừng làm thế mà :33",
-    },
-    createdAt: "2022-10-10T10:00:00.000Z",
-  },
-  {
-    _id: "b4",
-    conversationId: "1",
-    senderInfo: {
-      _id: "1",
-      avatar:
-        "https://designs.vn/wp-content/images/06-08-2013/logo_lagi_2_resize.jpg",
-      name: "Lê Thanh Tùng",
-    },
-    content: {
-      text: "ádlbar { display: none; /* For Chrome, Safari and Opera */",
-    },
-    createdAt: "2022-10-10T10:01:00.000Z",
-  },
-  {
-    _id: "1",
-    conversationId: "1",
-    senderInfo: {
-      _id: "1",
-      avatar:
-        "https://designs.vn/wp-content/images/06-08-2013/logo_lagi_2_resize.jpg",
-      name: "Lê Thanh Tùng",
-    },
-    content: {
-      text: "abc gần rồi...",
-    },
-    createdAt: "2022-10-10T10:00:00.000Z",
-  },
-  {
-    _id: "2",
-    conversationId: "1",
-    senderInfo: {
-      _id: "y8bYgJmzJ1hROg7PhIIXWvHw1CN2",
-      avatar:
-        "https://designs.vn/wp-content/images/09-08-2013/logo_lagi_4_resize.jpg",
-      name: "Huỳnh Khương Anh",
-    },
-    content: {
-      text: "it-scrollbar { &::-",
-    },
-    createdAt: "2022-10-10T10:00:00.000Z",
-  },
-  {
-    _id: "3",
-    conversationId: "1",
-    senderInfo: {
-      _id: "1",
-      avatar:
-        "https://designs.vn/wp-content/images/06-08-2013/logo_lagi_2_resize.jpg",
-      name: "Lê Thanh Tùng",
-    },
-    content: {
-      text: "vcl lun đừng làm thế mà :33",
-    },
-    createdAt: "2022-10-10T10:00:00.000Z",
-  },
-  {
-    _id: "4",
-    conversationId: "1",
-    senderInfo: {
-      _id: "1",
-      avatar:
-        "https://designs.vn/wp-content/images/06-08-2013/logo_lagi_2_resize.jpg",
-      name: "Lê Thanh Tùng",
-    },
-    content: {
-      text: "end_ádlbar { display: none; /* For Chrome, Safari and Opera */",
-    },
-    createdAt: "2022-10-10T10:01:00.000Z",
-  },
-];
-
-// Conversation={
-//   _id: string,
-//   type: string (group/couple),
-//   members: [ {_id, name, avatar}, ... ],
-//   name: (if group)
-// }
-// const conversation = {
-//   _id: "1",
-//   type: "couple",
-//   members: [
-//     {
-//       _id: "1",
-//       name: "Lê Thanh Tùng",
-//       avatar:
-//         "https://designs.vn/wp-content/images/06-08-2013/logo_lagi_2_resize.jpg",
-//     },
-//     {
-//       _id: "2",
-//       name: "Huỳnh Khương Anh",
-//       avatar:
-//         "https://designs.vn/wp-content/images/09-08-2013/logo_lagi_4_resize.jpg",
-//     },
-//   ],
-// };
-
-// const me = {
-//   _id: "1",
-//   avatar:
-//     "https://designs.vn/wp-content/images/06-08-2013/logo_lagi_2_resize.jpg",
-//   name: "Lê Thanh Tùng",
-// };
-// const userNhan =
-//   conversation.type == "couple"
-//     ? conversation.members[0]
-//     : { name: conversation.name, avatar: conversation.avatar };
-
+import { useMutation } from "react-query";
 const lastTime = "Truy cập 1 phút trước";
-
 
 // socket.emit('addUser', auth.get);
 
 const page = ({ params }) => {
   const conversationId = params.id;
+  const router = useRouter();
   const currentUser = React.useContext(AuthContext);
 
   const endRef = useRef();
   const inputPhotoRef = useRef();
+  const inputFileRef = useRef();
   const containerRef = useRef();
   const socket = useContext(SocketContext);
 
@@ -252,15 +72,9 @@ const page = ({ params }) => {
           (value) => value._id !== currentUser.uid
         )
       );
-      // Array.prototype.filter((value)=>value._id == currentUser.uid)
 
       //fetch chats
       const chatReponse = await ChatApi.getChatByConversationId(conversationId);
-      // console.log(
-      //   chatReponse.data.sort((a, b) => {
-      //     return new Date(a.createdAt) - new Date(b.createdAt);
-      //   })
-      // );
       setChat(
         chatReponse.sort((a, b) => {
           // return new Date(b.createdAt) - new Date(a.createdAt);
@@ -269,66 +83,66 @@ const page = ({ params }) => {
       );
     };
     fetchData();
-  }, []);
 
-  useEffect(() => { 
-    socket.emit("joinRoom", conversationId);
-  }, [conversationId]);
+    socket.on("getMessage", (chat) => {
+      setChatReceived(chat);
+    });
+  }, []);
 
   useEffect(() => {
-    socket.on("getMessage", (chat) => {
-      setChatReceived(chat); 
-    })
-  }, []);
+    socket.emit("joinRoom", conversationId);
+  }, [conversationId]);
 
   useEffect(() => {
     if (chatReceived) {
       setChat((prevChats) => [...prevChats, chatReceived]);
     }
-  }, [chatReceived])
+  }, [chatReceived]);
 
-
-  const [idUserLastChat, setIdUserLastChat] = useState(
-    chats[0]?.senderInfo._id
-  );
-
-  const handleSend = async () => {
+  const handleSend = () => {
     if (text == "") return;
     socket.emit("sendMessage", {
-      conversationId, 
+      conversationId,
       senderInfo: me,
-      content: { text },
+      content: { text: text == "" ? "👍" : text },
       createdAt: new Date(),
-    }); 
-    setText("");
+    });
 
-    const chat = await ChatApi.sendChatSingle(
+    // const chat =
+    ChatApi.sendChatSingle(
       {
         conversationId,
         senderInfo: me,
-        content: { text },
+        content: { text: text == "" ? "👍" : text },
+        createdAt: new Date(),
       },
       conversation.members
     );
+
+    setText("");
     // console.log("chat: ")
     // console.log(chat);
-    // chats.push(chat);
+    // setChat([...chats, chat]);
   };
 
-  useEffect(() => {
-    if (
-      containerRef.current.scrollHeight - containerRef.current.scrollTop ===
-      containerRef.current.clientHeight
-    ) {
-      endRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [chats]);
+  // useEffect(() => {
+  //   if (
+  //     containerRef.current.scrollHeight - containerRef.current.scrollTop ===
+  //     containerRef.current.clientHeight
+  //   ) {
+  //     endRef.current.scrollIntoView({ behavior: "smooth" });
+  //   }
+  // }, [chats]);
 
   function hanldeBtnPhotoClick() {
     inputPhotoRef.current.click();
   }
 
-  const handleFileChange = (event) => {
+  function hanldeBtnFileClick() {
+    inputFileRef.current.click();
+  }
+
+  const handlePhotoSelect = (event) => {
     const files = Array.from(event.target.files);
     files.forEach((file) => {
       const reader = new FileReader();
@@ -337,7 +151,6 @@ const page = ({ params }) => {
         setChat((prevChats) => [
           ...prevChats,
           {
-            _id: chats.length + 1,
             conversationId,
             senderInfo: me,
             content: { image: reader.result },
@@ -350,11 +163,46 @@ const page = ({ params }) => {
     });
   };
 
+  const handleFileSelect = (event) => {
+    const files = Array.from(event.target.files);
+    files.forEach((file) => {
+      const reader = new FileReader();
+
+      reader.onloadend = () => {
+        setChat((prevChats) => [
+          ...prevChats,
+          {
+            conversationId,
+            senderInfo: me,
+            content: { file: reader.result },
+            createdAt: new Date(),
+          },
+        ]);
+      };
+
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const downloadFile = (event) => {
+    event.preventDefault();
+    const url =
+      "https://drive.google.com/file/d/1og0LH1ZNR-pB4EsejyPLv272zW_TUydm/view?usp=sharing"; // Thay thế bằng URL tải xuống thực của bạn
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "file"; // Tên tệp tải xuống, bạn có thể thay đổi nó theo ý muốn
+    link.style.display = "none";
+
+    document.body.appendChild(link);
+
+    link.click();
+
+    document.body.removeChild(link);
+  };
+
   const hanldeEmojiClick = (emojiObject, event) => {
     setText((prev) => prev + emojiObject.emoji);
   };
-
-
   // console.log(chats, "chats")
 
   return (
@@ -401,30 +249,60 @@ const page = ({ params }) => {
         <div className="chats">
           {chats?.map((item) => (
             <div
-              key={item._id || item.createdAt}
+              key={item._id || Date.parse(item.createdAt).toString()}
               className={`chatContent ${
                 item.senderInfo._id === me?._id ? "myChat" : "yourChat"
               }`}
             >
               {item.senderInfo._id !== me?._id && (
-                <div className="imgSender" onClick="">
+                <div className="imgSender">
                   <img src={item.senderInfo.avatar} className="imgAvtSender" />
                 </div>
               )}
-              <div className="chat">
+              <Tooltip
+                className="chat"
+                color={"#2db7f5"}
+                style={{
+                  backgroundColor:
+                    item.senderInfo._id === me?._id ? "#E5EFFF" : "white",
+                }}
+                title={
+                  <MoreHorizIcon
+                    style={{ padding: "1px", backgroundColor: "#2db7f5" }}
+                    fontSize="small"
+                  />
+                }
+                placement={
+                  item.senderInfo._id !== me?._id ? "right-end" : "left-end"
+                }
+              >
                 {item.senderInfo._id !== me?._id && (
                   <p className="chatName">{item.senderInfo.name}</p>
                 )}
                 {item.content.text ? (
-                  <p className="chatContext" style={{ whiteSpace: "pre-wrap" }}>
+                  <p className="chatText" style={{ whiteSpace: "pre-wrap" }}>
                     {item.content.text}
                   </p>
                 ) : (
-                  <img
-                    src={item.content.image}
-                    alt="Chat"
-                    className="chatImg"
-                  />
+                  // <img
+                  //   src={item.content.image}
+                  //   alt="Chat"
+                  //   className="chatImg"
+                  // />
+                  <div className="chatFile">
+                    <img
+                      src={item.content.image}
+                      alt="word"
+                      className="iconFile"
+                    />
+                    <div className="fileContent">
+                      <p>Name file</p>
+                      <p>45 MB</p>
+                    </div>
+                    <a href="javascript:void(0)" onClick={downloadFile}>
+                      <FileDownloadOutlinedIcon className="iconT" />
+                    </a>
+                  </div>
                 )}
                 {/* check hour, giờ, userSend */}
                 <p className="chatTime">
@@ -433,7 +311,7 @@ const page = ({ params }) => {
                     minute: "2-digit",
                   })}
                 </p>
-              </div>
+              </Tooltip>
             </div>
           ))}
           {/* {img.map((chat, index) => (
@@ -445,7 +323,6 @@ const page = ({ params }) => {
               // style={{ width: "30px" }}
             />
           ))} */}
-          {/* <div className="block" /> */}
         </div>
         <div ref={endRef} />
       </div>
@@ -462,16 +339,8 @@ const page = ({ params }) => {
               margin: "7px 0",
             }}
           />
-          <Button>
-            <input
-              ref={inputPhotoRef}
-              style={{ display: "none" }}
-              accept="image/*,video/*"
-              type="file"
-              multiple={true}
-              onChange={handleFileChange}
-            />
-            <PhotoSizeSelectActualOutlinedIcon onClick={hanldeBtnPhotoClick} />
+          <Button onClick={hanldeBtnPhotoClick}>
+            <PhotoSizeSelectActualOutlinedIcon />
           </Button>
           <div
             style={{
@@ -480,7 +349,7 @@ const page = ({ params }) => {
               margin: "7px 0",
             }}
           />
-          <Button>
+          <Button onClick={hanldeBtnFileClick}>
             <AttachmentOutlinedIcon />
           </Button>
           <div
@@ -493,6 +362,22 @@ const page = ({ params }) => {
           <Button>
             <ContactEmergencyOutlinedIcon />
           </Button>
+          <input
+            ref={inputPhotoRef}
+            style={{ display: "none" }}
+            accept="image/*,video/*"
+            type="file"
+            multiple={true}
+            onChange={handlePhotoSelect}
+          />
+          <input
+            ref={inputFileRef}
+            style={{ display: "none" }}
+            accept="*/*"
+            type="file"
+            multiple={true}
+            onChange={handlePhotoSelect}
+          />
         </div>
         <div className="sendChatContent">
           <Input
@@ -505,11 +390,16 @@ const page = ({ params }) => {
             value={text}
             onChange={(e) => {
               setText(e.target.value);
-              console.log(e.target.value);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                handleSend();
+                e.preventDefault();
+              }
             }}
           />
           <div className="btnContent">
-            <Button>
+            <Button onClick={() => console.log(chats)}>
               <AlternateEmailIcon />
             </Button>
             <Button
@@ -518,10 +408,9 @@ const page = ({ params }) => {
             >
               <SentimentVerySatisfiedIcon />
             </Button>
-            <Button className="btnGui" onClick={() => handleSend()}>
-              {text == "" ? <ThumbUpIcon sx={{ color: "black" }} /> : "Gửi"}
+            <Button className="btnGui" onClick={handleSend}>
+              {text == "" ? <ThumbUpOutlinedIcon color="primary" /> : "Gửi"}
             </Button>
-
             {openEmoji && (
               <div>
                 <EmojiPicker
