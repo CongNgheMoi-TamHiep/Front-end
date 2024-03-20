@@ -1,11 +1,11 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 /* eslint-disable @next/next/no-img-element */
 "use client";
-import React, { useContext, useEffect, useRef, useState } from "react";
+import React, { use, useContext, useEffect, useRef, useState } from "react";
 import "./styles.scss";
 import { useRouter } from "next/navigation";
 import BookmarkBorderIcon from "@mui/icons-material/BookmarkBorder";
-import { Button, IconButton, Input } from "@mui/material";
+import { Button, IconButton, Input, Tooltip } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import LocalPhoneOutlinedIcon from "@mui/icons-material/LocalPhoneOutlined";
 import VideocamOutlinedIcon from "@mui/icons-material/VideocamOutlined";
@@ -16,7 +16,9 @@ import AttachmentOutlinedIcon from "@mui/icons-material/AttachmentOutlined";
 import ContactEmergencyOutlinedIcon from "@mui/icons-material/ContactEmergencyOutlined";
 import KitesurfingIcon from "@mui/icons-material/Kitesurfing";
 import AlternateEmailIcon from "@mui/icons-material/AlternateEmail";
+import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
 import ThumbUpOutlinedIcon from "@mui/icons-material/ThumbUpOutlined";
+import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import ThumbUpIcon from "@mui/icons-material/ThumbUp";
 import Divider from "@mui/material/Divider";
 import { AuthContext } from "@/context/AuthProvider";
@@ -39,6 +41,7 @@ const page = ({ params }) => {
 
   const endRef = useRef();
   const inputPhotoRef = useRef();
+  const inputFileRef = useRef();
   const containerRef = useRef();
   const socket = useContext(SocketContext);
 
@@ -47,13 +50,9 @@ const page = ({ params }) => {
   const [userNhan, setUserNhan] = useState([]);
   const [conversation, setConversation] = useState({});
   const [chats, setChat] = useState([]);
+  const [chatReceived, setChatReceived] = useState(null);
   const [img, setImg] = useState([]);
   const [openEmoji, setOpenEmoji] = useState(false);
-
-  // const { mutate: getChat } = useMutation(
-  //   "getChat",
-  //   ChatApi.getChatByConversationId(conversationId)
-  // );
 
   useEffect(() => {
     const fetchData = async () => {
@@ -73,15 +72,9 @@ const page = ({ params }) => {
           (value) => value._id !== currentUser.uid
         )
       );
-      // Array.prototype.filter((value)=>value._id == currentUser.uid)
 
       //fetch chats
       const chatReponse = await ChatApi.getChatByConversationId(conversationId);
-      // console.log(
-      //   chatReponse.data.sort((a, b) => {
-      //     return new Date(a.createdAt) - new Date(b.createdAt);
-      //   })
-      // );
       setChat(
         chatReponse.sort((a, b) => {
           // return new Date(b.createdAt) - new Date(a.createdAt);
@@ -90,32 +83,23 @@ const page = ({ params }) => {
       );
     };
     fetchData();
-    socket.emit("joinRoom", conversationId);
+
     socket.on("getMessage", (chat) => {
-      console.log(chat);
-      console.log(chats);
-      if (chat.createdAt !== chats[chats.length - 1]?.createdAt) {
-        setChat((prevChats) => [...prevChats, chat]);
-      }
+      setChatReceived(chat);
     });
   }, []);
 
-  // useEffect(() => {
-  //   // Xử lý sự kiện socket ở đây
-  //   socket.emit("joinRoom", conversationId);
-  //   socket.on("getMessage", (chat) => {
-  //     console.log(chats);
-  //     if (chat.createdAt !== chats[chats.length - 1]?.createdAt) {
-  //       setChat((prevChats) => [...prevChats, chat]);
-  //     }
-  //   });
-  // }, []);
+  useEffect(() => {
+    socket.emit("joinRoom", conversationId);
+  }, [conversationId]);
 
-  const [idUserLastChat, setIdUserLastChat] = useState(
-    chats[0]?.senderInfo._id
-  );
+  useEffect(() => {
+    if (chatReceived) {
+      setChat((prevChats) => [...prevChats, chatReceived]);
+    }
+  }, [chatReceived]);
 
-  const handleSend = async () => {
+  const handleSend = () => {
     if (text == "") return;
     socket.emit("sendMessage", {
       conversationId,
@@ -123,35 +107,42 @@ const page = ({ params }) => {
       content: { text: text == "" ? "👍" : text },
       createdAt: new Date(),
     });
-    setText("");
 
-    const chat = await ChatApi.sendChatSingle(
+    // const chat =
+    ChatApi.sendChatSingle(
       {
         conversationId,
         senderInfo: me,
         content: { text: text == "" ? "👍" : text },
+        createdAt: new Date(),
       },
       conversation.members
     );
+
+    setText("");
     // console.log("chat: ")
     // console.log(chat);
     // setChat([...chats, chat]);
   };
 
-  useEffect(() => {
-    if (
-      containerRef.current.scrollHeight - containerRef.current.scrollTop ===
-      containerRef.current.clientHeight
-    ) {
-      endRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [chats]);
+  // useEffect(() => {
+  //   if (
+  //     containerRef.current.scrollHeight - containerRef.current.scrollTop ===
+  //     containerRef.current.clientHeight
+  //   ) {
+  //     endRef.current.scrollIntoView({ behavior: "smooth" });
+  //   }
+  // }, [chats]);
 
   function hanldeBtnPhotoClick() {
     inputPhotoRef.current.click();
   }
 
-  const handleFileChange = (event) => {
+  function hanldeBtnFileClick() {
+    inputFileRef.current.click();
+  }
+
+  const handlePhotoSelect = (event) => {
     const files = Array.from(event.target.files);
     files.forEach((file) => {
       const reader = new FileReader();
@@ -160,7 +151,6 @@ const page = ({ params }) => {
         setChat((prevChats) => [
           ...prevChats,
           {
-            _id: chats.length + 1,
             conversationId,
             senderInfo: me,
             content: { image: reader.result },
@@ -171,6 +161,43 @@ const page = ({ params }) => {
 
       reader.readAsDataURL(file);
     });
+  };
+
+  const handleFileSelect = (event) => {
+    const files = Array.from(event.target.files);
+    files.forEach((file) => {
+      const reader = new FileReader();
+
+      reader.onloadend = () => {
+        setChat((prevChats) => [
+          ...prevChats,
+          {
+            conversationId,
+            senderInfo: me,
+            content: { file: reader.result },
+            createdAt: new Date(),
+          },
+        ]);
+      };
+
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const downloadFile = (event) => {
+    event.preventDefault();
+    const url =
+      "https://drive.google.com/file/d/1og0LH1ZNR-pB4EsejyPLv272zW_TUydm/view?usp=sharing"; // Thay thế bằng URL tải xuống thực của bạn
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "file"; // Tên tệp tải xuống, bạn có thể thay đổi nó theo ý muốn
+    link.style.display = "none";
+
+    document.body.appendChild(link);
+
+    link.click();
+
+    document.body.removeChild(link);
   };
 
   const hanldeEmojiClick = (emojiObject, event) => {
@@ -222,7 +249,7 @@ const page = ({ params }) => {
         <div className="chats">
           {chats?.map((item) => (
             <div
-              key={item._id}
+              key={item._id || Date.parse(item.createdAt).toString()}
               className={`chatContent ${
                 item.senderInfo._id === me?._id ? "myChat" : "yourChat"
               }`}
@@ -232,20 +259,50 @@ const page = ({ params }) => {
                   <img src={item.senderInfo.avatar} className="imgAvtSender" />
                 </div>
               )}
-              <div className="chat">
+              <Tooltip
+                className="chat"
+                color={"#2db7f5"}
+                style={{
+                  backgroundColor:
+                    item.senderInfo._id === me?._id ? "#E5EFFF" : "white",
+                }}
+                title={
+                  <MoreHorizIcon
+                    style={{ padding: "1px", backgroundColor: "#2db7f5" }}
+                    fontSize="small"
+                  />
+                }
+                placement={
+                  item.senderInfo._id !== me?._id ? "right-end" : "left-end"
+                }
+              >
                 {item.senderInfo._id !== me?._id && (
                   <p className="chatName">{item.senderInfo.name}</p>
                 )}
                 {item.content.text ? (
-                  <p className="chatContext" style={{ whiteSpace: "pre-wrap" }}>
+                  <p className="chatText" style={{ whiteSpace: "pre-wrap" }}>
                     {item.content.text}
                   </p>
                 ) : (
-                  <img
-                    src={item.content.image}
-                    alt="Chat"
-                    className="chatImg"
-                  />
+                  // <img
+                  //   src={item.content.image}
+                  //   alt="Chat"
+                  //   className="chatImg"
+                  // />
+                  <div className="chatFile">
+                    <img
+                      src={item.content.image}
+                      alt="word"
+                      className="iconFile"
+                    />
+                    <div className="fileContent">
+                      <p>Name file</p>
+                      <p>45 MB</p>
+                    </div>
+                    <a href="javascript:void(0)" onClick={downloadFile}>
+                      <FileDownloadOutlinedIcon className="iconT" />
+                    </a>
+                  </div>
                 )}
                 {/* check hour, giờ, userSend */}
                 <p className="chatTime">
@@ -254,7 +311,7 @@ const page = ({ params }) => {
                     minute: "2-digit",
                   })}
                 </p>
-              </div>
+              </Tooltip>
             </div>
           ))}
           {/* {img.map((chat, index) => (
@@ -266,7 +323,6 @@ const page = ({ params }) => {
               // style={{ width: "30px" }}
             />
           ))} */}
-          {/* <div className="block" /> */}
         </div>
         <div ref={endRef} />
       </div>
@@ -283,16 +339,8 @@ const page = ({ params }) => {
               margin: "7px 0",
             }}
           />
-          <Button>
-            <input
-              ref={inputPhotoRef}
-              style={{ display: "none" }}
-              accept="image/*,video/*"
-              type="file"
-              multiple={true}
-              onChange={handleFileChange}
-            />
-            <PhotoSizeSelectActualOutlinedIcon onClick={hanldeBtnPhotoClick} />
+          <Button onClick={hanldeBtnPhotoClick}>
+            <PhotoSizeSelectActualOutlinedIcon />
           </Button>
           <div
             style={{
@@ -301,7 +349,7 @@ const page = ({ params }) => {
               margin: "7px 0",
             }}
           />
-          <Button>
+          <Button onClick={hanldeBtnFileClick}>
             <AttachmentOutlinedIcon />
           </Button>
           <div
@@ -314,6 +362,22 @@ const page = ({ params }) => {
           <Button>
             <ContactEmergencyOutlinedIcon />
           </Button>
+          <input
+            ref={inputPhotoRef}
+            style={{ display: "none" }}
+            accept="image/*,video/*"
+            type="file"
+            multiple={true}
+            onChange={handlePhotoSelect}
+          />
+          <input
+            ref={inputFileRef}
+            style={{ display: "none" }}
+            accept="*/*"
+            type="file"
+            multiple={true}
+            onChange={handlePhotoSelect}
+          />
         </div>
         <div className="sendChatContent">
           <Input
