@@ -60,7 +60,7 @@ const Layout = ({ children }) => {
                   {/* {(item.hisMess).split(" ").length > 6
                   ? `${item.hisMess.split(" ").slice(0, 4).join(" ")}...`
                   : item.hisMess} */}
-                  {item.lastMess.content.text}
+                  {item.lastMess?.content.text}
                   {/* abc */}
                 </div>
               </div>

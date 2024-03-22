@@ -30,6 +30,7 @@ import EmojiPicker from "emoji-picker-react";
 import { io } from "socket.io-client";
 import { SocketContext } from "@/context/SocketProvider";
 import { useMutation } from "react-query";
+import Test from "../../../../components/Test";
 const lastTime = "Truy cập 1 phút trước";
 
 // socket.emit('addUser', auth.get);
@@ -52,7 +53,7 @@ const page = ({ params }) => {
   const [chats, setChat] = useState([]);
   const [chatReceived, setChatReceived] = useState(null);
   const [img, setImg] = useState([]);
-  const [openEmoji, setOpenEmoji] = useState(false);
+  const [isOpenEmoji, setOpenEmoji] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -100,7 +101,6 @@ const page = ({ params }) => {
   }, [chatReceived]);
 
   const handleSend = () => {
-    if (text == "") return;
     socket.emit("sendMessage", {
       conversationId,
       senderInfo: me,
@@ -204,7 +204,6 @@ const page = ({ params }) => {
     setText((prev) => prev + emojiObject.emoji);
   };
   // console.log(chats, "chats")
-
   return (
     <div className="conversationChat">
       <div className="titleHeader">
@@ -276,41 +275,43 @@ const page = ({ params }) => {
                   item.senderInfo._id !== me?._id ? "right-end" : "left-end"
                 }
               >
-                {item.senderInfo._id !== me?._id && (
-                  <p className="chatName">{item.senderInfo.name}</p>
-                )}
-                {item.content.text ? (
-                  <p className="chatText" style={{ whiteSpace: "pre-wrap" }}>
-                    {item.content.text}
-                  </p>
-                ) : (
-                  // <img
-                  //   src={item.content.image}
-                  //   alt="Chat"
-                  //   className="chatImg"
-                  // />
-                  <div className="chatFile">
-                    <img
-                      src={item.content.image}
-                      alt="word"
-                      className="iconFile"
-                    />
-                    <div className="fileContent">
-                      <p>Name file</p>
-                      <p>45 MB</p>
+                <div>
+                  {item.senderInfo._id !== me?._id && (
+                    <p className="chatName">{item.senderInfo.name}</p>
+                  )}
+                  {item.content.text ? (
+                    <p className="chatText" style={{ whiteSpace: "pre-wrap" }}>
+                      {item.content.text}
+                    </p>
+                  ) : (
+                    // <img
+                    //   src={item.content.image}
+                    //   alt="Chat"
+                    //   className="chatImg"
+                    // />
+                    <div className="chatFile">
+                      <img
+                        src={item.content.image}
+                        alt="word"
+                        className="iconFile"
+                      />
+                      <div className="fileContent">
+                        <p>Name file</p>
+                        <p>45 MB</p>
+                      </div>
+                      <a href="javascript:void(0)" onClick={downloadFile}>
+                        <FileDownloadOutlinedIcon className="iconT" />
+                      </a>
                     </div>
-                    <a href="javascript:void(0)" onClick={downloadFile}>
-                      <FileDownloadOutlinedIcon className="iconT" />
-                    </a>
-                  </div>
-                )}
-                {/* check hour, giờ, userSend */}
-                <p className="chatTime">
-                  {new Date(item.createdAt).toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </p>
+                  )}
+                  {/* check hour, giờ, userSend */}
+                  <p className="chatTime">
+                    {new Date(item.createdAt).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </p>
+                </div>
               </Tooltip>
             </div>
           ))}
@@ -403,22 +404,20 @@ const page = ({ params }) => {
               <AlternateEmailIcon />
             </Button>
             <Button
-              style={{ backgroundColor: openEmoji ? "#0091E1" : "white" }}
-              onClick={() => setOpenEmoji(!openEmoji)}
+              style={{ backgroundColor: isOpenEmoji ? "#0091E1" : "white" }}
+              onClick={() => setOpenEmoji(!isOpenEmoji)}
             >
               <SentimentVerySatisfiedIcon />
             </Button>
             <Button className="btnGui" onClick={handleSend}>
               {text == "" ? <ThumbUpOutlinedIcon color="primary" /> : "Gửi"}
             </Button>
-            {openEmoji && (
-              <div>
-                <EmojiPicker
-                  onEmojiClick={hanldeEmojiClick}
-                  className="blockEmoji"
-                />
-              </div>
-            )}
+            {/* EmojiPicker */}
+            <EmojiPicker
+              onEmojiClick={hanldeEmojiClick}
+              // className={`blockEmoji`}
+              className={`blockEmoji ${isOpenEmoji ? "" : "hiddenBlock"}`}
+            />
           </div>
         </div>
       </div>
