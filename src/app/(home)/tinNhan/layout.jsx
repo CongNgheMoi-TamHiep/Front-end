@@ -36,11 +36,10 @@ const Layout = ({ children }) => {
         currentUser?.uid
       );
       console.log(userConversations.conversations); 
-      // const users = await userApis.getAllUsers();
-      // const users = [];
       setConversations(userConversations.conversations);
-      // console.log(currentUser, userConversations.data.conversations[0]);
     };
+
+
     fetchdata();
   }, []);
 
