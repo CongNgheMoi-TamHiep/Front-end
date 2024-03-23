@@ -31,7 +31,6 @@ import Image from "next/image";
 import userApis from "@/apis/userApis";
 import CombineUserId from "@/utils/CombineUserId";
 import axiosPrivate from "@/apis/axios";
-import useSWR from 'swr'; 
 const lastTime = "Truy cập 1 phút trước";
 
 const page = ({ params }) => {
