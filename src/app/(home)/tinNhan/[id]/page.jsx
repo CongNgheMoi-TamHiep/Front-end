@@ -1,9 +1,8 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 /* eslint-disable @next/next/no-img-element */
 "use client";
-import React, { use, useContext, useEffect, useRef, useState } from "react";
+import React, {useContext, useEffect, useRef, useState } from "react";
 import "./styles.scss";
-import { useParams, useRouter } from "next/router";
 import BookmarkBorderIcon from "@mui/icons-material/BookmarkBorder";
 import { Button, IconButton, Input } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
@@ -21,259 +20,62 @@ import Divider from "@mui/material/Divider";
 import { AuthContext } from "@/context/AuthProvider";
 import ConversationApi from "@/apis/ConversationApi";
 import ChatApi from "@/apis/ChatApi";
-import UserConversationApi from "@/apis/userConversationApi";
-import { Col, Spin, Upload, UploadProps } from "antd";
 import EmojiPicker from "emoji-picker-react";
-import {io} from "socket.io-client";
 import { SocketContext } from "@/context/SocketProvider";
-// chat = {_id: string,
-//   conversationId: string,
-//   senderInfo: {_id, avatar, name},
-//   content: {text, image:, audio , file: }
-//   createdAt: date
-// }
-const chatss = [
-  {
-    _id: "a2",
-    conversationId: "1",
-    senderInfo: {
-      _id: "y8bYgJmzJ1hROg7PhIIXWvHw1CN2",
-      avatar:
-        "https://designs.vn/wp-content/images/09-08-2013/logo_lagi_4_resize.jpg",
-      name: "Huỳnh Khương Anh",
-    },
-    content: {
-      text: "start_it-scrollbar { &::-",
-    },
-    createdAt: "2022-10-10T10:00:00.000Z",
-  },
-  {
-    _id: "a",
-    conversationId: "1",
-    senderInfo: {
-      _id: "1",
-      avatar:
-        "https://designs.vn/wp-content/images/06-08-2013/logo_lagi_2_resize.jpg",
-      name: "Lê Thanh Tùng",
-    },
-    content: {
-      text: "vcl lun đừng làm thế mà :33",
-    },
-    createdAt: "2022-10-10T10:00:00.000Z",
-  },
-  {
-    _id: "a4",
-    conversationId: "1",
-    senderInfo: {
-      _id: "1",
-      avatar:
-        "https://designs.vn/wp-content/images/06-08-2013/logo_lagi_2_resize.jpg",
-      name: "Lê Thanh Tùng",
-    },
-    content: {
-      text: "ádlbar { display: none; /* For Chrome, Safari and Opera */",
-    },
-    createdAt: "2022-10-10T10:01:00.000Z",
-  },
-  {
-    _id: "b2",
-    conversationId: "1",
-    senderInfo: {
-      _id: "y8bYgJmzJ1hROg7PhIIXWvHw1CN2",
-      avatar:
-        "https://designs.vn/wp-content/images/09-08-2013/logo_lagi_4_resize.jpg",
-      name: "Huỳnh Khương Anh",
-    },
-    content: {
-      text: "it-scrollbar { &::-",
-    },
-    createdAt: "2022-10-10T10:00:00.000Z",
-  },
-  {
-    _id: "b3",
-    conversationId: "1",
-    senderInfo: {
-      _id: "1",
-      avatar:
-        "https://designs.vn/wp-content/images/06-08-2013/logo_lagi_2_resize.jpg",
-      name: "Lê Thanh Tùng",
-    },
-    content: {
-      text: "vcl lun đừng làm thế mà :33",
-    },
-    createdAt: "2022-10-10T10:00:00.000Z",
-  },
-  {
-    _id: "b4",
-    conversationId: "1",
-    senderInfo: {
-      _id: "1",
-      avatar:
-        "https://designs.vn/wp-content/images/06-08-2013/logo_lagi_2_resize.jpg",
-      name: "Lê Thanh Tùng",
-    },
-    content: {
-      text: "ádlbar { display: none; /* For Chrome, Safari and Opera */",
-    },
-    createdAt: "2022-10-10T10:01:00.000Z",
-  },
-  {
-    _id: "1",
-    conversationId: "1",
-    senderInfo: {
-      _id: "1",
-      avatar:
-        "https://designs.vn/wp-content/images/06-08-2013/logo_lagi_2_resize.jpg",
-      name: "Lê Thanh Tùng",
-    },
-    content: {
-      text: "abc gần rồi...",
-    },
-    createdAt: "2022-10-10T10:00:00.000Z",
-  },
-  {
-    _id: "2",
-    conversationId: "1",
-    senderInfo: {
-      _id: "y8bYgJmzJ1hROg7PhIIXWvHw1CN2",
-      avatar:
-        "https://designs.vn/wp-content/images/09-08-2013/logo_lagi_4_resize.jpg",
-      name: "Huỳnh Khương Anh",
-    },
-    content: {
-      text: "it-scrollbar { &::-",
-    },
-    createdAt: "2022-10-10T10:00:00.000Z",
-  },
-  {
-    _id: "3",
-    conversationId: "1",
-    senderInfo: {
-      _id: "1",
-      avatar:
-        "https://designs.vn/wp-content/images/06-08-2013/logo_lagi_2_resize.jpg",
-      name: "Lê Thanh Tùng",
-    },
-    content: {
-      text: "vcl lun đừng làm thế mà :33",
-    },
-    createdAt: "2022-10-10T10:00:00.000Z",
-  },
-  {
-    _id: "4",
-    conversationId: "1",
-    senderInfo: {
-      _id: "1",
-      avatar:
-        "https://designs.vn/wp-content/images/06-08-2013/logo_lagi_2_resize.jpg",
-      name: "Lê Thanh Tùng",
-    },
-    content: {
-      text: "end_ádlbar { display: none; /* For Chrome, Safari and Opera */",
-    },
-    createdAt: "2022-10-10T10:01:00.000Z",
-  },
-];
-
-// Conversation={
-//   _id: string,
-//   type: string (group/couple),
-//   members: [ {_id, name, avatar}, ... ],
-//   name: (if group)
-// }
-// const conversation = {
-//   _id: "1",
-//   type: "couple",
-//   members: [
-//     {
-//       _id: "1",
-//       name: "Lê Thanh Tùng",
-//       avatar:
-//         "https://designs.vn/wp-content/images/06-08-2013/logo_lagi_2_resize.jpg",
-//     },
-//     {
-//       _id: "2",
-//       name: "Huỳnh Khương Anh",
-//       avatar:
-//         "https://designs.vn/wp-content/images/09-08-2013/logo_lagi_4_resize.jpg",
-//     },
-//   ],
-// };
-
-// const me = {
-//   _id: "1",
-//   avatar:
-//     "https://designs.vn/wp-content/images/06-08-2013/logo_lagi_2_resize.jpg",
-//   name: "Lê Thanh Tùng",
-// };
-// const userNhan =
-//   conversation.type == "couple"
-//     ? conversation.members[0]
-//     : { name: conversation.name, avatar: conversation.avatar };
+import Image from "next/image";
+import userApis from "@/apis/userApis";
+import CombineUserId from "@/utils/CombineUserId";
+import axiosPrivate from "@/apis/axios";
 
 const lastTime = "Truy cập 1 phút trước";
 
-
-// socket.emit('addUser', auth.get);
-
 const page = ({ params }) => {
-  const conversationId = params.id;
-  const currentUser = React.useContext(AuthContext);
-
+  const receiverId = params.id;
+  const currentUser = useContext(AuthContext);
   const endRef = useRef();
   const inputPhotoRef = useRef();
   const containerRef = useRef();
   const socket = useContext(SocketContext);
-
+  const [conversationId, setConversationId] = useState(params.id);
+  const [conversation, setConversation] = useState(null);//[currentUser?.uid, receiverId
   const [text, setText] = useState("");
-  const [me, setMe] = useState();
-  const [userNhan, setUserNhan] = useState([]);
-  const [conversation, setConversation] = useState({});
+  const [userNhan, setUserNhan] = useState({});
   const [chats, setChat] = useState([]);
   const [chatReceived, setChatReceived] = useState(null);
-  const [img, setImg] = useState([]);
   const [openEmoji, setOpenEmoji] = useState(false);
-
+  const [isFirst, setIsFirst] = useState(true);
+  const [me, setMe] = useState({});
   useEffect(() => {
     const fetchData = async () => {
       //fetch user
-      const conversationResponse = await ConversationApi.getConversationById(
-        conversationId
-      );
-      setConversation(conversationResponse);
-      // console.log(conversationResponse.data, conversationId,currentUser);
-      setMe(
-        conversationResponse.members.find(
-          (value) => value._id == currentUser.uid
-        )
-      );
-      setUserNhan(
-        conversationResponse.members.filter(
-          (value) => value._id !== currentUser.uid
-        )
-      );
-      // Array.prototype.filter((value)=>value._id == currentUser.uid)
+      const conversationResponse = await ConversationApi.getConversationById(conversationId); 
+      let userNhan1 = null; 
+      let conversationId1 = null; 
+      if( conversationResponse?._id  ) {
+        userNhan1=await conversationResponse?.members.filter((value) => value._id !== currentUser?.uid)[0]
+        conversationId1=conversationId; 
+        setIsFirst(false);
+        setConversation(conversationResponse);
+      } else { 
+        userNhan1=await userApis.getUserById(receiverId); 
+        conversationId1=CombineUserId(currentUser?.uid, userNhan1._id); 
+        setConversationId(conversationId1)
+      }
 
-      //fetch chats
-      const chatReponse = await ChatApi.getChatByConversationId(conversationId);
-      // console.log(
-      //   chatReponse.data.sort((a, b) => {
+      userNhan1 = await userApis.getUserById(userNhan1._id); 
+      setUserNhan(userNhan1);
+      const chatReponse = await ChatApi.getChatByConversationId(conversationId1);
+      setChat(chatReponse)
+      // setChat(chatReponse.sort((a, b) => {
       //     return new Date(a.createdAt) - new Date(b.createdAt);
-      //   })
-      // );
-      setChat(
-        chatReponse.sort((a, b) => {
-          // return new Date(b.createdAt) - new Date(a.createdAt);
-          return new Date(a.createdAt) - new Date(b.createdAt);
-        })
-      );
+      // }));
     };
     fetchData();
   }, []);
 
   useEffect(() => { 
     socket.emit("joinRoom", conversationId);
-  }, [conversationId]);
+  }, [conversationId, isFirst, socket]);
 
   useEffect(() => {
     socket.on("getMessage", (chat) => {
@@ -282,37 +84,31 @@ const page = ({ params }) => {
   }, []);
 
   useEffect(() => {
-    if (chatReceived) {
+    if (chatReceived) 
       setChat((prevChats) => [...prevChats, chatReceived]);
-    }
   }, [chatReceived])
-
-
-  const [idUserLastChat, setIdUserLastChat] = useState(
-    chats[0]?.senderInfo._id
-  );
 
   const handleSend = async () => {
     if (text == "") return;
     socket.emit("sendMessage", {
       conversationId, 
-      senderInfo: me,
+      senderInfo: {
+        _id: currentUser?.uid,
+        name: me.name, 
+        avatar: me.avatar, 
+      },
       content: { text },
       createdAt: new Date(),
     }); 
     setText("");
-
-    const chat = await ChatApi.sendChatSingle(
+    await axiosPrivate.post(`/chat`, 
       {
-        conversationId,
-        senderInfo: me,
+        ...( isFirst ? {receiverId} : {conversationId}), 
+        senderId: currentUser?.uid,
         content: { text },
-      },
-      conversation.members
-    );
-    // console.log("chat: ")
-    // console.log(chat);
-    // chats.push(chat);
+      }
+    )
+    setIsFirst(false);
   };
 
   useEffect(() => {
@@ -324,7 +120,7 @@ const page = ({ params }) => {
     }
   }, [chats]);
 
-  function hanldeBtnPhotoClick() {
+  const hanldeBtnPhotoClick= () => {
     inputPhotoRef.current.click();
   }
 
@@ -332,20 +128,18 @@ const page = ({ params }) => {
     const files = Array.from(event.target.files);
     files.forEach((file) => {
       const reader = new FileReader();
-
       reader.onloadend = () => {
         setChat((prevChats) => [
           ...prevChats,
           {
             _id: chats.length + 1,
             conversationId,
-            senderInfo: me,
+            senderId: currentUser?.uid,
             content: { image: reader.result },
             createdAt: new Date(),
           },
         ]);
       };
-
       reader.readAsDataURL(file);
     });
   };
@@ -353,23 +147,22 @@ const page = ({ params }) => {
   const hanldeEmojiClick = (emojiObject, event) => {
     setText((prev) => prev + emojiObject.emoji);
   };
-
-
-  // console.log(chats, "chats")
-
   return (
     <div className="conversationChat">
       <div className="titleHeader">
         <div className="contentTitle">
           <Button className="imgCon">
-            <img
-              src={userNhan.length == 1 ? userNhan[0].avatar : ""}
+            <Image
+              src={ conversation?.image || userNhan?.avatar}
               className="imgAvt"
+              alt=""
+              width={50}
+              height={50}
             />
           </Button>
           <div className="nameCon">
             <h3 className="nameNhan">
-              {userNhan.length == 1 ? userNhan[0].name : "group"}
+              { conversation?.name || userNhan?.name}
             </h3>
             <div className="timeAccess">
               <div className="lastTime">{lastTime}</div>
@@ -399,53 +192,45 @@ const page = ({ params }) => {
 
       <div className="containerChat" ref={containerRef}>
         <div className="chats">
-          {chats?.map((item) => (
-            <div
-              key={item._id || item.createdAt}
-              className={`chatContent ${
-                item.senderInfo._id === me?._id ? "myChat" : "yourChat"
-              }`}
-            >
-              {item.senderInfo._id !== me?._id && (
-                <div className="imgSender" onClick="">
-                  <img src={item.senderInfo.avatar} className="imgAvtSender" />
-                </div>
-              )}
-              <div className="chat">
-                {item.senderInfo._id !== me?._id && (
-                  <p className="chatName">{item.senderInfo.name}</p>
+          {
+            chats?.map((item) => {
+              return (  <div
+                key={item._id || item.createdAt}
+                className={`chatContent ${
+                  item.senderInfo._id === currentUser?.uid ? "myChat" : "yourChat"
+                }`}
+              >
+                {item.senderInfo._id !== currentUser?.uid && (
+                  <div className="imgSender">
+                    <Image src={item.senderInfo.avatar} className="imgAvtSender" alt="" width={50} height={50}/>
+                  </div>
                 )}
-                {item.content.text ? (
-                  <p className="chatContext" style={{ whiteSpace: "pre-wrap" }}>
-                    {item.content.text}
+                <div className="chat">
+                  {item.senderInfo._id !== currentUser?.uid && (
+                    <p className="chatName">{item.senderInfo.name}</p>
+                  )}
+                  {item.content.text ? (
+                    <p className="chatContext" style={{ whiteSpace: "pre-wrap" }}>
+                      {item.content.text}
+                    </p>
+                  ) : (
+                    <Image
+                      src={item.content.image}
+                      alt="Chat"
+                      className="chatImg"
+                    />
+                  )}
+                  {/* check hour, giờ, userSend */}
+                  <p className="chatTime">
+                    {new Date(item.createdAt).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
                   </p>
-                ) : (
-                  <img
-                    src={item.content.image}
-                    alt="Chat"
-                    className="chatImg"
-                  />
-                )}
-                {/* check hour, giờ, userSend */}
-                <p className="chatTime">
-                  {new Date(item.createdAt).toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </p>
-              </div>
-            </div>
-          ))}
-          {/* {img.map((chat, index) => (
-            <img
-              key={index}
-              src={chat}
-              alt="Chat"
-              className="chatContent myChat imgChat"
-              // style={{ width: "30px" }}
-            />
-          ))} */}
-          {/* <div className="block" /> */}
+                </div>
+              </div>)
+            })
+          }
         </div>
         <div ref={endRef} />
       </div>
@@ -505,7 +290,6 @@ const page = ({ params }) => {
             value={text}
             onChange={(e) => {
               setText(e.target.value);
-              console.log(e.target.value);
             }}
           />
           <div className="btnContent">

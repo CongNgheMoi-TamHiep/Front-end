@@ -4,6 +4,7 @@ import "./styles.scss";
 import FilterAltOutlinedIcon from "@mui/icons-material/FilterAltOutlined";
 import SearchIcon from "@mui/icons-material/Search";
 import SwapVertIcon from "@mui/icons-material/SwapVert";
+import Image from "next/image";
 
 const GroupPage = () => {
   const [a, seta] = useState();
@@ -71,7 +72,7 @@ const GroupPage = () => {
         <div className="listF">
           {groups.map((item) => (
             <div key={item.id} className="itemF">
-              <img
+              <Image
                 className="avatar-img"
                 src={item.image}
                 alt=""

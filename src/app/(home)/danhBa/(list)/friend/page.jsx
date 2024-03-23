@@ -1,59 +1,43 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import "./styles.scss";
 import FilterAltOutlinedIcon from "@mui/icons-material/FilterAltOutlined";
 import SearchIcon from "@mui/icons-material/Search";
 import SwapVertIcon from "@mui/icons-material/SwapVert";
 import userApis from "@/apis/userApis";
+import Image from "next/image";
+import { AuthContext } from "@/context/AuthProvider";
+import { useRouter } from 'next/navigation'
+import CombineUserId from '@/utils/CombineUserId';
+import ConversationApi from '@/apis/ConversationApi';
 
 const FriendPage = () => {
-  // [
-  //   {
-  //     id: 1,
-  //     image:
-  //       "https://designs.vn/wp-content/images/06-08-2013/logo_lagi_2_resize.jpg",
-  //     name: "Lê Thanh Tùng",
-  //   },
-  //   {
-  //     id: 2,
-  //     image:
-  //       "https://designs.vn/wp-content/images/09-08-2013/logo_lagi_4_resize.jpg",
-  //     name: "Huỳnh Khương Anh",
-  //   },
-  //   {
-  //     id: 3,
-  //     image:
-  //       "https://designs.vn/wp-content/images/09-08-2013/logo_lagi_6_resize.jpg",
-  //     name: "Bá Zô Mà Núc",
-  //   },
-  // ]
   const [a, seta] = useState();
   const [friends, setFriends] = useState([]);
-
-  // for (let i = 4; i <= 10; i++) {
-  //   friends.push({
-  //     id: i,
-  //     image:
-  //       "https://designs.vn/wp-content/images/09-08-2013/logo_lagi_6_resize.jpg",
-  //     name: `Bàn bè #${i}`,
-  //   });
-  // }
-
+  const currentUser = useContext(AuthContext);
+  const router = useRouter();
   useEffect(() => {
     const fetchdata = async () => {
       const users = await userApis.getAllUsers();
-      console.log(users);
-      setFriends(users);
+      setFriends(users.filter((user) => user._id !== currentUser?.uid));
       // return users;
     };
     fetchdata();
     // setFriends(fetchdata());
-  }, []);
+  }, [currentUser?.uid]);
 
   const hanldeSelected = (id) => {
     seta(id);
   };
 
+  const handleDirectToConversation = async (userId) => {
+
+    const conversation = await ConversationApi.getConversationById(CombineUserId(currentUser.uid, userId)); 
+    if(conversation?._id) 
+      router.push(`/tinNhan/${conversation._id}`);
+    else
+      router.push(`/tinNhan/${userId}`);
+  }
   return (
     <div className="friend">
       <h3>Bạn bè ({friends.length})</h3>
@@ -83,10 +67,10 @@ const FriendPage = () => {
 
         <div className="listF">
           {friends.map((item) => (
-            <div key={item._id} className="itemF">
-              <img
+            <div key={item._id} className="itemF" onClick={()=>handleDirectToConversation(item._id)}>
+              <Image
                 className="avatar-img"
-                src={item.image}
+                src={item.avatar}
                 alt=""
                 width={50}
                 height={50}
