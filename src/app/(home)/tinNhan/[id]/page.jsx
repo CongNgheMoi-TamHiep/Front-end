@@ -31,7 +31,7 @@ import Image from "next/image";
 import userApis from "@/apis/userApis";
 import CombineUserId from "@/utils/CombineUserId";
 import axiosPrivate from "@/apis/axios";
-
+import useSWR from 'swr'; 
 const lastTime = "Truy cập 1 phút trước";
 
 const page = ({ params }) => {
@@ -251,14 +251,16 @@ const page = ({ params }) => {
 
       <div className="containerChat" ref={containerRef}>
         <div className="chats">
-          {chats?.map((item) => (
+          {chats?.map((item, index) => (
             <div
               key={item._id || Date.parse(item.createdAt).toString()}
               className={`chatContent ${
                 item.senderInfo._id === me?._id ? "myChat" : "yourChat"
               }`}
             >
-              {item.senderInfo._id !== me?._id && (
+              {item.senderInfo._id !== me?._id 
+              && (index===0 || item.senderInfo._id != chats[index - 1]?.senderInfo._id )
+              && (
                 <div className="imgSender">
                   <img src={item.senderInfo.avatar} className="imgAvtSender" />
                 </div>
