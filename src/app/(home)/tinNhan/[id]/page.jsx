@@ -38,18 +38,20 @@ const page = ({ params }) => {
   const receiverId = params.id;
   const router = useRouter();
   const currentUser = useContext(AuthContext);
+
   const endRef = useRef();
   const inputPhotoRef = useRef();
   const inputFileRef = useRef();
   const containerRef = useRef();
   const socket = useContext(SocketContext);
+
   const [conversationId, setConversationId] = useState(params.id);
   const [conversation, setConversation] = useState(null);//[currentUser?.uid, receiverId
   const [text, setText] = useState("");
   const [userNhan, setUserNhan] = useState({});
   const [chats, setChat] = useState([]);
   const [chatReceived, setChatReceived] = useState(null);
-  const [openEmoji, setOpenEmoji] = useState(false);
+  const [isOpenEmoji, setOpenEmoji] = useState(false);
   const [isFirst, setIsFirst] = useState(true);
   const [me, setMe] = useState(null);
   useEffect(() => {
