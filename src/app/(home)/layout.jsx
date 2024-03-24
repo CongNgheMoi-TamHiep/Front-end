@@ -15,13 +15,14 @@ import { auth } from '@/firebase';
 import axios from 'axios';
 import axiosPrivate from '@/apis/axios';
 import authApis from '@/apis/authApis';
+import { SocketContext } from '@/context/SocketProvider';
 const Layout = ({children}) => {
   const [Active, setActive] = useState('tinNhan');
   const [isAuthenticated, setIsAuthenticated] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const currentUser = useContext(AuthContext);
-
+  const socket = useContext(SocketContext);
   const handleTinNhan = () => {
     setActive("tinNhan");
   };
@@ -31,6 +32,7 @@ const Layout = ({children}) => {
   const handleSignOut = () => {
     auth.signOut();
     router.push('/login'); 
+    socket.disconnect();
   }
   
   useEffect(() => {

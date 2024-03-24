@@ -1,46 +1,46 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./styles.scss";
 import FilterAltOutlinedIcon from "@mui/icons-material/FilterAltOutlined";
 import SearchIcon from "@mui/icons-material/Search";
 import SwapVertIcon from "@mui/icons-material/SwapVert";
+import Image from "next/image";
 
 const GroupPage = () => {
   const [a, seta] = useState();
   const [groups, setGroups] = useState([
     {
-      id: 1,
+      id: 21,
       image:
         "https://designs.vn/wp-content/images/06-08-2013/logo_lagi_2_resize.jpg",
       name: "Nhóm CMN",
     },
     {
-      id: 2,
+      id: 22,
       image:
         "https://designs.vn/wp-content/images/09-08-2013/logo_lagi_4_resize.jpg",
       name: "Nhóm KT",
     },
     {
-      id: 3,
+      id: 23,
       image:
         "https://designs.vn/wp-content/images/09-08-2013/logo_lagi_6_resize.jpg",
       name: "Nhóm của tôi",
     },
   ]);
 
-  for (let i = 4; i <= 10; i++) {
-    groups.push({
-      id: i,
-      image:
-        "https://designs.vn/wp-content/images/09-08-2013/logo_lagi_6_resize.jpg",
-      name: `Nhóm #${i}`,
-    });
-  }
+  // for (let i = 24; i <= 30; i++) {
+  //   groups.push({
+  //     id: i,
+  //     image:
+  //       "https://designs.vn/wp-content/images/09-08-2013/logo_lagi_6_resize.jpg",
+  //     name: `Nhóm #${i}`,
+  //   });
+  // };
 
   const hanldeSelected = (id) => {
     seta(id);
   };
-
 
   return (
     <div className="friend">
@@ -72,7 +72,7 @@ const GroupPage = () => {
         <div className="listF">
           {groups.map((item) => (
             <div key={item.id} className="itemF">
-              <img
+              <Image
                 className="avatar-img"
                 src={item.image}
                 alt=""
