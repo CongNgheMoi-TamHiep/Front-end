@@ -1,6 +1,6 @@
 "use client";
 import React, { useContext, useEffect, useState } from "react";
-import "./styles.scss";
+// import "./styles.scss";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import userApis from "@/apis/userApis";
