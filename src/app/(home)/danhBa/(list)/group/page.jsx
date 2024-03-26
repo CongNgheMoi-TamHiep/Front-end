@@ -7,7 +7,6 @@ import SwapVertIcon from "@mui/icons-material/SwapVert";
 import Image from "next/image";
 
 const GroupPage = () => {
-  const [a, seta] = useState();
   const [groups, setGroups] = useState([
     {
       id: 21,
@@ -28,49 +27,69 @@ const GroupPage = () => {
       name: "Nhóm của tôi",
     },
   ]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortOrder, setSortOrder] = useState(0); // 0: A-Z, 1: Z-A
 
-  // for (let i = 24; i <= 30; i++) {
-  //   groups.push({
-  //     id: i,
-  //     image:
-  //       "https://designs.vn/wp-content/images/09-08-2013/logo_lagi_6_resize.jpg",
-  //     name: `Nhóm #${i}`,
-  //   });
-  // };
-
-  const hanldeSelected = (id) => {
-    seta(id);
+  const handleSearchChange = (event) => {
+    setSearchTerm(event.target.value);
   };
+
+  const handleSortChange = (event) => {
+    setSortOrder(parseInt(event.target.value));
+  };
+
+  const sortedGroups = groups.sort((a, b) => {
+    if (sortOrder === 0) {
+      return a.name.localeCompare(b.name);
+    } else {
+      return b.name.localeCompare(a.name);
+    }
+  });
+
+  const filteredGroups = sortedGroups.filter((group) => {
+    const searchValue = searchTerm.toLowerCase();
+    return group.name.toLowerCase().includes(searchValue);
+  });
 
   return (
     <div className="friend">
-      <h3> Nhóm ({groups.length})</h3>
+      <h3>Nhóm ({filteredGroups.length})</h3>
       <div className="contentF">
         <div className="timLoc">
           <div className="timKiem">
             <SearchIcon sx={{ color: "#858585" }} />
-            <input type="text" placeholder="Tìm kiếm bạn bè" />
+            <input
+              type="text"
+              placeholder="Tìm kiếm nhóm"
+              value={searchTerm}
+              onChange={handleSearchChange}
+            />
           </div>
           <div className="loc">
             <div className="selectLoc" tabIndex="0">
               <SwapVertIcon />
-              <select name="locTen" id="locTen">
-                <option value="0">Tên (A - Z)</option>
-                <option value="1">Tên (Z - A)</option>
+              <select
+                name="locTen"
+                id="locTen"
+                onChange={handleSortChange}
+                value={sortOrder}
+              >
+                <option value={0}>Tên (A - Z)</option>
+                <option value={1}>Tên (Z - A)</option>
               </select>
             </div>
             <div className="selectLoc">
               <FilterAltOutlinedIcon />
               <select name="locType" id="locType">
-                <option value="0">Tất cả</option>
-                <option value="1">Phân loại</option>
+                <option value={0}>Tất cả</option>
+                <option value={1}>Phân loại</option>
               </select>
             </div>
           </div>
         </div>
 
         <div className="listF">
-          {groups.map((item) => (
+          {filteredGroups.map((item) => (
             <div key={item.id} className="itemF">
               <Image
                 className="avatar-img"

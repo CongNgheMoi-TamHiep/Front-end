@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 /* eslint-disable @next/next/no-img-element */
 "use client";
-import React, {useContext, useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import "./styles.scss";
 import { useRouter } from "next/navigation";
 import BookmarkBorderIcon from "@mui/icons-material/BookmarkBorder";
@@ -45,7 +45,9 @@ const page = ({ params }) => {
   const socket = useContext(SocketContext);
 
   const [conversationId, setConversationId] = useState(params.id);
-  const [conversation, setConversation] = useState(null);//[currentUser?.uid, receiverId
+  const [currentConversation, setCurrentConversation] = useState(null);
+
+  const [conversation, setConversation] = useState(null); //[currentUser?.uid, receiverId
   const [text, setText] = useState("");
   const [userNhan, setUserNhan] = useState({});
   const [chats, setChat] = useState([]);
@@ -53,30 +55,38 @@ const page = ({ params }) => {
   const [isOpenEmoji, setOpenEmoji] = useState(false);
   const [isFirst, setIsFirst] = useState(true);
   const [me, setMe] = useState(null);
+  const [users, setUsers] = useState([]);
+
   useEffect(() => {
     const fetchData = async () => {
       //fetch user
-      const conversationResponse = await ConversationApi.getConversationById(conversationId); 
-      let userNhan1 = null; 
-      let conversationId1 = null; 
-      let me1=null
-      if( conversationResponse?._id  ) {
-        userNhan1=await conversationResponse?.members.filter((value) => value._id !== currentUser?.uid)[0]
-        conversationId1=conversationId; 
+      const conversationResponse = await ConversationApi.getConversationById(
+        conversationId
+      );
+      let userNhan1 = null;
+      let conversationId1 = null;
+      let me1 = null;
+      if (conversationResponse?._id) {
+        userNhan1 = await conversationResponse?.members.filter(
+          (value) => value._id !== currentUser?.uid
+        )[0];
+        conversationId1 = conversationId;
         setIsFirst(false);
         setConversation(conversationResponse);
-      } else { 
-        userNhan1=await userApis.getUserById(receiverId); 
-        conversationId1=CombineUserId(currentUser?.uid, userNhan1._id); 
-        setConversationId(conversationId1)
+      } else {
+        userNhan1 = await userApis.getUserById(receiverId);
+        conversationId1 = CombineUserId(currentUser?.uid, userNhan1._id);
+        setConversationId(conversationId1);
       }
 
-      userNhan1 = await userApis.getUserById(userNhan1._id); 
-      me1 = await userApis.getUserById(currentUser?.uid); 
+      userNhan1 = await userApis.getUserById(userNhan1._id);
+      me1 = await userApis.getUserById(currentUser?.uid);
       setUserNhan(userNhan1);
       setMe(me1);
-      const chatReponse = await ChatApi.getChatByConversationId(conversationId1);
-      setChat(chatReponse)
+      const chatReponse = await ChatApi.getChatByConversationId(
+        conversationId1
+      );
+      setChat(chatReponse);
       // setChat(chatReponse.sort((a, b) => {
       //     return new Date(a.createdAt) - new Date(b.createdAt);
       // }));
@@ -94,35 +104,32 @@ const page = ({ params }) => {
 
   useEffect(() => {
     socket.on("getMessage", (chat) => {
-      setChatReceived(chat); 
-    })
+      setChatReceived(chat);
+    });
   }, []);
 
   useEffect(() => {
-    if (chatReceived) 
-      setChat((prevChats) => [...prevChats, chatReceived]);
-  }, [chatReceived])
+    if (chatReceived) setChat((prevChats) => [...prevChats, chatReceived]);
+  }, [chatReceived]);
 
   const handleSend = async () => {
     if (text == "") return;
     socket.emit("sendMessage", {
-      conversationId, 
+      conversationId,
       senderInfo: {
         _id: currentUser?.uid,
-        name: me.name, 
-        avatar: me.avatar, 
+        name: me.name,
+        avatar: me.avatar,
       },
       content: { text },
       createdAt: new Date(),
-    }); 
+    });
     setText("");
-    await axiosPrivate.post(`/chat`, 
-      {
-        ...( isFirst ? {receiverId} : {conversationId}), 
-        senderId: currentUser?.uid,
-        content: { text },
-      }
-    )
+    await axiosPrivate.post(`/chat`, {
+      ...(isFirst ? { receiverId } : { conversationId }),
+      senderId: currentUser?.uid,
+      content: { text },
+    });
     setIsFirst(false);
   };
 
@@ -135,9 +142,9 @@ const page = ({ params }) => {
   //   }
   // }, [chats]);
 
-  const hanldeBtnPhotoClick= () => {
+  const hanldeBtnPhotoClick = () => {
     inputPhotoRef.current.click();
-  }
+  };
 
   function hanldeBtnFileClick() {
     inputFileRef.current.click();
@@ -201,8 +208,15 @@ const page = ({ params }) => {
   const hanldeEmojiClick = (emojiObject, event) => {
     setText((prev) => prev + emojiObject.emoji);
   };
-
-
+  useEffect(() => {
+    const fetchdata = async () => {
+      const userConversations =
+        await UserConversationApi.getUserConversationByUserId(currentUser?.uid);
+      console.log(userConversations.conversations);
+      setConversations(userConversations.conversations);
+    };
+    fetchdata();
+  }, []);
   // console.log(chats, "chats")
 
   return (
@@ -211,17 +225,16 @@ const page = ({ params }) => {
         <div className="contentTitle">
           <Button className="imgCon">
             <Image
-              src={ conversation?.image || userNhan?.avatar}
+              src={conversation?.image || userNhan?.avatar}
               className="imgAvt"
               alt=""
               width={50}
               height={50}
+              // onClick={handleRouteToCaNhanUserID}
             />
           </Button>
           <div className="nameCon">
-            <h3 className="nameNhan">
-              { conversation?.name || userNhan?.name}
-            </h3>
+            <h3 className="nameNhan">{conversation?.name || userNhan?.name}</h3>
             <div className="timeAccess">
               <div className="lastTime">{lastTime}</div>
               <Divider orientation="vertical" flexItem />
@@ -257,13 +270,17 @@ const page = ({ params }) => {
                 item.senderInfo._id === me?._id ? "myChat" : "yourChat"
               }`}
             >
-              {item.senderInfo._id !== me?._id 
-              && (index===0 || item.senderInfo._id != chats[index - 1]?.senderInfo._id )
-              && (
-                <div className="imgSender">
-                  <img src={item.senderInfo.avatar} className="imgAvtSender" />
-                </div>
-              )}
+              {item.senderInfo._id !== me?._id &&
+                (index === 0 ||
+                  item.senderInfo._id != chats[index - 1]?.senderInfo._id) && (
+                  <div className="imgSender">
+                    <img
+                      src={item.senderInfo.avatar}
+                      className="imgAvtSender"
+                      // onClick={handleRouteToCaNhanUser}
+                    />
+                  </div>
+                )}
               <Tooltip
                 className="chat"
                 color={"#2db7f5"}
