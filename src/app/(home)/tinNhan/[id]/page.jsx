@@ -46,6 +46,8 @@ const page = ({ params }) => {
   const socket = useContext(SocketContext);
 
   const [conversationId, setConversationId] = useState(params.id);
+  const [currentConversation, setCurrentConversation] = useState(null);
+
   const [conversation, setConversation] = useState(null); //[currentUser?.uid, receiverId
   const [text, setText] = useState("");
   const [userNhan, setUserNhan] = useState({});
@@ -54,6 +56,8 @@ const page = ({ params }) => {
   const [isOpenEmoji, setOpenEmoji] = useState(false);
   const [isFirst, setIsFirst] = useState(true);
   const [me, setMe] = useState(null);
+  const [users, setUsers] = useState([]);
+
   useEffect(() => {
     const fetchData = async () => {
       //fetch user
@@ -229,6 +233,15 @@ const page = ({ params }) => {
     </div>
   );
 
+  useEffect(() => {
+    const fetchdata = async () => {
+      const userConversations =
+        await UserConversationApi.getUserConversationByUserId(currentUser?.uid);
+      console.log(userConversations.conversations);
+      setConversations(userConversations.conversations);
+    };
+    fetchdata();
+  }, []);
   // console.log(chats, "chats")
 
   const checkIconFile = (item) => {
@@ -284,6 +297,7 @@ const page = ({ params }) => {
               alt=""
               width={50}
               height={50}
+              // onClick={handleRouteToCaNhanUserID}
             />
           </Button>
           <div className="nameCon">
