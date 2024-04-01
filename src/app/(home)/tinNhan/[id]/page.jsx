@@ -1,11 +1,12 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 /* eslint-disable @next/next/no-img-element */
 "use client";
-import React, {useContext, useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import "./styles.scss";
 import { useRouter } from "next/navigation";
 import BookmarkBorderIcon from "@mui/icons-material/BookmarkBorder";
 import { Button, IconButton, Input, Tooltip } from "@mui/material";
+import { Popover } from "antd";
 import SearchIcon from "@mui/icons-material/Search";
 import LocalPhoneOutlinedIcon from "@mui/icons-material/LocalPhoneOutlined";
 import VideocamOutlinedIcon from "@mui/icons-material/VideocamOutlined";
@@ -45,7 +46,7 @@ const page = ({ params }) => {
   const socket = useContext(SocketContext);
 
   const [conversationId, setConversationId] = useState(params.id);
-  const [conversation, setConversation] = useState(null);//[currentUser?.uid, receiverId
+  const [conversation, setConversation] = useState(null); //[currentUser?.uid, receiverId
   const [text, setText] = useState("");
   const [userNhan, setUserNhan] = useState({});
   const [chats, setChat] = useState([]);
@@ -56,27 +57,33 @@ const page = ({ params }) => {
   useEffect(() => {
     const fetchData = async () => {
       //fetch user
-      const conversationResponse = await ConversationApi.getConversationById(conversationId); 
-      let userNhan1 = null; 
-      let conversationId1 = null; 
-      let me1=null
-      if( conversationResponse?._id  ) {
-        userNhan1=await conversationResponse?.members.filter((value) => value._id !== currentUser?.uid)[0]
-        conversationId1=conversationId; 
+      const conversationResponse = await ConversationApi.getConversationById(
+        conversationId
+      );
+      let userNhan1 = null;
+      let conversationId1 = null;
+      let me1 = null;
+      if (conversationResponse?._id) {
+        userNhan1 = await conversationResponse?.members.filter(
+          (value) => value._id !== currentUser?.uid
+        )[0];
+        conversationId1 = conversationId;
         setIsFirst(false);
         setConversation(conversationResponse);
-      } else { 
-        userNhan1=await userApis.getUserById(receiverId); 
-        conversationId1=CombineUserId(currentUser?.uid, userNhan1._id); 
-        setConversationId(conversationId1)
+      } else {
+        userNhan1 = await userApis.getUserById(receiverId);
+        conversationId1 = CombineUserId(currentUser?.uid, userNhan1._id);
+        setConversationId(conversationId1);
       }
 
-      userNhan1 = await userApis.getUserById(userNhan1._id); 
-      me1 = await userApis.getUserById(currentUser?.uid); 
+      userNhan1 = await userApis.getUserById(userNhan1._id);
+      me1 = await userApis.getUserById(currentUser?.uid);
       setUserNhan(userNhan1);
       setMe(me1);
-      const chatReponse = await ChatApi.getChatByConversationId(conversationId1);
-      setChat(chatReponse)
+      const chatReponse = await ChatApi.getChatByConversationId(
+        conversationId1
+      );
+      setChat(chatReponse);
       // setChat(chatReponse.sort((a, b) => {
       //     return new Date(a.createdAt) - new Date(b.createdAt);
       // }));
@@ -94,35 +101,32 @@ const page = ({ params }) => {
 
   useEffect(() => {
     socket.on("getMessage", (chat) => {
-      setChatReceived(chat); 
-    })
+      setChatReceived(chat);
+    });
   }, []);
 
   useEffect(() => {
-    if (chatReceived) 
-      setChat((prevChats) => [...prevChats, chatReceived]);
-  }, [chatReceived])
+    if (chatReceived) setChat((prevChats) => [...prevChats, chatReceived]);
+  }, [chatReceived]);
 
   const handleSend = async () => {
     if (text == "") return;
     socket.emit("sendMessage", {
-      conversationId, 
+      conversationId,
       senderInfo: {
         _id: currentUser?.uid,
-        name: me.name, 
-        avatar: me.avatar, 
+        name: me.name,
+        avatar: me.avatar,
       },
       content: { text },
       createdAt: new Date(),
-    }); 
+    });
     setText("");
-    await axiosPrivate.post(`/chat`, 
-      {
-        ...( isFirst ? {receiverId} : {conversationId}), 
-        senderId: currentUser?.uid,
-        content: { text },
-      }
-    )
+    await axiosPrivate.post(`/chat`, {
+      ...(isFirst ? { receiverId } : { conversationId }),
+      senderId: currentUser?.uid,
+      content: { text },
+    });
     setIsFirst(false);
   };
 
@@ -135,18 +139,23 @@ const page = ({ params }) => {
   //   }
   // }, [chats]);
 
-  const hanldeBtnPhotoClick= () => {
+  const hanldeBtnPhotoClick = () => {
     inputPhotoRef.current.click();
-  }
+  };
 
   function hanldeBtnFileClick() {
     inputFileRef.current.click();
   }
 
+  // avatar  :   "https://images.pexels.com/photos/14940646/pexels-photo-14940646.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
+  // name  :   "Long"
+  // _id  :   "6jUNvMMbBUgfurNAmf87wp5BDzB3"
+  // updatedAt  :   "2024-03-23T05:42:04.775Z
   const handlePhotoSelect = (event) => {
     const files = Array.from(event.target.files);
     files.forEach((file) => {
       const reader = new FileReader();
+      console.log("reader.result", reader.result);
       reader.onloadend = () => {
         setChat((prevChats) => [
           ...prevChats,
@@ -154,6 +163,11 @@ const page = ({ params }) => {
             conversationId,
             senderId: currentUser?.uid,
             content: { image: reader.result },
+            senderInfo: {
+              _id: currentUser?.uid,
+              name: me.name,
+              avatar: me.avatar,
+            },
             createdAt: new Date(),
           },
         ]);
@@ -171,8 +185,13 @@ const page = ({ params }) => {
           ...prevChats,
           {
             conversationId,
-            senderInfo: me,
-            content: { file: reader.result },
+            senderId: currentUser?.uid,
+            content: { file: reader.result, size: 35, name: file.name },
+            senderInfo: {
+              _id: currentUser?.uid,
+              name: me.name,
+              avatar: me.avatar,
+            },
             createdAt: new Date(),
           },
         ]);
@@ -202,16 +221,65 @@ const page = ({ params }) => {
     setText((prev) => prev + emojiObject.emoji);
   };
 
+  const showFunctionChat = (
+    <div style={{ display: "flex", flexDirection: "column" }}>
+      <button>Them</button>
+      <button>Xoa</button>
+      <button>Copy</button>
+    </div>
+  );
 
   // console.log(chats, "chats")
 
+  const checkIconFile = (item) => {
+    const file = item.content.name.split(".");
+    const type = file[file.length - 1];
+    const wordExtensions = ["doc", "docm", "docx", "dot", "dotx"];
+    const excelExtensions = [
+      "xls",
+      "xlsx",
+      "xlsm",
+      "xlsb",
+      "xlt",
+      "xltm",
+      "xltx",
+      "xla",
+      "xlam",
+      "xll",
+      "xlw",
+      "csv",
+    ];
+    const powerpointExtensions = [
+      "ppt",
+      "pptx",
+      "pptm",
+      "pot",
+      "potx",
+      "potm",
+      "ppam",
+      "ppa",
+      "pps",
+      "ppsx",
+      "ppsm",
+    ];
+
+    if (wordExtensions.includes(type))
+      return "https://cdn-icons-png.flaticon.com/128/888/888883.png";
+    if (excelExtensions.includes(type))
+      return "https://cdn-icons-png.flaticon.com/128/888/888850.png";
+    if (powerpointExtensions.includes(type))
+      return "https://cdn-icons-png.flaticon.com/128/888/888874.png";
+    if (type == "pdf")
+      return "https://cdn-icons-png.flaticon.com/128/337/337946.png";
+    return "https://cdn-icons-png.flaticon.com/128/3073/3073412.png";
+  };
   return (
     <div className="conversationChat">
       <div className="titleHeader">
         <div className="contentTitle">
           <Button className="imgCon">
             <Image
-              src={ conversation?.image || userNhan?.avatar}
+              src={conversation?.image || userNhan?.avatar}
               className="imgAvt"
               alt=""
               width={50}
@@ -219,9 +287,7 @@ const page = ({ params }) => {
             />
           </Button>
           <div className="nameCon">
-            <h3 className="nameNhan">
-              { conversation?.name || userNhan?.name}
-            </h3>
+            <h3 className="nameNhan">{conversation?.name || userNhan?.name}</h3>
             <div className="timeAccess">
               <div className="lastTime">{lastTime}</div>
               <Divider orientation="vertical" flexItem />
@@ -257,68 +323,88 @@ const page = ({ params }) => {
                 item.senderInfo._id === me?._id ? "myChat" : "yourChat"
               }`}
             >
-              {item.senderInfo._id !== me?._id 
-              && (index===0 || item.senderInfo._id != chats[index - 1]?.senderInfo._id )
-              && (
+              {item.senderInfo._id !== me?._id && (
                 <div className="imgSender">
-                  <img src={item.senderInfo.avatar} className="imgAvtSender" />
+                  {(index === 0 ||
+                    item.senderInfo._id !=
+                      chats[index - 1]?.senderInfo._id) && (
+                    <img
+                      src={item.senderInfo.avatar}
+                      className="imgAvtSender"
+                    />
+                  )}
                 </div>
               )}
-              <Tooltip
-                className="chat"
-                color={"#2db7f5"}
-                style={{
-                  backgroundColor:
-                    item.senderInfo._id === me?._id ? "#E5EFFF" : "white",
-                }}
-                title={
-                  <MoreHorizIcon
-                    style={{ padding: "1px", backgroundColor: "#2db7f5" }}
-                    fontSize="small"
-                  />
-                }
+              <Popover
                 placement={
-                  item.senderInfo._id !== me?._id ? "right-end" : "left-end"
+                  item.senderInfo._id !== me?._id ? "rightBottom" : "leftBottom"
                 }
+                content={
+                  <Popover
+                    placement="top"
+                    arrow={false}
+                    content={showFunctionChat}
+                    trigger="click"
+                  >
+                    <MoreHorizIcon
+                      style={{ padding: "1px", backgroundColor: "transparent" }}
+                      fontSize="small"
+                    />
+                  </Popover>
+                }
+                arrow={false}
               >
-                <div>
-                  {item.senderInfo._id !== me?._id && (
-                    <p className="chatName">{item.senderInfo.name}</p>
-                  )}
-                  {item.content.text ? (
-                    <p className="chatText" style={{ whiteSpace: "pre-wrap" }}>
-                      {item.content.text}
-                    </p>
-                  ) : (
-                    // <img
-                    //   src={item.content.image}
-                    //   alt="Chat"
-                    //   className="chatImg"
-                    // />
-                    <div className="chatFile">
+                <div
+                  className="chat"
+                  color={"#2db7f5"}
+                  style={{
+                    backgroundColor:
+                      item.senderInfo._id === me?._id ? "#E5EFFF" : "white",
+                  }}
+                >
+                  <div>
+                    {item.senderInfo._id !== me?._id && (
+                      <p className="chatName">{item.senderInfo.name}</p>
+                    )}
+                    {item.content.text ? (
+                      <p
+                        className="chatText"
+                        style={{ whiteSpace: "pre-wrap" }}
+                      >
+                        {item.content.text}
+                      </p>
+                    ) : item.content.image ? (
                       <img
                         src={item.content.image}
-                        alt="word"
-                        className="iconFile"
+                        alt="Chat"
+                        className="chatImg"
                       />
-                      <div className="fileContent">
-                        <p>Name file</p>
-                        <p>45 MB</p>
+                    ) : (
+                      <div className="chatFile">
+                        <img
+                          src={checkIconFile(item)}
+                          alt="word"
+                          className="iconFile"
+                        />
+                        <div className="fileContent">
+                          <p>{item.content.name}</p>
+                          <p>{item.content.size} MB</p>
+                        </div>
+                        <a href={item.content.file} onClick={downloadFile}>
+                          <FileDownloadOutlinedIcon className="iconT" />
+                        </a>
                       </div>
-                      <a href="javascript:void(0)" onClick={downloadFile}>
-                        <FileDownloadOutlinedIcon className="iconT" />
-                      </a>
-                    </div>
-                  )}
-                  {/* check hour, giờ, userSend */}
-                  <p className="chatTime">
-                    {new Date(item.createdAt).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </p>
+                    )}
+                    {/* check hour, giờ, userSend */}
+                    <p className="chatTime">
+                      {new Date(item.createdAt).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </p>
+                  </div>
                 </div>
-              </Tooltip>
+              </Popover>
             </div>
           ))}
           {/* {img.map((chat, index) => (
@@ -372,7 +458,7 @@ const page = ({ params }) => {
           <input
             ref={inputPhotoRef}
             style={{ display: "none" }}
-            accept="image/*,video/*"
+            accept="image/*"
             type="file"
             multiple={true}
             onChange={handlePhotoSelect}
@@ -383,7 +469,7 @@ const page = ({ params }) => {
             accept="*/*"
             type="file"
             multiple={true}
-            onChange={handlePhotoSelect}
+            onChange={handleFileSelect}
           />
         </div>
         <div className="sendChatContent">
