@@ -20,6 +20,12 @@ const nextConfig = {
                 port: '',
                 pathname: '/**'
             },
+            {
+                protocol: 'https',
+                hostname: 'khanh2608-bucket01.s3.ap-southeast-1.amazonaws.com',
+                port: '',
+                pathname: '/**'
+            },
         ],
     }
 }

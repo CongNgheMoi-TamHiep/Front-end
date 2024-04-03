@@ -29,7 +29,7 @@ const FriendPage = () => {
 
   const handleDirectToConversation = async (userId) => {
     const conversation = await ConversationApi.getConversationById(
-      CombineUserId(currentUser.uid, userId)
+      CombineUserId(currentUser?.uid, userId)
     );
     if (conversation?._id) router.push(`/tinNhan/${conversation._id}`);
     else router.push(`/tinNhan/${userId}`);
