@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 "use client";
 import userApis from "@/apis/userApis";
 import Loading from "@/components/Loading";
@@ -5,6 +6,7 @@ import { AuthContext } from "@/context/AuthProvider";
 import React, { useContext, useEffect, useState } from "react";
 
 const page = () => {
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const currentUser = useContext(AuthContext);
   const [userId, setUserId] = useState(null);
   const [newAvatarUrl, setNewAvatarUrl] = useState("");
@@ -74,7 +76,9 @@ const page = () => {
             </div>
             <div style={{ display: "flex", gap: "20px", marginTop: "10px" }}>
               <p>Ngày sinh: </p>
-              <p>{userId.birthday ? userId.birthday : "Chưa có thông tin"}</p>
+              <p>
+                {userId.dateOfBirth ? userId.dateOfBirth : "Chưa có thông tin"}
+              </p>
             </div>
             <div style={{ display: "flex", gap: "20px", marginTop: "10px" }}>
               <p>Điện thoại: </p>

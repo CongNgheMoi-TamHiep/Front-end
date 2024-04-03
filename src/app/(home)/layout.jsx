@@ -27,47 +27,6 @@ const Layout = ({ children, params }) => {
   const [conversation, setConversation] = useState(null); //[currentUser?.uid, receiverId
   const [currentConversation, setCurrentConversation] = useState(null);
   const [users, setUsers] = useState(null);
-  
-  useEffect(() => {
-    const fetchData = async () => {
-      //fetch user
-      const conversationResponse = await ConversationApi.getConversationById(
-        conversationId
-      );
-      let userNhan1 = null;
-      let conversationId1 = null;
-      let me1 = null;
-      if (conversationResponse?._id) {
-        userNhan1 = await conversationResponse?.members.filter(
-          (value) => value._id !== currentUser?.uid
-        )[0];
-        conversationId1 = conversationId;
-        setIsFirst(false);
-        setConversation(conversationResponse);
-      } else {
-        userNhan1 = await userApis.getUserById(receiverId);
-        conversationId1 = CombineUserId(currentUser?.uid, userNhan1._id);
-        setConversationId(conversationId1);
-      }
-
-      userNhan1 = await userApis.getUserById(userNhan1._id);
-      me1 = await userApis.getUserById(currentUser?.uid);
-      setUserNhan(userNhan1);
-      setMe(me1);
-      const chatReponse = await ChatApi.getChatByConversationId(
-        conversationId1
-      );
-      setChat(chatReponse);
-      // setChat(chatReponse.sort((a, b) => {
-      //     return new Date(a.createdAt) - new Date(b.createdAt);
-      // }));
-    };
-    fetchData();
-
-    socket.on("getMessage", (chat) => {
-      setChatReceived(chat);
-    });
-  }, []);
 
   const handleCaNhanUser = (item) => {
     setUsers(item);

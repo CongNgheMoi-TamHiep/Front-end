@@ -5,7 +5,7 @@ const ChatApi = {
   getChatByConversationId(id) {
     return axiosPrivate(`/chat/${id}`);
   },
-  sendChat
+
 };
 
 export default ChatApi;

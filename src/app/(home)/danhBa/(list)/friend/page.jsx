@@ -117,7 +117,7 @@ const FriendPage = () => {
               className="itemF"
               onClick={() => handleDirectToConversation(item._id)}
             >
-              <Image
+              <img
                 className="avatar-img"
                 src={item.avatar}
                 alt=""
