@@ -62,7 +62,7 @@ const Layout = ({ children, params }) => {
     <div className="container">
       <div className="sidebar">
         <div className="top">
-          <Image
+          <img
             className="avatar"
             width={48}
             height={48}

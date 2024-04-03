@@ -91,7 +91,7 @@ const GroupPage = () => {
         <div className="listF">
           {filteredGroups.map((item) => (
             <div key={item.id} className="itemF">
-              <Image
+              <img
                 className="avatar-img"
                 src={item.image}
                 alt=""

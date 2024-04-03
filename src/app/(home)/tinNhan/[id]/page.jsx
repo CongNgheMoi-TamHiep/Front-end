@@ -208,23 +208,13 @@ const page = ({ params }) => {
   const hanldeEmojiClick = (emojiObject, event) => {
     setText((prev) => prev + emojiObject.emoji);
   };
-  useEffect(() => {
-    const fetchdata = async () => {
-      const userConversations =
-        await UserConversationApi.getUserConversationByUserId(currentUser?.uid);
-      console.log(userConversations.conversations);
-      setConversations(userConversations.conversations);
-    };
-    fetchdata();
-  }, []);
-  // console.log(chats, "chats")
 
   return (
     <div className="conversationChat">
       <div className="titleHeader">
         <div className="contentTitle">
           <Button className="imgCon">
-            <Image
+            <img
               src={conversation?.image || userNhan?.avatar}
               className="imgAvt"
               alt=""

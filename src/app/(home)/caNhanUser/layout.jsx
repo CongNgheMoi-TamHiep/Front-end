@@ -104,7 +104,7 @@ const Layout = ({ children }) => {
             onClick={() => handleRouteToDetailConversation(item)}
           >
             <div className="avatar">
-              <Image
+              <img
                 className="avatar-img"
                 src={
                   item?.user?.avatar ||
@@ -144,10 +144,10 @@ const Layout = ({ children }) => {
               </div>
               <div className="lastMess">
                 {chatReceived?.conversationId === item?.conversationId
-                  ? chatReceived.senderId === currentUser.uid
+                  ? chatReceived.senderId === currentUser?.uid
                     ? "Bạn: " + chatReceived.content.text
                     : item.user.name + ": " + chatReceived.content.text
-                  : item.lastMess?.senderId === currentUser.uid
+                  : item.lastMess?.senderId === currentUser?.uid
                   ? "Bạn: " + item.lastMess?.content.text
                   : item.user.name + ": " + item.lastMess?.content.text}
               </div>
