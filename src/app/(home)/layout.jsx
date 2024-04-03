@@ -27,7 +27,7 @@ const Layout = ({ children, params }) => {
   const [conversation, setConversation] = useState(null); //[currentUser?.uid, receiverId
   const [currentConversation, setCurrentConversation] = useState(null);
   const [users, setUsers] = useState(null);
-
+  
   useEffect(() => {
     const fetchData = async () => {
       //fetch user
