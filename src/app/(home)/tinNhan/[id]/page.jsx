@@ -92,10 +92,6 @@ const page = ({ params }) => {
       // }));
     };
     fetchData();
-
-    socket.on("getMessage", (chat) => {
-      setChatReceived(chat);
-    });
   }, []);
 
   useEffect(() => {
