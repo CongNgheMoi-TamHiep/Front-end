@@ -17,7 +17,6 @@ const Layout = ({ children }) => {
   const [chatReceived, setChatReceived] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const socket = useContext(SocketContext);
-
   const handleRouteToDetailConversation = (item) => {
     setCurrentConversation(item);
     console.log(item.conversationId);
@@ -35,9 +34,11 @@ const Layout = ({ children }) => {
       const userConversations =
         await UserConversationApi.getUserConversationByUserId(currentUser?.uid);
       console.log(userConversations.conversations);
+      console.log("currentUseruid");
+      console.log(currentUser?.uid);
       setConversations(userConversations.conversations);
 
-      if (userConversations.conversations.length > 0) {
+      if (userConversations?.conversations?.length > 0) {
         setCurrentConversation(userConversations.conversations[0]);
       }
     };
@@ -49,7 +50,7 @@ const Layout = ({ children }) => {
     setSearchTerm(event.target.value);
   };
 
-  const filteredConversations = conversations.filter((item) => {
+  const filteredConversations = conversations?.filter((item) => {
     const searchValue = searchTerm.toLowerCase();
     if (item) {
       const userName = item.user?.name || "";
@@ -92,7 +93,7 @@ const Layout = ({ children }) => {
           <SearchIcon className="icon icon-search" />
         </div>
 
-        {filteredConversations.map((item) => (
+        {filteredConversations?.map((item) => (
           <div
             key={item.conversationId}
             className={`userConversation ${
@@ -104,7 +105,7 @@ const Layout = ({ children }) => {
             onClick={() => handleRouteToDetailConversation(item)}
           >
             <div className="avatar">
-              <Image
+              <img
                 className="avatar-img"
                 src={
                   item?.user?.avatar ||
@@ -144,12 +145,12 @@ const Layout = ({ children }) => {
               </div>
               <div className="lastMess">
                 {chatReceived?.conversationId === item?.conversationId
-                  ? chatReceived.senderId === currentUser.uid
+                  ? chatReceived.senderId === currentUser?.uid
                     ? "Bạn: " + chatReceived.content.text
-                    : item.user.name + ": " + chatReceived.content.text
-                  : item.lastMess?.senderId === currentUser.uid
+                    : item?.user?.name + ": " + chatReceived.content.text
+                  : item.lastMess?.senderId === currentUser?.uid
                   ? "Bạn: " + item.lastMess?.content.text
-                  : item.user.name + ": " + item.lastMess?.content.text}
+                  : item?.user?.name + ": " + item.lastMess?.content.text}
               </div>
             </div>
           </div>

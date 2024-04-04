@@ -1,5 +1,5 @@
 "use client"
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 const { createContext } = require("react")
 import { auth } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
@@ -30,3 +30,6 @@ const AuthProvider = ({children}) => {
 }
 
 export default AuthProvider;
+export const useCurrentUser = () => { 
+    return useContext(AuthContext);
+}

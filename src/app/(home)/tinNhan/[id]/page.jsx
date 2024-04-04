@@ -291,7 +291,7 @@ const page = ({ params }) => {
       <div className="titleHeader">
         <div className="contentTitle">
           <Button className="imgCon">
-            <Image
+            <img
               src={conversation?.image || userNhan?.avatar}
               className="imgAvt"
               alt=""

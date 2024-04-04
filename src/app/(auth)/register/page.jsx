@@ -15,9 +15,9 @@ import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { MuiTelInput } from "mui-tel-input";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useContext } from "react";
 import { auth } from "@/firebase";
-import { RecaptchaVerifier, signInWithPhoneNumber, EmailAuthProvider, linkWithCredential } from "firebase/auth";
+import { RecaptchaVerifier, signInWithPhoneNumber, EmailAuthProvider, linkWithCredential, PhoneAuthProvider, signInWithCredential } from "firebase/auth";
 import "./styles.scss";
 import { AuthContext } from "@/context/AuthProvider";
 import Loading from "@/components/Loading";
@@ -27,6 +27,7 @@ import formatPhoneNumber  from '@/utils/formatPhoneNumber'
 import { format } from "path";
 import axiosPrivate  from "@/apis/axios";
 import authApis  from "@/apis/authApis";
+import firebase from "firebase/app";
 function Copyright(props) {
     return (
         <Typography
@@ -59,8 +60,19 @@ export default function SignUp() {
     const [isLoading, setIsLoading] = useState(true);
     const [name, setName] = useState("");
     const [password, setPassword] = useState("");
-    const recaptchaVerifier = React.useRef(null);
-    const currentUser = React.useContext(AuthContext); 
+    const recaptchaVerifier = useRef(null);
+    const currentUser = useContext(AuthContext); 
+    const [timer, setTimer] = useState(60);
+    useEffect(() => {
+        let intervalId;
+        if (timer > 0 && confirmation) {
+          intervalId = setInterval(() => {
+            setTimer((prevTimer) => prevTimer - 1);
+          }, 1000);
+        }
+        return () => clearInterval(intervalId);
+      }, [confirmation, timer]);
+
 
     useEffect(()=> { 
       if(currentUser) 
@@ -77,6 +89,7 @@ export default function SignUp() {
 
     const handleSubmit = async (event) => {
         event.preventDefault();
+        let phoneProvider = new PhoneAuthProvider(auth);
         try {
             const recaptcha = new RecaptchaVerifier(
                 auth,
@@ -84,7 +97,13 @@ export default function SignUp() {
                 {}
             );
             setIsCheck(true);
-            const confirmation = await signInWithPhoneNumber(auth, number, recaptcha);
+            // const confirmation = await signInWithPhoneNumber(auth, number, recaptcha);
+            const confirmation = await phoneProvider.verifyPhoneNumber(number, recaptcha, {
+                // mã xác thực sẽ hết hạn sau 2 phút
+                timeout: 120000 ,
+            })
+            console.log("confirmation: "); 
+            console.log(confirmation); 
             setConfirmation(confirmation);
         } catch (error) {
             console.log(error);
@@ -93,8 +112,10 @@ export default function SignUp() {
 
     const verifyOtp = async () => {
         try {
-            const result = await confirmation.confirm(otp);
-            const user = result.user;
+            const authCredential = await PhoneAuthProvider.credential(confirmation, otp);
+            const UserCredentialImpl  = await signInWithCredential(auth, authCredential); 
+            const user = UserCredentialImpl.user; 
+   
             const email = `${formatPhoneNumber(number)}@gmail.com`;
             const credential = EmailAuthProvider.credential(email, password);
             try {
@@ -132,6 +153,16 @@ export default function SignUp() {
                     <div>
                         {confirmation && (
                             <div className="otp">
+                                {timer > 0 && <p>Resend in {timer}s</p>}
+                                {timer === 0 && (
+                                    <Button
+                                        onClick={handleSubmit}
+                                        variant="contained"
+                                        color="success"
+                                    >
+                                        Resend otp
+                                    </Button>
+                                )}
                                 <TextField
                                     onKeyDown={(e) =>
                                         e.key === "Enter" && verifyOtp()
