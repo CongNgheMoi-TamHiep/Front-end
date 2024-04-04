@@ -102,8 +102,6 @@ export default function SignUp() {
                 // mã xác thực sẽ hết hạn sau 2 phút
                 timeout: 120000 ,
             })
-            console.log("confirmation: "); 
-            console.log(confirmation); 
             setConfirmation(confirmation);
         } catch (error) {
             console.log(error);
@@ -201,7 +199,6 @@ export default function SignUp() {
                         </Typography>
                         {confirmation ? (
                             <div className="otp">
-                                {!confirmation && <div ref={recaptchaVerifier}></div>}
                                 {confirmation && (
                                     <div>
                                         <TextField
