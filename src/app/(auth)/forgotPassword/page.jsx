@@ -74,10 +74,10 @@ export default function SignUp() {
   const currentUser = useContext(AuthContext);
   const [timer, setTimer] = useState(60);
   const [userCr, setUserCr] = useState(null);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState(null);
   const [otpState, setOtpState] = useState(0);
-  const [isValidPassword, setIsValidPassword] = useState(false);
-  const [isValidConfirmPassword, setIsValidConfirmPassword] = useState(false);
+  const [isInvalidPassword, setIsInvalidPassword] = useState(false);
+  const [isInvalidConfirmPassword, setIsInvalidConfirmPassword] = useState(false);
  
   useEffect(() => {
     let intervalId;
@@ -98,8 +98,13 @@ export default function SignUp() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (otpState !== 2) {
-      let phoneProvider = new PhoneAuthProvider(auth);
+      //checknumber exist; 
       try {
+        const isExist = await axiosPrivate(`/check/number/${formatPhoneNumber(number)}`);  
+        console.log(isExist)
+        if (!isExist.numberExists)  
+          throw new Error("This phone number is not registered!");
+        let phoneProvider = new PhoneAuthProvider(auth);
         const recaptcha = new RecaptchaVerifier(
           auth,
           recaptchaVerifier.current,
@@ -118,16 +123,19 @@ export default function SignUp() {
         setOtpState(1);
         setConfirmation(confirmation);
       } catch (error) {
-        console.log(error);
+        setError(error.message);
       }
-    } else {
+    } 
+    
+    else {
       try {
         // check regex password
+        if (isInvalidPassword || isInvalidConfirmPassword) 
+          throw new Error("Invalid password");
         updatePassword(userCr, password);
         router.push("/", { changePassword: true });
-        // throw notify toach
       } catch (error) {
-        setError(true);
+        setError(error.message);
       }
     }
   };
@@ -146,8 +154,7 @@ export default function SignUp() {
       setOtpState(2);
       setUserCr(user);
     } catch (error) {
-      setError(true);
-      console.log(error);
+      setError("Invalid otp");
     }
   };
 
@@ -155,32 +162,31 @@ export default function SignUp() {
     return <Loading />;
   }
 
-
   const checkPassword = (e) => {
     setPassword(e.target.value);
     const regex =
       /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()-_+=|\\{}\[\]:;'"<>,.?/])[A-Za-z\d!@#$%^&*()-_+=|\\{}\[\]:;'"<>,.?/]{8,}$/;
     if (!regex.test(e.target.value) && e.target.value !== "") {
-      setIsValidPassword(true);
+      setIsInvalidPassword(true);
     } else {
-      setIsValidPassword(false);
+      setIsInvalidPassword(false);
     }
 
     if (confirmPassword !== "" && confirmPassword !== e.target.value) {
-      setIsValidConfirmPassword(true);
+      setIsInvalidConfirmPassword(true);
     }
 
     if (confirmPassword !== "" && confirmPassword === e.target.value) {
-      setIsValidConfirmPassword(false);
+      setIsInvalidConfirmPassword(false);
     }
   };
 
   const checkConfirmPassword = (e) => {
     setConrfirmPassword(e.target.value);
     if (password !== e.target.value && e.target.value !== "") {
-      setIsValidConfirmPassword(true);
+      setIsInvalidConfirmPassword(true);
     } else {
-      setIsValidConfirmPassword(false);
+      setIsInvalidConfirmPassword(false);
     }
   };
 
@@ -211,7 +217,7 @@ export default function SignUp() {
                   size="smail"
                   label="Enter the code"
                 />
-                {error && <p style={{ color: "red" }}>Invalid otp</p>}
+                {error && <p style={{ color: "red" }}>{error}</p>}
                 <Button onClick={verifyOtp} variant="contained" color="success">
                   Verify otp
                 </Button>
@@ -234,14 +240,17 @@ export default function SignUp() {
             <Typography component="h1" variant="h5">
               Get back your account
             </Typography>
-            {
-              <Box
+            { (!isCheck || otpState === 2) &&
+              (<Box
                 component="form"
                 noValidate
                 onSubmit={handleSubmit}
                 sx={{ mt: 3 }}
               >
                 <Grid container spacing={2}>
+                  {<p style={{ color: "red" }}>{error}</p>}
+
+                  {/* Nhập số điện thoại */}
                   {!userCr && (
                     <Grid item xs={12}>
                       <MuiTelInput
@@ -256,13 +265,15 @@ export default function SignUp() {
                       />
                     </Grid>
                   )}
+                  
+                  {/* Nhập pass word */}
                   {userCr && (
                     <>
                       <Grid item xs={12}>
                         <TextField
-                          error={isValidPassword}
+                          error={isInvalidPassword}
                           helperText={
-                            isValidPassword &&
+                            isInvalidPassword &&
                             "Password incluces 1 uppercase letter, 1 lowercase letter, and 1 number, may contain special characters (8-16 characters long)"
                           }
                           required
@@ -278,9 +289,9 @@ export default function SignUp() {
                       </Grid>
                       <Grid item xs={12}>
                         <TextField
-                          error={isValidConfirmPassword}
+                          error={isInvalidConfirmPassword}
                           helperText={
-                            isValidConfirmPassword &&
+                            isInvalidConfirmPassword &&
                             "Password confirm do not match"
                           }
                           required
@@ -305,14 +316,15 @@ export default function SignUp() {
                 >
                   Submit
                 </Button>
-                {/* <Grid container justifyContent="flex-end">
+                { otpState !== 2 && 
+                  (<Grid container justifyContent="flex-end">
                   <Grid item>
                     <Link href="/login" variant="body2">
                       Already have an account? Sign in
                     </Link>
                   </Grid>
-                </Grid> */}
-              </Box>
+                </Grid> )}
+              </Box>)
             }
           </Box>
         )}

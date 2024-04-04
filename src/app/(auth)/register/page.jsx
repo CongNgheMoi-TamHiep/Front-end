@@ -188,7 +188,7 @@ export default function SignUp() {
           name,
           number: user2.phoneNumber,
           avatar:
-            "https://images.pexels.com/photos/14940646/pexels-photo-14940646.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+            "https://firebasestorage.googleapis.com/v0/b/zalo-78227.appspot.com/o/avatarDefault.jpg?alt=media&token=2b2922bb-ada3-4000-b5f7-6d97ff87becd",
         };
         // call register API to server
         await authApis.register(userInfo);

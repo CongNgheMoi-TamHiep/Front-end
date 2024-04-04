@@ -4,6 +4,8 @@ import React, { useState } from "react";
 import { Modal } from "antd";
 import { Box, Grid, TextField, Button } from "@mui/material";
 import openNotificationWithIcon from "@/components/OpenNotificationWithIcon";
+import { EmailAuthProvider, reauthenticateWithCredential, updatePassword } from "firebase/auth";
+import { useCurrentUser } from "@/context/AuthProvider";
 
 const ModalChangePassword = ({ show, handleClose }) => {
   const [oldPassword, setOldPassword] = useState("");
@@ -13,13 +15,13 @@ const ModalChangePassword = ({ show, handleClose }) => {
   const [isInValidNewPassword, setIsInValidNewPassword] = useState(false);
   const [isInValidConfirmPassword, setIsInValidConfirmPassword] =
     useState(false);
-
+  const currentUser = useCurrentUser();
   const handleSubmit = (e) => {
     e.preventDefault();
     handleUpdatePassword(password);
   };
 
-  const handleUpdatePassword = () => {
+  const handleUpdatePassword = async () => {
     if (oldPassword === "" || newPassword === "" || confirmPassword === "") {
       openNotificationWithIcon("error", "Error", "Please fill all fields");
       setIsInValidOldPassword(oldPassword === "");
@@ -35,8 +37,20 @@ const ModalChangePassword = ({ show, handleClose }) => {
       openNotificationWithIcon("error", "Error", "Information is invalid");
       return;
     }
+    try {
+      const credential = await EmailAuthProvider.credential( currentUser.email, oldPassword);
+      await reauthenticateWithCredential(currentUser, credential);
 
-    console.log("update pw");
+      // old password is correct here 
+      await updatePassword(currentUser, newPassword);
+      setOldPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      openNotificationWithIcon("success", "Success", "Password changed successfully");
+      handleClose();
+    } catch (error) {
+      setIsInValidOldPassword(true); 
+    }
   };
 
   const checkOldPassword = (e) => {
