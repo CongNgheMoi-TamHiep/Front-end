@@ -8,6 +8,8 @@ import { format } from "date-fns";
 import ModalInfo from "./modalInfo/page";
 import ModalChangePassword from "./modolChangePassword/page";
 import "./modalInfo/style.scss";
+import { Upload } from "antd";
+import openNotificationWithIcon from "@/components/OpenNotificationWithIcon";
 
 const page = () => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -72,6 +74,14 @@ const page = () => {
   const handleCloseModalChangePW = () => {
     setOpenModalChangePW(false);
   };
+
+  const handleImgChange = async (info) => {
+    // const reader = new FileReader();
+    // reader.readAsDataURL(file);
+    // reader.onload = () => resolve(reader.result);
+    // reader.onerror = (error) => reject(error);
+    console.log(info.fileList[0].originFileObj);
+  };
   return (
     <div className="conversationChat" style={{ flex: 5 }}>
       <img
@@ -79,7 +89,6 @@ const page = () => {
         alt=""
         width={"100%"}
         height={"200px"}
-        style={{ cursor: "pointer" }}
       />
       <div style={{ marginTop: "10px", marginLeft: "40px" }}>
         {userId ? (
@@ -90,14 +99,20 @@ const page = () => {
               gap: "20px",
             }}
           >
-            <img
-              src={userId.avatar}
-              width={80}
-              height={80}
-              style={{ borderRadius: "50%" }}
-              alt=""
-            />
-
+            <Upload
+              maxCount={1}
+              accept="image/*"
+              onChange={handleImgChange}
+              showUploadList={false}
+            >
+              <img
+                src={userId.avatar}
+                width={80}
+                height={80}
+                style={{ borderRadius: "50%", cursor: "pointer" }}
+                alt=""
+              />
+            </Upload>
             <p style={{ fontSize: "20px" }}>{userId.name}</p>
           </div>
         ) : (
