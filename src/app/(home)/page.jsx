@@ -4,10 +4,9 @@ import CircularProgress from "@mui/material/CircularProgress";
 import Box from "@mui/material/Box";
 import openNotificationWithIcon from "@/components/OpenNotificationWithIcon";
 const Home = ({params}) => {
-    console.log(params?.changePassword )
     return (
         <div className="loading">
-            {openNotificationWithIcon("success", "Change password successed!","Change password successed!")}
+            {params?.changePassword && openNotificationWithIcon("success", "Change password successed!","Change password successed!")}
             <div className="">
                 <h1>
                     Welcome to zola

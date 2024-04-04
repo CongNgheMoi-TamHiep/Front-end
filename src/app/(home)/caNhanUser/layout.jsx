@@ -1,6 +1,6 @@
 "use client";
 import React, { useContext, useEffect, useState } from "react";
-// import "./styles.scss";
+import "./styles.scss";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import userApis from "@/apis/userApis";
@@ -37,7 +37,7 @@ const Layout = ({ children }) => {
       console.log(userConversations.conversations);
       setConversations(userConversations.conversations);
 
-      if (userConversations.conversations.length > 0) {
+      if (userConversations?.conversations?.length > 0) {
         setCurrentConversation(userConversations.conversations[0]);
       }
     };
@@ -49,7 +49,7 @@ const Layout = ({ children }) => {
     setSearchTerm(event.target.value);
   };
 
-  const filteredConversations = conversations.filter((item) => {
+  const filteredConversations = conversations?.filter((item) => {
     const searchValue = searchTerm.toLowerCase();
     if (item) {
       const userName = item.user?.name || "";
@@ -92,7 +92,7 @@ const Layout = ({ children }) => {
           <SearchIcon className="icon icon-search" />
         </div>
 
-        {filteredConversations.map((item) => (
+        {filteredConversations?.map((item) => (
           <div
             key={item.conversationId}
             className={`userConversation ${
@@ -149,7 +149,7 @@ const Layout = ({ children }) => {
                     : item.user.name + ": " + chatReceived.content.text
                   : item.lastMess?.senderId === currentUser?.uid
                   ? "Bạn: " + item.lastMess?.content.text
-                  : item.user.name + ": " + item.lastMess?.content.text}
+                  : item.user?.name + ": " + item.lastMess?.content.text}
               </div>
             </div>
           </div>
