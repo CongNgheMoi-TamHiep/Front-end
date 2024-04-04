@@ -6,6 +6,7 @@ import { AuthContext } from "@/context/AuthProvider";
 import React, { useContext, useEffect, useState } from "react";
 import { format } from "date-fns";
 import ModalInfo from "./modalInfo/page";
+import ModalChangePassword from "./modolChangePassword/page";
 import "./modalInfo/style.scss";
 
 const page = () => {
@@ -17,6 +18,7 @@ const page = () => {
   const [newGender, setNewGender] = useState("");
   const [newDateOfBirth, setNewDateOfBirth] = useState("");
   const [showChangeInfoModal, setShowChangeInfoModal] = useState(false);
+  const [openModalChangePW, setOpenModalChangePW] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -63,7 +65,13 @@ const page = () => {
     setShowChangeInfoModal(false);
     // setShowChangePasswordModal(false);
   };
+  const handleOpenChangePasswordModal = () => {
+    setOpenModalChangePW(true);
+  };
 
+  const handleCloseModalChangePW = () => {
+    setOpenModalChangePW(false);
+  };
   return (
     <div className="conversationChat" style={{ flex: 5 }}>
       <img
@@ -71,6 +79,7 @@ const page = () => {
         alt=""
         width={"100%"}
         height={"200px"}
+        style={{ cursor: "pointer" }}
       />
       <div style={{ marginTop: "10px", marginLeft: "40px" }}>
         {userId ? (
@@ -168,6 +177,7 @@ const page = () => {
           }}
           type="button"
           value={"Đổi mật khẩu"}
+          onClick={handleOpenChangePasswordModal}
         />
       </div>
       {/* Modal Thay đổi thông tin */}
@@ -181,6 +191,10 @@ const page = () => {
         newDateOfBirth={newDateOfBirth}
         setNewDateOfBirth={setNewDateOfBirth}
         handleUpdateUserInfo={handleUpdateUserInfo}
+      />
+      <ModalChangePassword
+        show={openModalChangePW}
+        handleClose={handleCloseModalChangePW}
       />
     </div>
   );
