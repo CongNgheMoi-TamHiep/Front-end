@@ -1,14 +1,17 @@
+"use client";
 import React from "react";
 import CircularProgress from "@mui/material/CircularProgress";
 import Box from "@mui/material/Box";
-const Home = () => {
+import openNotificationWithIcon from "@/components/OpenNotificationWithIcon";
+const Home = ({params}) => {
+    console.log(params?.changePassword )
     return (
         <div className="loading">
-            {/* <Box sx={{ display: "flex" }}>
-                <CircularProgress />
-            </Box> */}
+            {openNotificationWithIcon("success", "Change password successed!","Change password successed!")}
             <div className="">
-                Welcome to zalo
+                <h1>
+                    Welcome to zola
+                </h1>
             </div>
         </div>
     );
