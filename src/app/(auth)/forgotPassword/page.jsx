@@ -101,7 +101,6 @@ export default function SignUp() {
       //checknumber exist; 
       try {
         const isExist = await axiosPrivate(`/check/number/${formatPhoneNumber(number)}`);  
-        console.log(isExist)
         if (!isExist.numberExists)  
           throw new Error("This phone number is not registered!");
         let phoneProvider = new PhoneAuthProvider(auth);
