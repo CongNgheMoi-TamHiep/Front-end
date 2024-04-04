@@ -22,19 +22,19 @@ const page = () => {
   const [showChangeInfoModal, setShowChangeInfoModal] = useState(false);
   const [openModalChangePW, setOpenModalChangePW] = useState(false);
 
+  const fetchData = async () => {
+    try {
+      const user = await userApis.getUserById(currentUser?.uid);
+      setUserId(user);
+      // console.log(user);
+      setNewName(user.name);
+      setNewGender(user.gender);
+      setNewDateOfBirth(user.dateOfBirth);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+    }
+  };
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const user = await userApis.getUserById(currentUser?.uid);
-        setUserId(user);
-        // console.log(user);
-        setNewName(user.name);
-        setNewGender(user.gender);
-        setNewDateOfBirth(user.dateOfBirth);
-      } catch (error) {
-        console.error("Error fetching user:", error);
-      }
-    };
     fetchData();
     // currentUser?.uid
   }, [currentUser?.uid]);
@@ -52,7 +52,6 @@ const page = () => {
         gender: newGender,
         dateOfBirth: newDateOfBirth,
       });
-      console.log(userId);
       handleCloseModals();
     } catch (error) {
       console.error("Error updating user info:", error);
@@ -75,13 +74,22 @@ const page = () => {
     setOpenModalChangePW(false);
   };
 
-  const handleImgChange = async (info) => {
+  const handleImgChange = async ({file}) => {
     // const reader = new FileReader();
     // reader.readAsDataURL(file);
     // reader.onload = () => resolve(reader.result);
     // reader.onerror = (error) => reject(error);
-    console.log(info.fileList[0].originFileObj);
+    try {
+      const fmData = new FormData();
+      fmData.append("file", file);
+      await userApis.updateAvatar(currentUser?.uid, fmData);
+      await new Promise(resolve => setTimeout(resolve, 1000)); 
+      fetchData(); 
+    } catch (error) {
+      console.log(error)
+    }
   };
+
   return (
     <div className="conversationChat" style={{ flex: 5 }}>
       <img
@@ -102,7 +110,8 @@ const page = () => {
             <Upload
               maxCount={1}
               accept="image/*"
-              onChange={handleImgChange}
+              progress
+              customRequest={handleImgChange}
               showUploadList={false}
             >
               <img

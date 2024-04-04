@@ -9,12 +9,22 @@ const userApis = {
         const user = await axiosPrivate(`/user/${id}`);
         return user; 
     },
-    updateAnUserById (id, data) {
+    async updateAnUserById (id, data) {
         axiosPrivate.patch(`/user/${id}`, data);
     },
-    deleteUserById (id) {
+    async deleteUserById (id) {
         axiosPrivate.delete(`/user/${id}`);
+    },
+
+    async updateAvatar (id, file) {
+        await axiosPrivate.patch(`/user/${id}/updateAvatar`, file, {
+            headers: {
+                "Content-Type": "multipart/form-data",
+                "Accept": 'application/json',
+            },
+        });
     }
+
 }
 
 export default userApis;
