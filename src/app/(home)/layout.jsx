@@ -17,7 +17,7 @@ import axiosPrivate from "@/apis/axios";
 import authApis from "@/apis/authApis";
 import { SocketContext } from "@/context/SocketProvider";
 const Layout = ({ children, params }) => {
-  const [Active, setActive] = useState("tinNhan");
+  const [Active, setActive] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();

@@ -300,7 +300,7 @@ export default function SignUp() {
             </p>
             {confirmation ? (
               <div className="otp">
-                {!confirmation && <div ref={recaptchaVerifier}></div>}
+                
                 {confirmation && (
                   <div>
                     <TextField

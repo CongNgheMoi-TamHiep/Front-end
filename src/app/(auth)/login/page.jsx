@@ -15,7 +15,7 @@ import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { MuiTelInput } from "mui-tel-input";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Loading from "@/components/Loading";
 import { AuthContext } from "@/context/AuthProvider";
 import { auth } from "@/firebase";
@@ -50,6 +50,7 @@ export default function SignIn() {
     const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
     const currentUser = React.useContext(AuthContext);
+    const [error, setError] = useState(false);
     // sign in
     const handleSubmit = async (event) => {
         event.preventDefault();
@@ -62,31 +63,34 @@ export default function SignIn() {
             );
             
             setIsAuthenticated(true);
+            setError(null); 
             router.push("/");
         } catch (error) {
+            console.log("hello world")
             const errorCode = error.code;
             const errorMessage = error.message;
-            console.log(errorCode, errorMessage);
+            setError(errorMessage); 
+            console.log(errorMessage);
         }
     };
     const handleNumber = (newnumber) => {
         setNumber(newnumber);
     };
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (currentUser) setIsAuthenticated(true);
         else setIsAuthenticated(false);
         setIsLoading(false);
     }, [currentUser]);
 
-    React.useEffect(() => { 
+    useEffect(() => { 
         if (isAuthenticated) 
             router.push("/");
     }, [isAuthenticated])
 
     if (isLoading) return <Loading />;
     if (isAuthenticated) return <Loading />;
-    
+   
     return (
         <ThemeProvider theme={defaultTheme}>
             <Container component="main" maxWidth="xs">
@@ -105,6 +109,7 @@ export default function SignIn() {
                     <Typography component="h1" variant="h5">
                         Sign in
                     </Typography>
+                    { error && <p style={{color: "red"}} > Input wrong phone number or password!</p>}
                     <Box
                         component="form"
                         onSubmit={handleSubmit}
@@ -131,12 +136,13 @@ export default function SignIn() {
                             id="password"
                             autoComplete="current-password"
                         />
-                        <FormControlLabel
+                        {/* <FormControlLabel
                             control={
                                 <Checkbox value="remember" color="primary" />
                             }
                             label="Remember me"
-                        />
+                        /> */}
+                        
                         <Button
                             type="submit"
                             fullWidth
@@ -147,7 +153,7 @@ export default function SignIn() {
                         </Button>
                         <Grid container>
                             <Grid item xs>
-                                <Link href="#" variant="body2">
+                                <Link href="/forgotPassword" variant="body2">
                                     Forgot password?
                                 </Link>
                             </Grid>

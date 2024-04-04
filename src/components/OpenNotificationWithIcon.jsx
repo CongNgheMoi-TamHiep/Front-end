@@ -7,4 +7,4 @@ const openNotificationWithIcon =  (type, message, description) => {
     });
   };
 
-export default openNotificationWithIcon
+export default openNotificationWithIcon;
