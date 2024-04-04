@@ -6,7 +6,7 @@ const axiosPrivate = axios.create({
     baseURL: BASE_URL,
     headers: { "Content-Type": "application/json" },
 });
-axiosPrivate.defaults.withCredentials = true;
+// axiosPrivate.defaults.withCredentials = true;
 
 axiosPrivate.interceptors.request.use(
     async (config) => {

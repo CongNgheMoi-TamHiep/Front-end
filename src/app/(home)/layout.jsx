@@ -14,8 +14,8 @@ import { AuthContext } from "@/context/AuthProvider";
 import { auth } from "@/firebase";
 import axios from "axios";
 import axiosPrivate from "@/apis/axios";
-import authApis from "@/apis/authApis";
 import { SocketContext } from "@/context/SocketProvider";
+import userApis from "@/apis/userApis";
 const Layout = ({ children, params }) => {
   const [Active, setActive] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(true);
@@ -26,10 +26,9 @@ const Layout = ({ children, params }) => {
   const [conversationId, setConversationId] = useState(params.id);
   const [conversation, setConversation] = useState(null); //[currentUser?.uid, receiverId
   const [currentConversation, setCurrentConversation] = useState(null);
-  const [users, setUsers] = useState(null);
+  const [user, setUser] = useState(null);
 
-  const handleCaNhanUser = (item) => {
-    setUsers(item);
+  const handleCaNhanUser = () => {
     // console.log(item.currentUser?.uid);
     router.push("/caNhanUser");
   };
@@ -46,9 +45,16 @@ const Layout = ({ children, params }) => {
   };
 
   useEffect(() => {
-    if (currentUser) setIsAuthenticated(true);
-    else setIsAuthenticated(false);
-    setIsLoading(false);
+    (async()=> {
+      if (currentUser) {
+        setIsAuthenticated(true);
+        const user1 = await userApis.getUserById(currentUser.uid)
+        console.log(user1)
+        setUser(user1);
+      }
+      else setIsAuthenticated(false);
+      setIsLoading(false);
+    })(); 
   }, [currentUser]);
 
   useEffect(() => {
@@ -56,8 +62,9 @@ const Layout = ({ children, params }) => {
     else if (Active) router.push(`/${Active}`);
   }, [Active, isAuthenticated]);
 
+  console.log("user:"); 
+  console.log(user); 
   if (isLoading) return <Loading />;
-
   return (
     <div className="container">
       <div className="sidebar">
@@ -67,7 +74,7 @@ const Layout = ({ children, params }) => {
             width={48}
             height={48}
             alt=""
-            src="https://images.pexels.com/photos/18111144/pexels-photo-18111144/free-photo-of-equipment-of-a-painter.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
+            src={ user?.avatar || "https://images.pexels.com/photos/18111144/pexels-photo-18111144/free-photo-of-equipment-of-a-painter.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"}
             onClick={handleCaNhanUser}
           />
           <div

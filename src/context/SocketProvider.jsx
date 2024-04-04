@@ -9,7 +9,7 @@ import { io } from "socket.io-client";
 
 export const SocketContext = createContext(); 
 const SocketProvider = ({children}) => {
-    const socket = io('https://tamhiep.zola-api.tech', {transports: ['websocket']}); 
+    const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {transports: ['websocket']}); 
     const currentUser = useContext(AuthContext);
     useEffect(() => {
         if(currentUser?.uid)
