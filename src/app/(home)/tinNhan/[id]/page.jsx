@@ -32,6 +32,7 @@ import Image from "next/image";
 import userApis from "@/apis/userApis";
 import CombineUserId from "@/utils/CombineUserId";
 import axiosPrivate from "@/apis/axios";
+import UserConversationApi from "@/apis/userConversationApi";
 const lastTime = "Truy cập 1 phút trước";
 
 const page = ({ params }) => {
@@ -238,7 +239,7 @@ const page = ({ params }) => {
       const userConversations =
         await UserConversationApi.getUserConversationByUserId(currentUser?.uid);
       console.log(userConversations.conversations);
-      setConversations(userConversations.conversations);
+      // setConversations(userConversations.conversations);
     };
     fetchdata();
   }, []);

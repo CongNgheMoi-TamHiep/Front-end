@@ -137,7 +137,7 @@ export default function SignUp() {
 
     if (!checked) {
       setIsNotValid(true);
-      setReport("Use must agree to the terms of Zola before Signup");
+      setReport("Use must agree to Zola's terms before Sign up");
       return;
     }
 
@@ -230,13 +230,13 @@ export default function SignUp() {
       setIsValidPassword(false);
     }
 
-    if(confirmPassword !== "" && confirmPassword !== e.target.value) {
+    if (confirmPassword !== "" && confirmPassword !== e.target.value) {
       setIsValidConfirmPassword(true);
     }
 
-    if(confirmPassword !== "" && confirmPassword === e.target.value) {
-        setIsValidConfirmPassword(false);
-      }
+    if (confirmPassword !== "" && confirmPassword === e.target.value) {
+      setIsValidConfirmPassword(false);
+    }
   };
 
   const checkConfirmPassword = (e) => {
@@ -300,7 +300,6 @@ export default function SignUp() {
             </p>
             {confirmation ? (
               <div className="otp">
-                
                 {confirmation && (
                   <div>
                     <TextField
@@ -335,7 +334,10 @@ export default function SignUp() {
                   <Grid item xs={12}>
                     <TextField
                       error={isValidName}
-                      helperText={isValidName && "Name must be alphanumeric"}
+                      helperText={
+                        isValidName &&
+                        "Name must have at least 2 characters, no special characters or numbers"
+                      }
                       autoComplete="given-name"
                       name="name"
                       required
@@ -364,7 +366,8 @@ export default function SignUp() {
                     <TextField
                       error={isValidPassword}
                       helperText={
-                        isValidPassword && "Password must be alphanumeric"
+                        isValidPassword &&
+                        "Password incluces 1 uppercase letter, 1 lowercase letter, and 1 number, may contain special characters (8-16 characters long)"
                       }
                       required
                       fullWidth
@@ -382,7 +385,7 @@ export default function SignUp() {
                       error={isValidConfirmPassword}
                       helperText={
                         isValidConfirmPassword &&
-                        "Password must be alphanumeric"
+                        "Password confirm do not match"
                       }
                       required
                       fullWidth
