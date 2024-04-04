@@ -6,6 +6,7 @@ import "./styles.scss";
 import { useRouter } from "next/navigation";
 import BookmarkBorderIcon from "@mui/icons-material/BookmarkBorder";
 import { Button, IconButton, Input, Tooltip } from "@mui/material";
+import { Popover } from "antd";
 import SearchIcon from "@mui/icons-material/Search";
 import LocalPhoneOutlinedIcon from "@mui/icons-material/LocalPhoneOutlined";
 import VideocamOutlinedIcon from "@mui/icons-material/VideocamOutlined";
@@ -31,6 +32,7 @@ import Image from "next/image";
 import userApis from "@/apis/userApis";
 import CombineUserId from "@/utils/CombineUserId";
 import axiosPrivate from "@/apis/axios";
+import UserConversationApi from "@/apis/userConversationApi";
 const lastTime = "Truy cập 1 phút trước";
 
 const page = ({ params }) => {
@@ -150,10 +152,15 @@ const page = ({ params }) => {
     inputFileRef.current.click();
   }
 
+  // avatar  :   "https://images.pexels.com/photos/14940646/pexels-photo-14940646.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
+  // name  :   "Long"
+  // _id  :   "6jUNvMMbBUgfurNAmf87wp5BDzB3"
+  // updatedAt  :   "2024-03-23T05:42:04.775Z
   const handlePhotoSelect = (event) => {
     const files = Array.from(event.target.files);
     files.forEach((file) => {
       const reader = new FileReader();
+      console.log("reader.result", reader.result);
       reader.onloadend = () => {
         setChat((prevChats) => [
           ...prevChats,
@@ -161,6 +168,11 @@ const page = ({ params }) => {
             conversationId,
             senderId: currentUser?.uid,
             content: { image: reader.result },
+            senderInfo: {
+              _id: currentUser?.uid,
+              name: me.name,
+              avatar: me.avatar,
+            },
             createdAt: new Date(),
           },
         ]);
@@ -178,8 +190,13 @@ const page = ({ params }) => {
           ...prevChats,
           {
             conversationId,
-            senderInfo: me,
-            content: { file: reader.result },
+            senderId: currentUser?.uid,
+            content: { file: reader.result, size: 35, name: file.name },
+            senderInfo: {
+              _id: currentUser?.uid,
+              name: me.name,
+              avatar: me.avatar,
+            },
             createdAt: new Date(),
           },
         ]);
@@ -209,6 +226,56 @@ const page = ({ params }) => {
     setText((prev) => prev + emojiObject.emoji);
   };
 
+  const showFunctionChat = (
+    <div style={{ display: "flex", flexDirection: "column" }}>
+      <button>Them</button>
+      <button>Xoa</button>
+      <button>Copy</button>
+    </div>
+  );
+
+  const checkIconFile = (item) => {
+    const file = item.content.name.split(".");
+    const type = file[file.length - 1];
+    const wordExtensions = ["doc", "docm", "docx", "dot", "dotx"];
+    const excelExtensions = [
+      "xls",
+      "xlsx",
+      "xlsm",
+      "xlsb",
+      "xlt",
+      "xltm",
+      "xltx",
+      "xla",
+      "xlam",
+      "xll",
+      "xlw",
+      "csv",
+    ];
+    const powerpointExtensions = [
+      "ppt",
+      "pptx",
+      "pptm",
+      "pot",
+      "potx",
+      "potm",
+      "ppam",
+      "ppa",
+      "pps",
+      "ppsx",
+      "ppsm",
+    ];
+
+    if (wordExtensions.includes(type))
+      return "https://cdn-icons-png.flaticon.com/128/888/888883.png";
+    if (excelExtensions.includes(type))
+      return "https://cdn-icons-png.flaticon.com/128/888/888850.png";
+    if (powerpointExtensions.includes(type))
+      return "https://cdn-icons-png.flaticon.com/128/888/888874.png";
+    if (type == "pdf")
+      return "https://cdn-icons-png.flaticon.com/128/337/337946.png";
+    return "https://cdn-icons-png.flaticon.com/128/3073/3073412.png";
+  };
   return (
     <div className="conversationChat">
       <div className="titleHeader">
@@ -260,72 +327,88 @@ const page = ({ params }) => {
                 item.senderInfo._id === me?._id ? "myChat" : "yourChat"
               }`}
             >
-              {item.senderInfo._id !== me?._id &&
-                (index === 0 ||
-                  item.senderInfo._id != chats[index - 1]?.senderInfo._id) && (
-                  <div className="imgSender">
+              {item.senderInfo._id !== me?._id && (
+                <div className="imgSender">
+                  {(index === 0 ||
+                    item.senderInfo._id !=
+                      chats[index - 1]?.senderInfo._id) && (
                     <img
                       src={item.senderInfo.avatar}
                       className="imgAvtSender"
-                      // onClick={handleRouteToCaNhanUser}
                     />
-                  </div>
-                )}
-              <Tooltip
-                className="chat"
-                color={"#2db7f5"}
-                style={{
-                  backgroundColor:
-                    item.senderInfo._id === me?._id ? "#E5EFFF" : "white",
-                }}
-                title={
-                  <MoreHorizIcon
-                    style={{ padding: "1px", backgroundColor: "#2db7f5" }}
-                    fontSize="small"
-                  />
-                }
-                placement={
-                  item.senderInfo._id !== me?._id ? "right-end" : "left-end"
-                }
-              >
-                <div>
-                  {item.senderInfo._id !== me?._id && (
-                    <p className="chatName">{item.senderInfo.name}</p>
                   )}
-                  {item.content.text ? (
-                    <p className="chatText" style={{ whiteSpace: "pre-wrap" }}>
-                      {item.content.text}
-                    </p>
-                  ) : (
-                    // <img
-                    //   src={item.content.image}
-                    //   alt="Chat"
-                    //   className="chatImg"
-                    // />
-                    <div className="chatFile">
+                </div>
+              )}
+              <Popover
+                placement={
+                  item.senderInfo._id !== me?._id ? "rightBottom" : "leftBottom"
+                }
+                content={
+                  <Popover
+                    placement="top"
+                    arrow={false}
+                    content={showFunctionChat}
+                    trigger="click"
+                  >
+                    <MoreHorizIcon
+                      style={{ padding: "1px", backgroundColor: "transparent" }}
+                      fontSize="small"
+                    />
+                  </Popover>
+                }
+                arrow={false}
+              >
+                <div
+                  className="chat"
+                  color={"#2db7f5"}
+                  style={{
+                    backgroundColor:
+                      item.senderInfo._id === me?._id ? "#E5EFFF" : "white",
+                  }}
+                >
+                  <div>
+                    {item.senderInfo._id !== me?._id && (
+                      <p className="chatName">{item.senderInfo.name}</p>
+                    )}
+                    {item.content.text ? (
+                      <p
+                        className="chatText"
+                        style={{ whiteSpace: "pre-wrap" }}
+                      >
+                        {item.content.text}
+                      </p>
+                    ) : item.content.image ? (
                       <img
                         src={item.content.image}
-                        alt="word"
-                        className="iconFile"
+                        alt="Chat"
+                        className="chatImg"
                       />
-                      <div className="fileContent">
-                        <p>Name file</p>
-                        <p>45 MB</p>
+                    ) : (
+                      <div className="chatFile">
+                        <img
+                          src={checkIconFile(item)}
+                          alt="word"
+                          className="iconFile"
+                        />
+                        <div className="fileContent">
+                          <p>{item.content.name}</p>
+                          <p>{item.content.size} MB</p>
+                        </div>
+                        <a href={item.content.file} onClick={downloadFile}>
+                          <FileDownloadOutlinedIcon className="iconT" />
+                        </a>
                       </div>
-                      <a href="javascript:void(0)" onClick={downloadFile}>
-                        <FileDownloadOutlinedIcon className="iconT" />
-                      </a>
-                    </div>
-                  )}
-                  {/* check hour, giờ, userSend */}
-                  <p className="chatTime">
-                    {new Date(item.createdAt).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </p>
+                    )}
+                    {/* check hour, giờ, userSend */}
+                    <p className="chatTime">
+                      {new Date(item.createdAt).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </p>
+                  </div>
                 </div>
-              </Tooltip>
+              </Popover>
             </div>
           ))}
           {/* {img.map((chat, index) => (
@@ -379,7 +462,7 @@ const page = ({ params }) => {
           <input
             ref={inputPhotoRef}
             style={{ display: "none" }}
-            accept="image/*,video/*"
+            accept="image/*"
             type="file"
             multiple={true}
             onChange={handlePhotoSelect}
@@ -390,7 +473,7 @@ const page = ({ params }) => {
             accept="*/*"
             type="file"
             multiple={true}
-            onChange={handlePhotoSelect}
+            onChange={handleFileSelect}
           />
         </div>
         <div className="sendChatContent">
