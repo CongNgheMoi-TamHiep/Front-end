@@ -234,17 +234,6 @@ const page = ({ params }) => {
     </div>
   );
 
-  useEffect(() => {
-    const fetchdata = async () => {
-      const userConversations =
-        await UserConversationApi.getUserConversationByUserId(currentUser?.uid);
-      console.log(userConversations.conversations);
-      // setConversations(userConversations.conversations);
-    };
-    fetchdata();
-  }, []);
-  // console.log(chats, "chats")
-
   const checkIconFile = (item) => {
     const file = item.content.name.split(".");
     const type = file[file.length - 1];
