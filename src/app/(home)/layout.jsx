@@ -74,7 +74,7 @@ const Layout = ({ children, params }) => {
             width={48}
             height={48}
             alt=""
-            src={ user?.avatar || "https://images.pexels.com/photos/18111144/pexels-photo-18111144/free-photo-of-equipment-of-a-painter.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"}
+            src={ user?.avatar || "https://firebasestorage.googleapis.com/v0/b/zalo-78227.appspot.com/o/avatarDefault.jpg?alt=media&token=2b2922bb-ada3-4000-b5f7-6d97ff87becd"}
             onClick={handleCaNhanUser}
           />
           <div

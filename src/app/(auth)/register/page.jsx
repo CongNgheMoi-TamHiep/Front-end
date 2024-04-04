@@ -141,6 +141,13 @@ export default function SignUp() {
       return;
     }
 
+    const isExist = await axiosPrivate(`/check/number/${formatPhoneNumber(number)}`);  
+    if (isExist.numberExists)  {
+      setIsNotValid(true);
+      setReport("This phone number is registered!");
+      return; 
+    }
+
     let phoneProvider = new PhoneAuthProvider(auth);
     try {
       const recaptcha = new RecaptchaVerifier(
