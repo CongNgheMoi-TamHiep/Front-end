@@ -3,56 +3,16 @@ import { Modal, Typography, Image } from "antd";
 import { format } from "date-fns";
 
 const ModalProfileUser = ({ isOpen, onClose, user }) => {
-  const [isVisible, setIsVisible] = useState(isOpen);
-
-  useEffect(() => {
-    setIsVisible(isOpen);
-  }, [isOpen]);
-
-  const handleAnimationEnd = () => {
-    if (!isOpen) {
-      setIsVisible(false);
-    }
-  };
-
   return (
     <Modal
-      visible={isVisible}
+      visible={isOpen}
       onCancel={onClose}
       footer={null}
+      centered
       width={"33.3333%"}
-      style={{
-        top: 20,
-        right: 0,
-        position: "fixed",
-        animation: isOpen
-          ? "modal-slide-right 0.1s forwards"
-          : "modal-slide-right-close 0.3s forwards",
-      }}
-      maskStyle={{ backgroundColor: "rgba(0, 0, 0, 0)" }}
-      onAnimationEnd={handleAnimationEnd}
+      // maskStyle={{ backgroundColor: "rgba(0, 0, 0, 0)" }}
     >
-      <style>
-        {`
-          @keyframes modal-slide-right {
-            from {
-              transform: translateX(100%);
-            }
-            to {
-              transform: translateX(0);
-            }
-          }
-          @keyframes modal-slide-right-close {
-            from {
-              transform: translateX(0);
-            }
-            to {
-              transform: translateX(100%);
-            }
-          }
-        `}
-      </style>
-      <div style={{ height: "100%", overflowY: "auto" }}>
+      <div>
         <Typography.Title level={4}>Cá nhân</Typography.Title>
         <img
           src="https://cdn2.cellphones.com.vn/1200x400/https://cdn.sforum.vn/sforum/wp-content/uploads/2023/10/zalo-video-thumbnail.jpg"
