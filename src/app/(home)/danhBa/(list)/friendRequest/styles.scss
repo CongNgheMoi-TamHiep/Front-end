@@ -1,0 +1,15 @@
+.containerFR {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-auto-rows: minmax(50px, auto);
+  grid-gap: 10px;
+}
+
+.itemFR {
+  border: 1px solid #ccc;
+  padding: 10px;
+}
+
+.view-moreFR {
+  grid-column: 1 / -1;
+}

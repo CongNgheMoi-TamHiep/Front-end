@@ -8,10 +8,11 @@ import { useRouter } from "next/navigation";
 
 const Layout = ({ children }) => {
   const items = [
-    { id: 1, title: "Danh sách bạn bè", icon: <PersonIcon className="icon" /> },
-    { id: 2, title: "Danh sách nhóm", icon: <GroupIcon className="icon" /> },
-    { id: 3, title: "Lời mời kết bạn", icon: <DraftsIcon className="icon" /> },
+    { id: 1, title: "Friend Lists", icon: <PersonIcon className="icon" /> } ,
+    { id: 2, title: "Joined Groups", icon: <GroupIcon className="icon" /> },
+    { id: 3, title: "Friend Requests", icon: <DraftsIcon className="icon" /> },
   ];
+  // "Danh sách bạn bè" "Danh sách nhóm" "Lời mời kết bạn"
 
   const router = useRouter();
   const [active, setActive] = useState(1);
@@ -25,7 +26,7 @@ const Layout = ({ children }) => {
       case 2:
         return "/danhBa/group";
       case 3:
-        return "/danhBa/friend";
+        return "/danhBa/friendRequest";
     }
   };
 

@@ -165,6 +165,9 @@ const Layout = ({ children }) => {
               bgColorHover="#DAE9FF"
               border="1px solid #0068FF"
               color="#0068FF"
+              onClick={(e) => {
+                e.stopPropagation();
+                console.log("object");}}
             >
               Add friend
             </Button>

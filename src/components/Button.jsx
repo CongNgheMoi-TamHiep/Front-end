@@ -1,4 +1,3 @@
-// import 'styles.scss'
 import styled from "@emotion/styled";
 
 const StyledButton = styled.button`
