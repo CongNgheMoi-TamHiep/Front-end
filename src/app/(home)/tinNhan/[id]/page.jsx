@@ -5,8 +5,9 @@ import React, { useContext, useEffect, useRef, useState } from "react";
 import "./styles.scss";
 import { useRouter } from "next/navigation";
 import BookmarkBorderIcon from "@mui/icons-material/BookmarkBorder";
-import { Button, IconButton, Input, Tooltip } from "@mui/material";
-import { Popover, Spin } from "antd";
+import { IconButton, Input, Tooltip } from "@mui/material";
+import Button from "@/components/Button";
+import { Popover, Spin, Upload } from "antd";
 import SearchIcon from "@mui/icons-material/Search";
 import LocalPhoneOutlinedIcon from "@mui/icons-material/LocalPhoneOutlined";
 import VideocamOutlinedIcon from "@mui/icons-material/VideocamOutlined";
@@ -279,147 +280,146 @@ const page = ({ params }) => {
   return (
     <div className="conversationChat">
       {/* <Spin spinning={false}> */}
-        <div className="titleHeader">
-          <div className="contentTitle">
-            <Button className="imgCon">
-              <img
-                src={conversation?.image || userNhan?.avatar}
-                className="imgAvt"
-                alt=""
-                width={50}
-                height={50}
-                // onClick={handleRouteToCaNhanUserID}
-              />
-            </Button>
-            <div className="nameCon">
-              <h3 className="nameNhan">
-                {conversation?.name || userNhan?.name}
-              </h3>
-              <div className="timeAccess">
-                <div className="lastTime">{lastTime}</div>
-                <Divider orientation="vertical" flexItem />
-                <IconButton className="btn">
-                  <BookmarkBorderIcon className="btn" />
-                </IconButton>
-              </div>
+      <div className="titleHeader">
+        <div className="contentTitle">
+          <Button className="imgCon">
+            <img
+              src={conversation?.image || userNhan?.avatar}
+              className="imgAvt"
+              alt=""
+              width={50}
+              height={50}
+              // onClick={handleRouteToCaNhanUserID}
+            />
+          </Button>
+          <div className="nameCon">
+            <h3 className="nameNhan">{conversation?.name || userNhan?.name}</h3>
+            <div className="timeAccess">
+              <div className="lastTime">{lastTime}</div>
+              <Divider orientation="vertical" flexItem />
+              {/* <IconButton className="btn">
+                <BookmarkBorderIcon className="btn" />
+              </IconButton> */}
+              <Button borderRadius="40%" margin="0" padding="0">
+                <BookmarkBorderIcon className="btn" />
+              </Button>
             </div>
-          </div>
-
-          <div className="btnContent">
-            <IconButton>
-              <SearchIcon />
-            </IconButton>
-            <IconButton>
-              <LocalPhoneOutlinedIcon />
-            </IconButton>
-            <IconButton>
-              <VideocamOutlinedIcon />
-            </IconButton>
-            <IconButton>
-              <WidthNormalIcon />
-            </IconButton>
           </div>
         </div>
 
-        <div className="containerChat" ref={containerRef}>
-          <div className="chats">
-            {chats?.map((item, index) => (
-              <div
-                key={item._id || Date.parse(item.createdAt).toString()}
-                className={`chatContent ${
-                  item.senderInfo._id === me?._id ? "myChat" : "yourChat"
-                }`}
-              >
-                {item.senderInfo._id !== me?._id && (
-                  <div className="imgSender">
-                    {(index === 0 ||
-                      item.senderInfo._id !=
-                        chats[index - 1]?.senderInfo._id) && (
-                      <img
-                        src={item.senderInfo.avatar}
-                        className="imgAvtSender"
-                      />
-                    )}
-                  </div>
-                )}
-                <Popover
-                  placement={
-                    item.senderInfo._id !== me?._id
-                      ? "rightBottom"
-                      : "leftBottom"
-                  }
-                  content={
-                    <Popover
-                      placement="top"
-                      arrow={false}
-                      content={showFunctionChat}
-                      trigger="click"
-                    >
-                      <MoreHorizIcon
-                        style={{
-                          padding: "1px",
-                          backgroundColor: "transparent",
-                        }}
-                        fontSize="small"
-                      />
-                    </Popover>
-                  }
-                  arrow={false}
-                >
-                  <div
-                    className="chat"
-                    color={"#2db7f5"}
-                    style={{
-                      backgroundColor:
-                        item.senderInfo._id === me?._id ? "#E5EFFF" : "white",
-                    }}
+        <div className="btnContent">
+          <Button>
+            <SearchIcon />
+          </Button>
+          <Button>
+            <LocalPhoneOutlinedIcon />
+          </Button>
+          <Button>
+            <VideocamOutlinedIcon />
+          </Button>
+          <Button>
+            <WidthNormalIcon />
+          </Button>
+        </div>
+      </div>
+
+      <div className="containerChat" ref={containerRef}>
+        <div className="chats">
+          {chats?.map((item, index) => (
+            <div
+              key={item._id || Date.parse(item.createdAt).toString()}
+              className={`chatContent ${
+                item.senderInfo._id === me?._id ? "myChat" : "yourChat"
+              }`}
+            >
+              {item.senderInfo._id !== me?._id && (
+                <div className="imgSender">
+                  {(index === 0 ||
+                    item.senderInfo._id !=
+                      chats[index - 1]?.senderInfo._id) && (
+                    <img
+                      src={item.senderInfo.avatar}
+                      className="imgAvtSender"
+                    />
+                  )}
+                </div>
+              )}
+              <Popover
+                placement={
+                  item.senderInfo._id !== me?._id ? "rightBottom" : "leftBottom"
+                }
+                content={
+                  <Popover
+                    placement="top"
+                    arrow={false}
+                    content={showFunctionChat}
+                    trigger="click"
                   >
-                    <div>
-                      {item.senderInfo._id !== me?._id && (
-                        <p className="chatName">{item.senderInfo.name}</p>
-                      )}
-                      {item.content.text ? (
-                        <p
-                          className="chatText"
-                          style={{ whiteSpace: "pre-wrap" }}
-                        >
-                          {item.content.text}
-                        </p>
-                      ) : item.content.image ? (
-                        <img
-                          src={item.content.image}
-                          alt="Chat"
-                          className="chatImg"
-                        />
-                      ) : (
-                        <div className="chatFile">
-                          <img
-                            src={checkIconFile(item)}
-                            alt="word"
-                            className="iconFile"
-                          />
-                          <div className="fileContent">
-                            <p>{item.content.name}</p>
-                            <p>{item.content.size} MB</p>
-                          </div>
-                          <a href={item.content.file} onClick={downloadFile}>
-                            <FileDownloadOutlinedIcon className="iconT" />
-                          </a>
-                        </div>
-                      )}
-                      {/* check hour, giờ, userSend */}
-                      <p className="chatTime">
-                        {new Date(item.createdAt).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
+                    <MoreHorizIcon
+                      style={{
+                        padding: "1px",
+                        backgroundColor: "transparent",
+                      }}
+                      fontSize="small"
+                    />
+                  </Popover>
+                }
+                arrow={false}
+              >
+                <div
+                  className="chat"
+                  color={"#2db7f5"}
+                  style={{
+                    backgroundColor:
+                      item.senderInfo._id === me?._id ? "#E5EFFF" : "white",
+                  }}
+                >
+                  <div>
+                    {item.senderInfo._id !== me?._id && (
+                      <p className="chatName">{item.senderInfo.name}</p>
+                    )}
+                    {item.content.text ? (
+                      <p
+                        className="chatText"
+                        style={{ whiteSpace: "pre-wrap" }}
+                      >
+                        {item.content.text}
                       </p>
-                    </div>
+                    ) : item.content.image ? (
+                      <img
+                        src={item.content.image}
+                        alt="Chat"
+                        className="chatImg"
+                      />
+                    ) : (
+                      <div className="chatFile">
+                        <img
+                          src={checkIconFile(item)}
+                          alt="word"
+                          className="iconFile"
+                        />
+                        <div className="fileContent">
+                          <p>{item.content.name}</p>
+                          <p>{item.content.size} MB</p>
+                        </div>
+                        <a href={item.content.file} onClick={downloadFile}>
+                          <FileDownloadOutlinedIcon className="iconT" />
+                        </a>
+                      </div>
+                    )}
+                    {/* check hour, giờ, userSend */}
+                    <p className="chatTime">
+                      {new Date(item.createdAt).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </p>
                   </div>
-                </Popover>
-              </div>
-            ))}
-            {/* {img.map((chat, index) => (
+                </div>
+              </Popover>
+            </div>
+          ))}
+          {/* {img.map((chat, index) => (
          <img
            key={index}
            src={chat}
@@ -428,103 +428,84 @@ const page = ({ params }) => {
            // style={{ width: "30px" }}
          />
        ))} */}
-          </div>
-          <div ref={endRef} />
         </div>
+        <div ref={endRef} />
+      </div>
 
-        <div className="sendChat">
-          <div className="itemChat">
-            <Button>
-              <KitesurfingIcon />
-            </Button>
-            <div
-              style={{
-                width: "1.5px",
-                backgroundColor: "gray",
-                margin: "7px 0",
-              }}
-            />
-            <Button onClick={hanldeBtnPhotoClick}>
+      <div className="sendChat">
+        <div className="itemChat">
+          <Button padding="8px 10px">
+            <KitesurfingIcon />
+          </Button>
+          <Upload>
+            <Button padding="8px 10px" onClick={hanldeBtnPhotoClick}>
               <PhotoSizeSelectActualOutlinedIcon />
             </Button>
-            <div
-              style={{
-                width: "1.5px",
-                backgroundColor: "gray",
-                margin: "7px 0",
-              }}
-            />
-            <Button onClick={hanldeBtnFileClick}>
-              <AttachmentOutlinedIcon />
+          </Upload>
+          <Button padding="8px 10px" onClick={hanldeBtnFileClick}>
+            <AttachmentOutlinedIcon />
+          </Button>
+          <Button padding="8px 10px">
+            <ContactEmergencyOutlinedIcon />
+          </Button>
+          <input
+            ref={inputPhotoRef}
+            style={{ display: "none" }}
+            accept="image/*"
+            type="file"
+            multiple={true}
+            onChange={handlePhotoSelect}
+          />
+          <input
+            ref={inputFileRef}
+            style={{ display: "none" }}
+            accept="*/*"
+            type="file"
+            multiple={true}
+            onChange={handleFileSelect}
+          />
+        </div>
+        <div className="sendChatContent">
+          <Input
+            className="inputChat"
+            autoFocus={true}
+            placeholder="Nhập tin nhắn"
+            minRows={1}
+            maxRows={5}
+            multiline={true}
+            value={text}
+            onChange={(e) => {
+              setText(e.target.value);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                handleSend();
+                e.preventDefault();
+              }
+            }}
+          />
+          <div className="btnContent">
+            <Button onClick={() => console.log(chats)}>
+              <AlternateEmailIcon />
             </Button>
-            <div
-              style={{
-                width: "1.5px",
-                backgroundColor: "gray",
-                margin: "7px 0",
-              }}
-            />
-            <Button>
-              <ContactEmergencyOutlinedIcon />
+            <Button
+              style={{ backgroundColor: isOpenEmoji ? "#0091E1" : "white" }}
+              onClick={() => setOpenEmoji(!isOpenEmoji)}
+            >
+              <SentimentVerySatisfiedIcon />
             </Button>
-            <input
-              ref={inputPhotoRef}
-              style={{ display: "none" }}
-              accept="image/*"
-              type="file"
-              multiple={true}
-              onChange={handlePhotoSelect}
+            <Button className="btnGui" onClick={handleSend}>
+              {text == "" ? <ThumbUpOutlinedIcon color="primary" /> : "Gửi"}
+            </Button>
+            {/* EmojiPicker */}
+            <EmojiPicker
+              onEmojiClick={hanldeEmojiClick}
+              // className={`blockEmoji`}
+              className={`blockEmoji ${isOpenEmoji ? "" : "hiddenBlock"}`}
             />
-            <input
-              ref={inputFileRef}
-              style={{ display: "none" }}
-              accept="*/*"
-              type="file"
-              multiple={true}
-              onChange={handleFileSelect}
-            />
-          </div>
-          <div className="sendChatContent">
-            <Input
-              className="inputChat"
-              autoFocus={true}
-              placeholder="Nhập tin nhắn"
-              minRows={1}
-              maxRows={5}
-              multiline={true}
-              value={text}
-              onChange={(e) => {
-                setText(e.target.value);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  handleSend();
-                  e.preventDefault();
-                }
-              }}
-            />
-            <div className="btnContent">
-              <Button onClick={() => console.log(chats)}>
-                <AlternateEmailIcon />
-              </Button>
-              <Button
-                style={{ backgroundColor: isOpenEmoji ? "#0091E1" : "white" }}
-                onClick={() => setOpenEmoji(!isOpenEmoji)}
-              >
-                <SentimentVerySatisfiedIcon />
-              </Button>
-              <Button className="btnGui" onClick={handleSend}>
-                {text == "" ? <ThumbUpOutlinedIcon color="primary" /> : "Gửi"}
-              </Button>
-              {/* EmojiPicker */}
-              <EmojiPicker
-                onEmojiClick={hanldeEmojiClick}
-                // className={`blockEmoji`}
-                className={`blockEmoji ${isOpenEmoji ? "" : "hiddenBlock"}`}
-              />
-            </div>
           </div>
         </div>
+      </div>
       {/* </Spin> */}
     </div>
   );

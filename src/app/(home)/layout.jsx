@@ -45,16 +45,15 @@ const Layout = ({ children, params }) => {
   };
 
   useEffect(() => {
-    (async()=> {
+    (async () => {
       if (currentUser) {
         setIsAuthenticated(true);
-        const user1 = await userApis.getUserById(currentUser.uid)
-        console.log(user1)
+        const user1 = await userApis.getUserById(currentUser.uid);
+        console.log(user1);
         setUser(user1);
-      }
-      else setIsAuthenticated(false);
+      } else setIsAuthenticated(false);
       setIsLoading(false);
-    })(); 
+    })();
   }, [currentUser]);
 
   useEffect(() => {
@@ -62,8 +61,8 @@ const Layout = ({ children, params }) => {
     else if (Active) router.push(`/${Active}`);
   }, [Active, isAuthenticated]);
 
-  console.log("user:"); 
-  console.log(user); 
+  console.log("user:");
+  console.log(user);
   if (isLoading) return <Loading />;
   return (
     <div className="container">
@@ -74,7 +73,10 @@ const Layout = ({ children, params }) => {
             width={48}
             height={48}
             alt=""
-            src={ user?.avatar || "https://firebasestorage.googleapis.com/v0/b/zalo-78227.appspot.com/o/avatarDefault.jpg?alt=media&token=2b2922bb-ada3-4000-b5f7-6d97ff87becd"}
+            src={
+              user?.avatar ||
+              "https://firebasestorage.googleapis.com/v0/b/zalo-78227.appspot.com/o/avatarDefault.jpg?alt=media&token=2b2922bb-ada3-4000-b5f7-6d97ff87becd"
+            }
             onClick={handleCaNhanUser}
           />
           <div
@@ -105,7 +107,7 @@ const Layout = ({ children, params }) => {
           </div>
         </div>
       </div>
-      <div>{children}</div>
+      <div style={{ height: "100vh" }}>{children}</div>
     </div>
   );
 };

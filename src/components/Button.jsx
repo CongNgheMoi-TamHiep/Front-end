@@ -38,7 +38,7 @@ const StyledButton = styled.button`
 export default function Button(props) {
   const {
     children,
-    width = "100%",
+    width = "auto",
     type = "button",
     bgColor = "white",
     bgColorHover = "#EAEDF0",
