@@ -6,6 +6,19 @@ const ChatApi = {
     return axiosPrivate(`/chat/${id}`);
   },
 
+  sendFile(file, type, conversationId, senderId) {
+    return axiosPrivate.post(`/chat/files`, file, {
+      params: {
+        type,
+        conversationId,
+        senderId,
+      },
+      headers: {
+        "Content-Type": "multipart/form-data",
+        Accept: "application/json",
+      },
+    });
+  },
 };
 
 export default ChatApi;
