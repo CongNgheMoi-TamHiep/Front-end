@@ -109,7 +109,7 @@ export default function SignUp() {
       name === "" ||
       confirmPassword === ""
     ) {
-      setIsValidName(password === "");
+      setIsValidName(name === "");
       setIsValidPhone(number.split(" ").length == 1);
       setIsValidPassword(password === "");
       setIsValidConfirmPassword(confirmPassword === "");
@@ -141,11 +141,13 @@ export default function SignUp() {
       return;
     }
 
-    const isExist = await axiosPrivate(`/check/number/${formatPhoneNumber(number)}`);  
-    if (isExist.numberExists)  {
+    const isExist = await axiosPrivate(
+      `/check/number/${formatPhoneNumber(number)}`
+    );
+    if (isExist.numberExists) {
       setIsNotValid(true);
       setReport("This phone number is registered!");
-      return; 
+      return;
     }
 
     let phoneProvider = new PhoneAuthProvider(auth);

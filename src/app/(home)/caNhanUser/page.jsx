@@ -8,7 +8,8 @@ import { format } from "date-fns";
 import ModalInfo from "./modalInfo/page";
 import ModalChangePassword from "./modolChangePassword/page";
 import "./modalInfo/style.scss";
-import { Upload } from "antd";
+import { Badge, Image, Tooltip, Upload } from "antd";
+import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import openNotificationWithIcon from "@/components/OpenNotificationWithIcon";
 
 const page = () => {
@@ -74,7 +75,7 @@ const page = () => {
     setOpenModalChangePW(false);
   };
 
-  const handleImgChange = async ({file}) => {
+  const handleImgChange = async ({ file }) => {
     // const reader = new FileReader();
     // reader.readAsDataURL(file);
     // reader.onload = () => resolve(reader.result);
@@ -83,10 +84,10 @@ const page = () => {
       const fmData = new FormData();
       fmData.append("file", file);
       await userApis.updateAvatar(currentUser?.uid, fmData);
-      await new Promise(resolve => setTimeout(resolve, 1000)); 
-      fetchData(); 
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      fetchData();
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
   };
 
@@ -105,8 +106,20 @@ const page = () => {
               display: "flex",
               alignItems: "center",
               gap: "20px",
+              position: "relative",
             }}
           >
+            <Image
+              src={userId.avatar}
+              width={80}
+              height={80}
+              style={{
+                objectFit: "fill",
+                borderRadius: "50%",
+                cursor: "pointer",
+              }}
+              alt=""
+            />
             <Upload
               maxCount={1}
               accept="image/*"
@@ -114,14 +127,26 @@ const page = () => {
               customRequest={handleImgChange}
               showUploadList={false}
             >
-              <img
-                src={userId.avatar}
-                width={80}
-                height={80}
-                style={{ borderRadius: "50%", cursor: "pointer" }}
-                alt=""
-              />
+              <Tooltip placement="right" title="Đổi ảnh đại diện" arrow={false}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    width: "30px",
+                    height: "30px",
+                    borderRadius: "50%",
+                    backgroundColor: "gray",
+                    position: "absolute",
+                    top: 60,
+                    left: 60,
+                  }}
+                >
+                  <CameraAltIcon />
+                </div>
+              </Tooltip>
             </Upload>
+
             <p style={{ fontSize: "20px" }}>{userId.name}</p>
           </div>
         ) : (

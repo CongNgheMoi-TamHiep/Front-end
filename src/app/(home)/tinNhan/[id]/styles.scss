@@ -229,22 +229,23 @@
     flex-shrink: 0;
 
     .itemChat {
-      flex: 1;
       display: flex;
+      align-items: center;
       justify-content: flex-start;
-      padding-left: 5px;
+      padding: 0 5px;
+      background-color: transparent;
       border-bottom: 1px solid aquamarine;
-      gap: 5px;
+      // gap: 5px;
 
-      & > Button {
-        margin: 4px 0px;
-        padding-left: 0px;
-        padding-right: 0px;
-        color: #000;
-        &:hover {
-          background-color: #e6e2e0;
-        }
-      }
+      // & > Button {
+      //   margin: 4px 0px;
+      //   padding-left: 0px;
+      //   padding-right: 0px;
+      //   color: #000;
+      //   &:hover {
+      //     background-color: #e6e2e0;
+      //   }
+      // }
     }
 
     .sendChatContent {
@@ -278,15 +279,15 @@
           color: aqua;
         }
 
-        & > Button {
-          // margin-bottom: 5px;
-          margin-top: 5px;
-          color: #000;
-          cursor: pointer;
-          &:hover {
-            background-color: #e6e2e0;
-          }
-        }
+        // & > Button {
+        //   // margin-bottom: 5px;
+        //   margin-top: 5px;
+        //   color: #000;
+        //   cursor: pointer;
+        //   &:hover {
+        //     background-color: #e6e2e0;
+        //   }
+        // }
 
         .blockEmoji {
           position: absolute;
