@@ -1,19 +1,21 @@
 "use client";
-import React, { useContext, useEffect, useState } from "react";
+import React, { use, useContext, useEffect, useState } from "react";
 import "./styles.scss";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Button from "@/components/Button";
 import userApis from "@/apis/userApis";
 import UserConversationApi from "@/apis/userConversationApi";
+import FriendRequest from "@/apis/friendRequest";
 import { AuthContext } from "@/context/AuthProvider";
 import { SocketContext } from "@/context/SocketProvider";
 import SearchIcon from "@mui/icons-material/Search";
 import GroupAddSharpIcon from "@mui/icons-material/GroupAddSharp";
 import PersonAddAltSharpIcon from "@mui/icons-material/PersonAddAltSharp";
-import { Col, Input, Row, Space, Modal, Divider } from "antd";
+import { Col, Input, Row, Space, Modal, Divider, Flex } from "antd";
 import { MuiTelInput } from "mui-tel-input";
 import ModalConfirmAddFriend from "@/components/ModalConfirmAddFriend";
+import { ca } from "date-fns/locale";
 
 const Layout = ({ children }) => {
   const router = useRouter();
@@ -23,7 +25,7 @@ const Layout = ({ children }) => {
   const [chatReceived, setChatReceived] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [user, setUser] = useState(null);
-  const [userFind, setUserFind] = useState(null);
+  const [userFind, setUserFind] = useState(undefined);
   const [number, setNumber] = useState("");
   const [openModalCreateGroup, setOpenModalCreateGroup] = useState(false);
   const [openModalAddFriend, setOpenModalAddFriend] = useState(false);
@@ -60,14 +62,28 @@ const Layout = ({ children }) => {
     fetchData();
   }, []);
 
-  // useEffect(async () => {
-  //   if (currentUser) {
-  //     // setIsAuthenticated(true);
-  //     const user1 = await userApis.getUserById(currentUser.uid);
-  //     console.log(user1);
-  //     setUser(user1);
-  //   }
-  // }, [currentUser]);
+  const getUserFriend = async () => {
+    console.log(number.replaceAll(" ", ""));
+    const resp = await FriendRequest.getFriendByNumber(
+      number.replaceAll(" ", "")
+    );
+    console.log(resp);
+    if (resp?.name !== undefined) {
+      const respCheck = await FriendRequest.checkFriend(
+        currentUser.uid,
+        resp.uid
+      );
+      resp.state = respCheck;
+      setUserFind(resp);
+    } else setUserFind(undefined);
+  };
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      getUserFriend();
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [number]);
 
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
@@ -111,13 +127,30 @@ const Layout = ({ children }) => {
     setOpenModalCreateGroup(true);
   };
 
-  const buttonAddFriend = ({ key, findGroup }) => {
+  const checkFriendState = (state) => {
+    switch (state) {
+      case "pedding1":
+        return "Cancel request";
+      case "pedding2":
+        return "Accept";
+      case "declined1":
+        return "";
+      case "declined2":
+        return "Add friend";
+      case "accepted":
+        return "Call";
+      default:
+        return "Add friend";
+    }
+  };
+
+  const buttonAddFriend = ({ key, findGroup, item }) => {
     return (
       <Button
         width="100%"
         key={key}
         onClick={() => {
-          setOpenModalConfirmAddFriend(true);
+          // setOpenModalConfirmAddFriend(true);
           // setUserFind()
         }}
       >
@@ -126,7 +159,8 @@ const Layout = ({ children }) => {
             <img
               className="avatar-img"
               src={
-                "https://images.pexels.com/photos/6534399/pexels-photo-6534399.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
+                item?.avatar ||
+                "https://firebasestorage.googleapis.com/v0/b/zalo-78227.appspot.com/o/avatarDefault.jpg?alt=media&token=2b2922bb-ada3-4000-b5f7-6d97ff87becd"
               }
               alt=""
               width={50}
@@ -143,7 +177,7 @@ const Layout = ({ children }) => {
               alignItems: "flex-start",
             }}
           >
-            <h4>Nguyen Van A</h4>
+            <h4>{item?.name}</h4>
             {findGroup ? (
               <p>In group a</p>
             ) : (
@@ -167,9 +201,10 @@ const Layout = ({ children }) => {
               color="#0068FF"
               onClick={(e) => {
                 e.stopPropagation();
-                console.log("object");}}
+                setOpenModalConfirmAddFriend(true);
+              }}
             >
-              Add friend
+              {checkFriendState(item.state)}
             </Button>
           </Col>
         </Row>
@@ -286,7 +321,12 @@ const Layout = ({ children }) => {
       >
         <div
           style={{
-            maxHeight: "50vh",
+            display: "flex",
+            flexDirection: "column",
+            borderTop: "1px solid #A9ACB0",
+            paddingTop: "10px",
+            maxHeight: "55vh",
+            minHeight: "55vh",
             overflowY: "auto",
             overflowX: "hidden",
             scrollbarWidth: "none",
@@ -294,6 +334,7 @@ const Layout = ({ children }) => {
           }}
         >
           <MuiTelInput
+            size="small"
             defaultCountry={"VN"}
             value={number}
             onChange={setNumber}
@@ -305,28 +346,77 @@ const Layout = ({ children }) => {
               position: "sticky",
               top: 0,
               backgroundColor: "white",
-              marginBottom: "5px",
+              marginBottom: "10px",
               zIndex: 1,
             }}
           />
-          {true && (
-            <div>
-              <p>Find friend via phone number</p>
+          <div
+            style={{
+              flexGrow: 1,
+              overflow: "auto",
+              overflowY: "auto",
+              overflowX: "hidden",
+              scrollbarWidth: "none",
+              msOverflowStyle: "none",
+            }}
+          >
+            {userFind !== undefined && (
+              <div>
+                <p>Find friend via phone number</p>
+                <div>
+                  {buttonAddFriend({
+                    key: Date.now().toString(),
+                    findGroup: false,
+                    item: userFind,
+                  })}
+                </div>
+              </div>
+            )}
+            {/* <div>
+              <p>You may know</p>
               <div>
                 {Array.from({ length: 1 }, (_, i) =>
-                  buttonAddFriend({ key: i, findGroup: false })
+                  buttonAddFriend({
+                    key: i,
+                    findGroup: true,
+                    item: { name: "a" },
+                  })
                 )}
               </div>
-            </div>
-          )}
-          <div>
-            <p>You may know</p>
-            <div>
-              {Array.from({ length: 4 }, (_, i) =>
-                buttonAddFriend({ key: i, findGroup: true })
-              )}
-            </div>
+            </div> */}
           </div>
+          <Flex
+            justify="end"
+            gap={5}
+            style={{
+              borderTop: "1px solid #A9ACB0",
+              marginTop: "10px",
+              paddingTop: "5px",
+              position: "sticky",
+              bottom: 0,
+            }}
+          >
+            <Button
+              key="back"
+              onClick={() => setOpenModalAddFriend(false)}
+              bgColor="#DFE2E7"
+              bgColorHover="#C7CACF"
+              color="black"
+              padding="10px 25px"
+            >
+              CANCAL
+            </Button>
+            <Button
+              key="submit"
+              bgColor="#0068FF"
+              bgColorHover="#0063F2"
+              color="white"
+              padding="10px 25px"
+              // onClick={handleOK}
+            >
+              SEARCH
+            </Button>
+          </Flex>
         </div>
       </Modal>
 

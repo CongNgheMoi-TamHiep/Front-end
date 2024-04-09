@@ -130,6 +130,7 @@
           width: 45px;
           height: 45px;
           border-radius: 50%;
+          border: 1px solid #55a7ff;
           object-fit: cover;
         }
 
@@ -205,6 +206,15 @@
         .chatTime {
           font-size: 12px;
           color: #909294;
+        }
+      }
+
+      .popoverChat {
+        background-color: gray;
+
+        div {
+          padding: 0;
+          background-color: gray;
         }
       }
     }

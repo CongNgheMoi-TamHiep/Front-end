@@ -8,7 +8,7 @@ const ModalConfirmAddFriend = (props) => {
     children,
     message,
     setMessage,
-    height = "50vh",
+    height = "55vh",
     show = true,
     handleClose,
     handleOK,
@@ -27,7 +27,7 @@ const ModalConfirmAddFriend = (props) => {
       <Flex
         vertical
         justify="center"
-        gap="15px"
+        gap="25px"
         style={{
           height: height,
           maxHeight: height,
@@ -35,6 +35,8 @@ const ModalConfirmAddFriend = (props) => {
           overflowX: "hidden",
           scrollbarWidth: "none",
           msOverflowStyle: "none",
+          borderTop: "1px solid #A9ACB0",
+          // paddingTop: "10px",
         }}
       >
         <Flex justify="start" align="center" gap={20}>
@@ -71,10 +73,10 @@ const ModalConfirmAddFriend = (props) => {
         />
         <Flex
           justify="end"
-          gap={10}
+          gap={15}
           style={{
             borderTop: "1px solid #A9ACB0",
-            marginTop: "14px",
+            marginTop: "25px",
             paddingTop: "10px",
           }}
         >
