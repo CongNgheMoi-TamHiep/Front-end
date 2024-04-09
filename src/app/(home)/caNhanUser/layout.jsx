@@ -8,6 +8,7 @@ import UserConversationApi from "@/apis/userConversationApi";
 import { AuthContext } from "@/context/AuthProvider";
 import { SocketContext } from "@/context/SocketProvider";
 import SearchIcon from "@mui/icons-material/Search";
+import { useSocket } from "../../../context/SocketProvider";
 
 const Layout = ({ children }) => {
   const router = useRouter();
@@ -16,7 +17,7 @@ const Layout = ({ children }) => {
   const [currentConversation, setCurrentConversation] = useState(null);
   const [chatReceived, setChatReceived] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const socket = useContext(SocketContext);
+  const {socket} = useSocket(); 
 
   const handleRouteToDetailConversation = (item) => {
     setCurrentConversation(item);

@@ -41,6 +41,7 @@ import axiosPrivate from "@/apis/axios";
 import { Typography } from "antd";
 import UserConversationApi from "@/apis/userConversationApi";
 import ModalProfileUser from "../../../../components/ModalProfileUser";
+import { useSocket } from "../../../../context/SocketProvider";
 const lastTime = "Truy cập 1 phút trước";
 
 const page = ({ params }) => {
@@ -53,7 +54,7 @@ const page = ({ params }) => {
   // const inputPhotoRef = useRef();
   // const inputFileRef = useRef();
   const containerRef = useRef();
-  const socket = useContext(SocketContext);
+  const {socket} = useSocket(); 
 
   const [conversationId, setConversationId] = useState(params.id);
   const [currentConversation, setCurrentConversation] = useState(null);
@@ -118,10 +119,6 @@ const page = ({ params }) => {
       // }));
     };
     fetchData();
-
-    socket.on("getMessage", (chat) => {
-      setChatReceived(chat);
-    });
   }, []);
 
   useEffect(() => {
@@ -130,6 +127,8 @@ const page = ({ params }) => {
 
   useEffect(() => {
     socket.on("getMessage", (chat) => {
+      console.log("chat socket: ");
+      console.log(chat);
       setChatReceived(chat);
     });
   }, []);
@@ -139,16 +138,16 @@ const page = ({ params }) => {
   }, [chatReceived]);
 
   const handleSend = async () => {
-    socket.emit("sendMessage", {
-      conversationId,
-      senderInfo: {
-        _id: currentUser?.uid,
-        name: me.name,
-        avatar: me.avatar,
-      },
-      content: text == "" ? { text: "👍" } : { text },
-      createdAt: new Date(),
-    });
+    // socket.emit("sendMessage", {
+    //   conversationId,
+    //   senderInfo: {
+    //     _id: currentUser?.uid,
+    //     name: me.name,
+    //     avatar: me.avatar,
+    //   },
+    //   content: text == "" ? { text: "👍" } : { text },
+    //   createdAt: new Date(),
+    // });
     setText("");
     await axiosPrivate.post(`/chat`, {
       ...(isFirst ? { receiverId } : { conversationId }),
@@ -283,23 +282,23 @@ const page = ({ params }) => {
         const fmData = new FormData();
         fmData.append("file", info.file);
         ChatApi.sendFile(fmData, "file", conversationId, currentUser?.uid);
-        socket.emit("sendMessage", {
-          conversationId,
-          senderId: currentUser?.uid,
-          content: {
-            file: {
-              url: reader.result,
-              size: formatFileSize(info?.file.size) || 35,
-              name: info?.file.name || "text.txt",
-            },
-          },
-          senderInfo: {
-            _id: currentUser?.uid,
-            name: me.name,
-            avatar: me.avatar,
-          },
-          createdAt: new Date(),
-        });
+        // socket.emit("sendMessage", {
+        //   conversationId,
+        //   senderId: currentUser?.uid,
+        //   content: {
+        //     file: {
+        //       url: reader.result,
+        //       size: formatFileSize(info?.file.size) || 35,
+        //       name: info?.file.name || "text.txt",
+        //     },
+        //   },
+        //   senderInfo: {
+        //     _id: currentUser?.uid,
+        //     name: me.name,
+        //     avatar: me.avatar,
+        //   },
+        //   createdAt: new Date(),
+        // });
       };
       reader.readAsDataURL(info.file);
     }
@@ -312,17 +311,17 @@ const page = ({ params }) => {
         const fmData = new FormData();
         fmData.append("file", info.file);
         ChatApi.sendFile(fmData, "image", conversationId, currentUser?.uid);
-        socket.emit("sendMessage", {
-          conversationId,
-          senderId: currentUser?.uid,
-          content: { image: reader.result },
-          senderInfo: {
-            _id: currentUser?.uid,
-            name: me.name,
-            avatar: me.avatar,
-          },
-          createdAt: new Date(),
-        });
+        // socket.emit("sendMessage", {
+        //   conversationId,
+        //   senderId: currentUser?.uid,
+        //   content: { image: reader.result },
+        //   senderInfo: {
+        //     _id: currentUser?.uid,
+        //     name: me.name,
+        //     avatar: me.avatar,
+        //   },
+        //   createdAt: new Date(),
+        // });
       };
       reader.readAsDataURL(info.file);
     }
@@ -386,16 +385,16 @@ const page = ({ params }) => {
             <div
               key={item._id || Date.parse(item.createdAt).toString() + index}
               className={`chatContent ${
-                item.senderInfo._id === me?._id ? "myChat" : "yourChat"
+                item.senderInfo?._id === me?._id ? "myChat" : "yourChat"
               }`}
             >
-              {item.senderInfo._id !== me?._id && (
+              {item.senderInfo?._id !== me?._id && (
                 <div className="imgSender">
                   {(index === 0 ||
-                    item.senderInfo._id !=
-                      chats[index - 1]?.senderInfo._id) && (
+                    item.senderInfo?._id !=
+                      chats[index - 1]?.senderInfo?._id) && (
                     <img
-                      src={item.senderInfo.avatar}
+                      src={item.senderInfo?.avatar}
                       className="imgAvtSender"
                     />
                   )}
@@ -404,12 +403,12 @@ const page = ({ params }) => {
               <Popover
                 arrow={false}
                 placement={
-                  item.senderInfo._id !== me?._id ? "rightBottom" : "leftBottom"
+                  item.senderInfo?._id !== me?._id ? "rightBottom" : "leftBottom"
                 }
                 content={
                   <Popover
                     placement={
-                      item.senderInfo._id !== me?._id ? "topLeft" : "topRight"
+                      item.senderInfo?._id !== me?._id ? "topLeft" : "topRight"
                     }
                     arrow={false}
                     content={() => showFunctionChat(item.content)}
@@ -433,12 +432,12 @@ const page = ({ params }) => {
                   color={"#2db7f5"}
                   style={{
                     backgroundColor:
-                      item.senderInfo._id === me?._id ? "#E5EFFF" : "white",
+                      item.senderInfo?._id === me?._id ? "#E5EFFF" : "white",
                   }}
                 >
                   <div>
-                    {item.senderInfo._id !== me?._id && (
-                      <p className="chatName">{item.senderInfo.name}</p>
+                    {item.senderInfo?._id !== me?._id && (
+                      <p className="chatName">{item.senderInfo?.name}</p>
                     )}
                     {item.content.text !== undefined ? (
                       <p
