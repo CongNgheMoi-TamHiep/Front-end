@@ -18,6 +18,7 @@ import ModalConfirmAddFriend from "@/components/ModalConfirmAddFriend";
 import openNotificationWithIcon from "@/components/OpenNotificationWithIcon";
 import PhotoOutlinedIcon from "@mui/icons-material/PhotoOutlined";
 import { ca } from "date-fns/locale";
+import { useSocket } from "../../../context/SocketProvider";
 
 const Layout = ({ children }) => {
   const router = useRouter();
@@ -31,9 +32,8 @@ const Layout = ({ children }) => {
   const [number, setNumber] = useState("");
   const [openModalCreateGroup, setOpenModalCreateGroup] = useState(false);
   const [openModalAddFriend, setOpenModalAddFriend] = useState(false);
-  const [openModalConfirmAddFriend, setOpenModalConfirmAddFriend] =
-    useState(false);
-  const socket = useContext(SocketContext);
+  const [openModalConfirmAddFriend, setOpenModalConfirmAddFriend] = useState(false);
+  const {socket} = useSocket(); 
   const handleRouteToDetailConversation = (item) => {
     setCurrentConversation(item);
     console.log(item.conversationId);

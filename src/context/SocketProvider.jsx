@@ -10,16 +10,21 @@ import { io } from "socket.io-client";
 export const SocketContext = createContext(); 
 const SocketProvider = ({children}) => {
     const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {transports: ['websocket']}); 
+    const [socketValue, setSocketValue] = useState(socket);
     const currentUser = useContext(AuthContext);
     useEffect(() => {
+        socket.on('connect', () => {
+            setSocketValue(socket);
+        })
         if(currentUser?.uid)
             socket.emit('addUser', currentUser?.uid);
     }, [currentUser?.uid])
     return (
-        <SocketContext.Provider value={socket}>
+        <SocketContext.Provider value={{socket:socketValue}}>
             {children}
         </SocketContext.Provider>
     )
 }
 
 export default SocketProvider;
+export const useSocket = () => useContext(SocketContext);
