@@ -15,13 +15,15 @@ import PersonAddAltSharpIcon from "@mui/icons-material/PersonAddAltSharp";
 import { Col, Input, Row, Space, Modal, Divider, Flex } from "antd";
 import { MuiTelInput } from "mui-tel-input";
 import ModalConfirmAddFriend from "@/components/ModalConfirmAddFriend";
+import openNotificationWithIcon from "@/components/OpenNotificationWithIcon";
+import PhotoOutlinedIcon from "@mui/icons-material/PhotoOutlined";
 import { ca } from "date-fns/locale";
 
 const Layout = ({ children }) => {
   const router = useRouter();
   const currentUser = React.useContext(AuthContext);
   const [conversations, setConversations] = useState([]);
-  const [currentConversation, setCurrentConversation] = useState(null);
+  const [currentConversation, setCurrentConversation] = useState(undefined);
   const [chatReceived, setChatReceived] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [user, setUser] = useState(null);
@@ -46,48 +48,58 @@ const Layout = ({ children }) => {
     const fetchData = async () => {
       const userConversations =
         await UserConversationApi.getUserConversationByUserId(currentUser?.uid);
-      console.log(userConversations.conversations);
-      console.log("currentUseruid");
-      console.log(currentUser?.uid);
       setConversations(userConversations.conversations);
-
-      if (userConversations?.conversations?.length > 0) {
-        setCurrentConversation(userConversations.conversations[0]);
-      }
+      console.log(userConversations.conversations);
       const user1 = await userApis.getUserById(currentUser.uid);
-      console.log(user1);
       setUser(user1);
     };
 
     fetchData();
   }, []);
 
+  useEffect(() => {
+    // console.log(conversations);
+    // console.log(chatReceived);
+    if (chatReceived) {
+      console.log(chatReceived);
+      const conversation = conversations.find(
+        (item) => item.conversationId === chatReceived.conversationId
+      );
+
+      conversation.lastMess.content = chatReceived.content;
+      conversation.lastMess.createdAt = chatReceived.createdAt;
+      conversation.lastMess.senderId = chatReceived.senderInfo._id;
+
+      setConversations([
+        conversation,
+        ...conversations.filter(
+          (item) => item.conversationId !== chatReceived.conversationId
+        ),
+      ]);
+    }
+  }, [chatReceived]);
+
   const getUserFriend = async () => {
-    console.log(number.replaceAll(" ", ""));
-    const resp = await FriendRequest.getFriendByNumber(
-      number.replaceAll(" ", "")
-    );
-    console.log(resp);
+    let numberNew = number.split(" ");
+    numberNew[1][0] === "0" && (numberNew[1] = numberNew[1].slice(1));
+    console.log(numberNew.join(""));
+    const resp = await FriendRequest.getFriendByNumber(numberNew.join(""));
     if (resp?.name !== undefined) {
       const respCheck = await FriendRequest.checkFriend(
         currentUser.uid,
-        resp.uid
+        resp._id
       );
       resp.state = respCheck;
       setUserFind(resp);
     } else setUserFind(undefined);
   };
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      getUserFriend();
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [number]);
-
-  const handleSearchChange = (event) => {
-    setSearchTerm(event.target.value);
-  };
+  // useEffect(() => {
+  //   const timer = setTimeout(() => {
+  //     getUserFriend();
+  //   }, 300);
+  //   return () => clearTimeout(timer);
+  // }, [number]);
 
   const filteredConversations = conversations?.filter((item) => {
     const searchValue = searchTerm.toLowerCase();
@@ -127,20 +139,95 @@ const Layout = ({ children }) => {
     setOpenModalCreateGroup(true);
   };
 
+  const handleSearchChange = (event) => {
+    setSearchTerm(event.target.value);
+  };
+
   const checkFriendState = (state) => {
     switch (state) {
-      case "pedding1":
-        return "Cancel request";
-      case "pedding2":
-        return "Accept";
+      case "pending1":
+        return (
+          <Button
+            padding="5px 12px"
+            margin="0px"
+            bgColorHover="#DAE9FF"
+            border="1px solid #0068FF"
+            color="#0068FF"
+            fontSize="14px"
+            onClick={(e) => {
+              e.stopPropagation();
+              FriendRequest.cancalRequest(currentUser.uid + "-" + userFind._id);
+              setUserFind({ ...userFind, state: "nofriend" });
+              openNotificationWithIcon(
+                "success",
+                "Cancel request",
+                "Cancel request to friend"
+              );
+            }}
+          >
+            Cancel request
+          </Button>
+        );
+      case "pending2":
+        return (
+          <Button
+            padding="5px 18px"
+            margin="0px"
+            bgColorHover="#DAE9FF"
+            border="1px solid #0068FF"
+            color="#0068FF"
+            onClick={(e) => {
+              e.stopPropagation();
+              openNotificationWithIcon(
+                "success",
+                "Accept",
+                "Accept friend request"
+              );
+            }}
+          >
+            Accept
+          </Button>
+        );
       case "declined1":
         return "";
       case "declined2":
-        return "Add friend";
+      case "nofriend":
+        return (
+          <Button
+            padding="5px 18px"
+            margin="0px"
+            bgColorHover="#DAE9FF"
+            border="1px solid #0068FF"
+            color="#0068FF"
+            onClick={(e) => {
+              e.stopPropagation();
+              setOpenModalConfirmAddFriend(true);
+            }}
+          >
+            Add friend
+          </Button>
+        );
+
       case "accepted":
-        return "Call";
-      default:
-        return "Add friend";
+        return (
+          <Button
+            padding="5px 18px"
+            margin="0px"
+            bgColorHover="#DAE9FF"
+            border="1px solid #0068FF"
+            color="#0068FF"
+            onClick={(e) => {
+              e.stopPropagation();
+              openNotificationWithIcon(
+                "success",
+                "Calling",
+                "Calling to friend"
+              );
+            }}
+          >
+            Call
+          </Button>
+        );
     }
   };
 
@@ -154,7 +241,7 @@ const Layout = ({ children }) => {
           // setUserFind()
         }}
       >
-        <Row justify={"space-around"} gutter={16} style={{ width: "100%" }}>
+        <Row justify={"space-around"} style={{ width: "100%" }}>
           <Col flex={"60px"}>
             <img
               className="avatar-img"
@@ -165,7 +252,7 @@ const Layout = ({ children }) => {
               alt=""
               width={50}
               height={50}
-              style={{ borderRadius: "50%" }}
+              style={{ borderRadius: "50%", marginRight: "5px" }}
             />
           </Col>
           <Col
@@ -187,25 +274,14 @@ const Layout = ({ children }) => {
             )}
           </Col>
           <Col
-            flex={"150px"}
+            flex={"160px"}
             style={{
               display: "flex",
-              justifyContent: "center",
+              justifyContent: "end",
               alignItems: "center",
             }}
           >
-            <Button
-              padding="2px 18px"
-              bgColorHover="#DAE9FF"
-              border="1px solid #0068FF"
-              color="#0068FF"
-              onClick={(e) => {
-                e.stopPropagation();
-                setOpenModalConfirmAddFriend(true);
-              }}
-            >
-              {checkFriendState(item.state)}
-            </Button>
+            {checkFriendState(item.state)}
           </Col>
         </Row>
       </Button>
@@ -244,70 +320,84 @@ const Layout = ({ children }) => {
             </Col>
           </Row>
 
-          {filteredConversations?.map((item) => (
-            <div
-              key={item.conversationId}
-              className={`userConversation ${
-                currentConversation &&
-                currentConversation.conversationId === item.conversationId
-                  ? "active"
-                  : ""
-              }`}
-              onClick={() => handleRouteToDetailConversation(item)}
-            >
-              <div className="avatar">
-                <img
-                  className="avatar-img"
-                  src={
-                    item?.user?.avatar ||
-                    item?.image ||
-                    "https://images.pexels.com/photos/6534399/pexels-photo-6534399.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
-                  }
-                  alt=""
-                  width={60}
-                  height={60}
-                />
-              </div>
-              <div className="info" style={{ flex: 1 }}>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                  }}
-                >
+          {filteredConversations?.map((item) => {
+            {
+              /* {conversations?.map((item) => { */
+            }
+
+            return (
+              <div
+                key={item.conversationId}
+                className={`userConversation ${
+                  currentConversation &&
+                  currentConversation.conversationId === item.conversationId
+                    ? "active"
+                    : ""
+                }`}
+                onClick={() => handleRouteToDetailConversation(item)}
+              >
+                <div className="avatar">
+                  <img
+                    className="avatar-img"
+                    src={
+                      item?.user?.avatar ||
+                      item?.image ||
+                      "https://images.pexels.com/photos/6534399/pexels-photo-6534399.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
+                    }
+                    alt=""
+                    width={60}
+                    height={60}
+                  />
+                </div>
+                <div className="info" style={{ flex: 1 }}>
                   <div
-                    className="name"
-                    style={{ fontWeight: "bold", fontSize: "16px" }}
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                    }}
                   >
-                    {item?.user?.name || item?.name}
+                    <div
+                      className="name"
+                      style={{ fontWeight: "bold", fontSize: "16px" }}
+                    >
+                      {item?.user?.name || item?.name}
+                    </div>
+                    <div>
+                      {item.lastMess && (
+                        <span
+                          style={{
+                            fontSize: "13px",
+                            fontWeight: "normal",
+                          }}
+                        >
+                          {formatTimeDifference(
+                            new Date(item.lastMess.createdAt)
+                          )}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <div>
-                    {item.lastMess && (
-                      <span
-                        style={{
-                          fontSize: "13px",
-                          fontWeight: "normal",
-                        }}
-                      >
-                        {formatTimeDifference(
-                          new Date(item.lastMess.createdAt)
-                        )}
-                      </span>
-                    )}
+                  <div className="lastMess">
+                    {item.type === "couple" &&
+                      (item.lastMess?.senderId === currentUser?.uid
+                        ? "Bạn: "
+                        : item?.user?.name + ": ")}
+                    {item.type === "group" &&
+                      (item.lastMess?.senderId === currentUser?.uid
+                        ? "Bạn: "
+                        : item?.member.find(
+                            (i) => i._id === item.lastMess.senderId
+                          ).name + ": ")}
+                    {item.lastMess?.content.text
+                      ? item.lastMess?.content.text
+                      : item.lastMess?.content.file
+                      ? `📄${item.lastMess?.content.file.name}`
+                      : `🏞️Photo`}
                   </div>
-                </div>
-                <div className="lastMess">
-                  {chatReceived?.conversationId === item?.conversationId
-                    ? chatReceived.senderId === currentUser?.uid
-                      ? "Bạn: " + chatReceived.content.text
-                      : item?.user?.name + ": " + chatReceived.content.text
-                    : item.lastMess?.senderId === currentUser?.uid
-                    ? "Bạn: " + item.lastMess?.content.text
-                    : item?.user?.name + ": " + item.lastMess?.content.text}
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
         {children}
       </div>
@@ -338,6 +428,9 @@ const Layout = ({ children }) => {
             defaultCountry={"VN"}
             value={number}
             onChange={setNumber}
+            onKeyUp={(e) => {
+              if (e.key === "Enter") getUserFriend();
+            }}
             fullWidth
             id="phone"
             placeholder="Phone number"
@@ -404,7 +497,7 @@ const Layout = ({ children }) => {
               color="black"
               padding="10px 25px"
             >
-              CANCAL
+              CANCEL
             </Button>
             <Button
               key="submit"
@@ -412,7 +505,7 @@ const Layout = ({ children }) => {
               bgColorHover="#0063F2"
               color="white"
               padding="10px 25px"
-              // onClick={handleOK}
+              onClick={() => getUserFriend()}
             >
               SEARCH
             </Button>
@@ -424,8 +517,10 @@ const Layout = ({ children }) => {
       <ModalConfirmAddFriend
         show={openModalConfirmAddFriend}
         handleClose={() => setOpenModalConfirmAddFriend(false)}
-        handleOK={() => setOpenModalConfirmAddFriend(false)}
-        user={userFind}
+        // handleOK={() => setOpenModalConfirmAddFriend(false)}
+        user={currentUser}
+        userFind={userFind}
+        setUserFind={setUserFind}
       />
     </>
   );

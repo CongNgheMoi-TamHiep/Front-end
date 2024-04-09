@@ -49,7 +49,6 @@ const Layout = ({ children, params }) => {
       if (currentUser) {
         setIsAuthenticated(true);
         const user1 = await userApis.getUserById(currentUser.uid);
-        console.log(user1);
         setUser(user1);
       } else setIsAuthenticated(false);
       setIsLoading(false);
@@ -61,8 +60,6 @@ const Layout = ({ children, params }) => {
     else if (Active) router.push(`/${Active}`);
   }, [Active, isAuthenticated]);
 
-  console.log("user:");
-  console.log(user);
   if (isLoading) return <Loading />;
   return (
     <div className="container">

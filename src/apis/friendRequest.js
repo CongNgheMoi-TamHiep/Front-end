@@ -15,6 +15,19 @@ const FriendRequest = {
       },
     });
   },
+
+  addFriend(user, userF) {
+    return axiosPrivate.post("/friendRequest/send", {
+      senderUserId: user.uid,
+      receiverUserId: userF._id,
+    });
+  },
+
+  cancalRequest(id) {
+    return axiosPrivate.post(`/friendRequest/cancel`, {
+      friendRequestId: id,
+    });
+  },
 };
 
 export default FriendRequest;
