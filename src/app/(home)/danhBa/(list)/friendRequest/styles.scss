@@ -4,6 +4,7 @@
   grid-auto-rows: minmax(50px, auto);
   grid-gap: 20px;
   margin: 20px;
+  margin-top: 0;
 }
 
 .itemFR {
@@ -57,4 +58,8 @@
 .declineFR {
   color: red;
   border: 1px solid red;
+}
+
+.pTitleFR{
+  margin: 10px 20px;
 }

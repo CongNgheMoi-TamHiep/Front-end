@@ -23,6 +23,26 @@ const FriendRequest = {
     });
   },
 
+  getFriendRequestReceived(userId) {
+    return axiosPrivate.get(`/friendRequest/received/${userId}`);
+  },
+
+  getFriendRequestSend(userId) {
+    return axiosPrivate.get(`/friendRequest/sent/${userId}`);
+  },
+
+  acceptFriendRequest(id) {
+    return axiosPrivate.post(`/friendRequest/accept`, {
+      friendRequestId: id,
+    });
+  },
+
+  declineFriendRequest(id) {
+    return axiosPrivate.post(`/friendRequest/decline`, {
+      friendRequestId: id,
+    });
+  },
+
   cancalRequest(id) {
     return axiosPrivate.post(`/friendRequest/cancel`, {
       friendRequestId: id,
