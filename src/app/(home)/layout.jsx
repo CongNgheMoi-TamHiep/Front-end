@@ -16,13 +16,14 @@ import axios from "axios";
 import axiosPrivate from "@/apis/axios";
 import { SocketContext } from "@/context/SocketProvider";
 import userApis from "@/apis/userApis";
+import { useSocket } from "../../context/SocketProvider";
 const Layout = ({ children, params }) => {
   const [Active, setActive] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const currentUser = useContext(AuthContext);
-  const socket = useContext(SocketContext);
+  const {socket} = useSocket(); 
   const [conversationId, setConversationId] = useState(params.id);
   const [conversation, setConversation] = useState(null); //[currentUser?.uid, receiverId
   const [currentConversation, setCurrentConversation] = useState(null);
