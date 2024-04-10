@@ -31,8 +31,11 @@ const ModalProfileUser = ({ isOpen, onClose, user }) => {
           }}
         >
           <Image
-            src={user.avatar}
-            alt={user.name}
+            src={
+              user?.avatar ||
+              "https://firebasestorage.googleapis.com/v0/b/zalo-78227.appspot.com/o/avatarDefault.jpg?alt=media&token=2b2922bb-ada3-4000-b5f7-6d97ff87becd"
+            }
+            alt={user?.name}
             width={60}
             height={60}
             style={{ borderRadius: "50%" }}
@@ -41,7 +44,7 @@ const ModalProfileUser = ({ isOpen, onClose, user }) => {
             level={4}
             style={{ fontSize: "20px", marginTop: "14px" }}
           >
-            {user.name}
+            {user?.name}
           </Typography.Title>
         </div>
         <div
@@ -56,19 +59,20 @@ const ModalProfileUser = ({ isOpen, onClose, user }) => {
           <Typography.Title level={5}>Thông tin cá nhân</Typography.Title>
 
           <Typography.Text style={{ fontSize: "16px" }}>
-            Giới tính: <span style={{ marginLeft: "39px" }}>{user.gender}</span>
+            Giới tính:{" "}
+            <span style={{ marginLeft: "39px" }}>{user?.gender}</span>
           </Typography.Text>
           <Typography.Text style={{ fontSize: "16px" }}>
             Ngày sinh:{" "}
             <span style={{ marginLeft: "30px" }}>
-              {user.dateOfBirth
-                ? format(new Date(user.dateOfBirth), "dd/MM/yyyy")
+              {user?.dateOfBirth
+                ? format(new Date(user?.dateOfBirth), "dd/MM/yyyy")
                 : "Chưa có thông tin"}
             </span>
           </Typography.Text>
           <Typography.Text style={{ fontSize: "16px" }}>
             Số điện thoại:{" "}
-            <span style={{ marginLeft: "6px" }}>{user.number}</span>
+            <span style={{ marginLeft: "6px" }}>{user?.number}</span>
           </Typography.Text>
         </div>
         <div

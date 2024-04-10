@@ -19,6 +19,7 @@ import openNotificationWithIcon from "@/components/OpenNotificationWithIcon";
 import PhotoOutlinedIcon from "@mui/icons-material/PhotoOutlined";
 import { ca } from "date-fns/locale";
 import { useSocket } from "../../../context/SocketProvider";
+import ModalProfileUser from "@/components/ModalProfileUser";
 
 const Layout = ({ children }) => {
   const router = useRouter();
@@ -31,9 +32,12 @@ const Layout = ({ children }) => {
   const [userFind, setUserFind] = useState(undefined);
   const [number, setNumber] = useState("");
   const [openModalCreateGroup, setOpenModalCreateGroup] = useState(false);
+  const [userProfile, setUserProfile] = useState({});
   const [openModalAddFriend, setOpenModalAddFriend] = useState(false);
-  const [openModalConfirmAddFriend, setOpenModalConfirmAddFriend] = useState(false);
-  const {socket} = useSocket(); 
+  const [showModalProfile, setShowModalProfile] = useState(false);
+  const [openModalConfirmAddFriend, setOpenModalConfirmAddFriend] =
+    useState(false);
+  const { socket } = useSocket();
   const handleRouteToDetailConversation = (item) => {
     setCurrentConversation(item);
     console.log(item.conversationId);
@@ -49,7 +53,7 @@ const Layout = ({ children }) => {
       const userConversations =
         await UserConversationApi.getUserConversationByUserId(currentUser?.uid);
       setConversations(userConversations.conversations);
-      console.log(userConversations.conversations);
+      // console.log(userConversations.conversations);
       const user1 = await userApis.getUserById(currentUser.uid);
       setUser(user1);
     };
@@ -237,8 +241,8 @@ const Layout = ({ children }) => {
         width="100%"
         key={key}
         onClick={() => {
-          // setOpenModalConfirmAddFriend(true);
-          // setUserFind()
+          setShowModalProfile(true);
+          setUserFind(item)
         }}
       >
         <Row justify={"space-around"} style={{ width: "100%" }}>
@@ -288,6 +292,10 @@ const Layout = ({ children }) => {
     );
   };
 
+  const handleCloseModal = () => {
+    setShowModalProfile(false);
+  };
+
   return (
     <>
       <div className="nameUser">
@@ -302,7 +310,7 @@ const Layout = ({ children }) => {
             <Col span={19}>
               <Input
                 size="middle"
-                placeholder="Tìm kiếm"
+                placeholder="Searh"
                 value={searchTerm}
                 onChange={handleSearchChange}
                 prefix={<SearchIcon style={{ fontSize: "20px" }} />}
@@ -512,6 +520,12 @@ const Layout = ({ children }) => {
           </Flex>
         </div>
       </Modal>
+
+      <ModalProfileUser
+        isOpen={showModalProfile}
+        onClose={handleCloseModal}
+        user={userFind}
+      />
 
       {/* Confirm add friend */}
       <ModalConfirmAddFriend
