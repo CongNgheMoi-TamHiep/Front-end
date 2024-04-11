@@ -19,6 +19,14 @@ const ChatApi = {
       },
     });
   },
+
+  deleteMessage(messageId) {
+    return axiosPrivate.post(`/chat/deleteYourSide/${messageId}`);
+  },
+
+  recallMessage(messageId) {
+    return axiosPrivate.post(`/chat/delete/${messageId}`);
+  },
 };
 
 export default ChatApi;

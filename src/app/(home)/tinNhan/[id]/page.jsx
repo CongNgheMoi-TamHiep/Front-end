@@ -7,8 +7,8 @@ import { useRouter } from "next/navigation";
 import BookmarkBorderIcon from "@mui/icons-material/BookmarkBorder";
 import { IconButton, Input, Tooltip } from "@mui/material";
 import Button from "@/components/Button";
-import { Popover, Spin, Upload } from "antd";
-import SearchIcon from "@mui/icons-material/Search";
+import { Popover, Spin, Upload, Modal, Flex, Checkbox } from "antd";
+import InputAntd from "antd/lib/input";
 import LocalPhoneOutlinedIcon from "@mui/icons-material/LocalPhoneOutlined";
 import VideocamOutlinedIcon from "@mui/icons-material/VideocamOutlined";
 import WidthNormalIcon from "@mui/icons-material/WidthNormal";
@@ -23,7 +23,7 @@ import ThumbUpOutlinedIcon from "@mui/icons-material/ThumbUpOutlined";
 import DeleteForeverOutlinedIcon from "@mui/icons-material/DeleteForeverOutlined";
 import ContentCopyOutlinedIcon from "@mui/icons-material/ContentCopyOutlined";
 import ReplayOutlinedIcon from "@mui/icons-material/ReplayOutlined";
-import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
+import { MoreHoriz, Search } from "@mui/icons-material";
 import ReplyIcon from "@mui/icons-material/Reply";
 import ThumbUpIcon from "@mui/icons-material/ThumbUp";
 import Divider from "@mui/material/Divider";
@@ -33,15 +33,16 @@ import ChatApi from "@/apis/ChatApi";
 import EmojiPicker from "emoji-picker-react";
 import { io } from "socket.io-client";
 import { SocketContext } from "@/context/SocketProvider";
-import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined';
+import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";
 import formatFileSize from "@/utils/formatFileSize";
 import userApis from "@/apis/userApis";
 import CombineUserId from "@/utils/CombineUserId";
 import axiosPrivate from "@/apis/axios";
 import { Typography } from "antd";
 import UserConversationApi from "@/apis/userConversationApi";
-import ModalProfileUser from "../../../../components/ModalProfileUser";
-import { useSocket } from "../../../../context/SocketProvider";
+import ModalProfileUser from "@/components/ModalProfileUser";
+import { useSocket } from "@/context/SocketProvider";
+import openNotificationWithIcon from "@/components/OpenNotificationWithIcon";
 const lastTime = "Truy cập 1 phút trước";
 
 const page = ({ params }) => {
@@ -54,7 +55,7 @@ const page = ({ params }) => {
   // const inputPhotoRef = useRef();
   // const inputFileRef = useRef();
   const containerRef = useRef();
-  const {socket} = useSocket(); 
+  const { socket } = useSocket();
 
   const [conversationId, setConversationId] = useState(params.id);
   const [currentConversation, setCurrentConversation] = useState(null);
@@ -67,13 +68,20 @@ const page = ({ params }) => {
   const [isOpenEmoji, setOpenEmoji] = useState(false);
   const [isFirst, setIsFirst] = useState(true);
   const [me, setMe] = useState(null);
-  const [users, setUsers] = useState([]);
+  const [searchTerm, setSearchTerm] = useState([]);
+  const [userProfile, setUserProfile] = useState({});
   const [openPopover, setOpenPopover] = useState(false);
-
+  const [openModalForward, setOpenModalForward] = useState(false);
   const [showModalProfile, setShowModalProfile] = useState(false);
 
   // Xử lý sự kiện click để mở modal thông tin của userNhan
-  const handleOpenModal = () => {
+  const handleOpenModal = async (id) => {
+    //check group/couple
+    if (typeof id === "object") setUserProfile(userNhan);
+    else {
+      const user = await userApis.getUserById(id);
+      setUserProfile(user);
+    }
     setShowModalProfile(true);
   };
 
@@ -188,29 +196,54 @@ const page = ({ params }) => {
     setOpenPopover(false);
   };
 
-  const showFunctionChat = (content) => {
+  const showFunctionChat = (item) => {
     return (
       <div style={{ display: "flex", flexDirection: "column" }}>
-        <Button onClick={copyClipBoard(content.text)}>
+        <Button
+          onClick={() => {
+            setOpenModalForward(true);
+            setOpenPopover(false);
+          }}
+          hidden={item.type === "deleted"}
+        >
           <ReplyIcon style={{ marginRight: "8px" }} /> Forward
         </Button>
-        {content.text !== undefined ? (
-          <Button onClick={copyClipBoard(content.text)}>
+        {item.content.text !== undefined ? (
+          <Button onClick={copyClipBoard(item.content.text)}>
             <ContentCopyOutlinedIcon style={{ marginRight: "8px" }} /> Copy text
           </Button>
         ) : (
-          <a href={`${content.file.url}`} download>
-            <Button width={"100%"}>
+          <a href={`${item.content.file.url}`} download>
+            <Button width={"100%"} onClick={() => setOpenPopover(false)}>
               <FileDownloadOutlinedIcon style={{ marginRight: "8px" }} />
               Download
             </Button>
           </a>
         )}
-        <Button color="red">
+        <Button
+          color="red"
+          onClick={() => {
+            setChat((prev) => prev.filter((chat) => chat._id !== item._id));
+            ChatApi.deleteMessage(item._id);
+            setOpenPopover(false);
+            openNotificationWithIcon("success", "Delete message success");
+          }}
+        >
           <DeleteForeverOutlinedIcon style={{ marginRight: "8px" }} />
           Delete for my only
         </Button>
-        <Button color="red">
+        <Button
+          hidden={item.senderId !== currentUser?.uid || item.type === "deleted"}
+          color="red"
+          onClick={async () => {
+            const response = await ChatApi.recallMessage(item._id);
+            setChat((prev) =>
+              prev.map((chat) => (chat._id === item._id ? response : chat))
+            );
+            openNotificationWithIcon("success", "Recall message success");
+            setOpenPopover(false);
+          }}
+        >
           <ReplayOutlinedIcon style={{ marginRight: "8px" }} />
           Recall
         </Button>
@@ -275,60 +308,143 @@ const page = ({ params }) => {
   };
 
   const handleFileChange = async (info) => {
-    if (info.file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        console.log(info.file);
-        const fmData = new FormData();
-        fmData.append("file", info.file);
-        ChatApi.sendFile(fmData, "file", conversationId, currentUser?.uid);
-        // socket.emit("sendMessage", {
-        //   conversationId,
-        //   senderId: currentUser?.uid,
-        //   content: {
-        //     file: {
-        //       url: reader.result,
-        //       size: formatFileSize(info?.file.size) || 35,
-        //       name: info?.file.name || "text.txt",
-        //     },
-        //   },
-        //   senderInfo: {
-        //     _id: currentUser?.uid,
-        //     name: me.name,
-        //     avatar: me.avatar,
-        //   },
-        //   createdAt: new Date(),
-        // });
-      };
-      reader.readAsDataURL(info.file);
+    try {
+      if (info.file) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          console.log(info.file);
+          const fmData = new FormData();
+          fmData.append("file", info.file);
+          ChatApi.sendFile(fmData, "file", conversationId, currentUser?.uid);
+          // socket.emit("sendMessage", {
+          //   conversationId,
+          //   senderId: currentUser?.uid,
+          //   content: {
+          //     file: {
+          //       url: reader.result,
+          //       size: formatFileSize(info?.file.size) || 35,
+          //       name: info?.file.name || "text.txt",
+          //     },
+          //   },
+          //   senderInfo: {
+          //     _id: currentUser?.uid,
+          //     name: me.name,
+          //     avatar: me.avatar,
+          //   },
+          //   createdAt: new Date(),
+          // });
+        };
+        reader.readAsDataURL(info.file);
+      }
+    } catch (error) {
+      openNotificationWithIcon(
+        "error",
+        "Error",
+        "You can only send a maximum of 20MB"
+      );
     }
   };
 
   const handleImgChange = async (info) => {
-    if (info.file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const fmData = new FormData();
-        fmData.append("file", info.file);
-        ChatApi.sendFile(fmData, "image", conversationId, currentUser?.uid);
-        // socket.emit("sendMessage", {
-        //   conversationId,
-        //   senderId: currentUser?.uid,
-        //   content: { image: reader.result },
-        //   senderInfo: {
-        //     _id: currentUser?.uid,
-        //     name: me.name,
-        //     avatar: me.avatar,
-        //   },
-        //   createdAt: new Date(),
-        // });
-      };
-      reader.readAsDataURL(info.file);
+    try {
+      if (info.file) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const fmData = new FormData();
+          fmData.append("file", info.file);
+          ChatApi.sendFile(fmData, "image", conversationId, currentUser?.uid);
+          // socket.emit("sendMessage", {
+          //   conversationId,
+          //   senderId: currentUser?.uid,
+          //   content: { image: reader.result },
+          //   senderInfo: {
+          //     _id: currentUser?.uid,
+          //     name: me.name,
+          //     avatar: me.avatar,
+          //   },
+          //   createdAt: new Date(),
+          // });
+        };
+        reader.readAsDataURL(info.file);
+      }
+    } catch (error) {
+      openNotificationWithIcon(
+        "error",
+        "Error",
+        "You can only send a maximum of 20MB"
+      );
     }
   };
 
+  const formatSizeFile = (size) => {
+    if (size < 1024) return size + " B";
+    if (size < 1024 * 1024) return (size / 1024).toFixed(2) + " KB";
+    return (size / (1024 * 1024)).toFixed(2) + " MB";
+  };
+
+  const handleSearchChange = (event) => {
+    setSearchTerm(event.target.value);
+  };
+  const [forwardSelected, setForwardSelected] = useState([]);
   return (
     <div className="conversationChat">
+      <Modal
+        open={openModalForward}
+        title={<h3>Share</h3>}
+        width={"400px"}
+        height={"80vh"}
+        onOk={() => console.log(forwardSelected)}
+        onCancel={() => setOpenModalForward(false)}
+      >
+        <Flex vertical={true}>
+          <InputAntd
+            size="middle"
+            placeholder="Tìm kiếm"
+            value={searchTerm}
+            onChange={handleSearchChange}
+            prefix={<Search style={{ fontSize: "20px" }} />}
+          />
+          <Checkbox.Group
+            style={{ width: "100%" }}
+            onChange={setForwardSelected}
+          >
+            <Flex vertical={true}>
+              <p>Recent</p>
+              {Array.from({ length: 2 }).map((_, index) => (
+                <Checkbox key={index} style={{ width: "100%" }} value={index}>
+                  <Flex align="center">
+                    <img
+                      src="https://cdn-icons-png.flaticon.com/128/1375/1375106.png"
+                      alt=""
+                      width={50}
+                      height={50}
+                    />
+                    <p>Nguyễn Văn A</p>
+                  </Flex>
+                </Checkbox>
+              ))}
+              <p>Contacts</p>
+              {Array.from({ length: 1 }).map((_, index) => (
+                <Checkbox
+                  key={index}
+                  style={{ width: "100%" }}
+                  value={index + 2}
+                >
+                  <Flex align="center">
+                    <img
+                      src="https://cdn-icons-png.flaticon.com/128/1375/1375106.png"
+                      alt=""
+                      width={50}
+                      height={50}
+                    />
+                    <p>Nguyễn Văn B</p>
+                  </Flex>
+                </Checkbox>
+              ))}
+            </Flex>
+          </Checkbox.Group>
+        </Flex>
+      </Modal>
       {/* <Spin spinning={false}> */}
       <div className="titleHeader">
         <div className="contentTitle">
@@ -345,7 +461,7 @@ const page = ({ params }) => {
           <ModalProfileUser
             isOpen={showModalProfile}
             onClose={handleCloseModal}
-            user={userNhan}
+            user={userProfile}
           />
 
           <div className="nameCon">
@@ -353,9 +469,6 @@ const page = ({ params }) => {
             <div className="timeAccess">
               <div className="lastTime">{lastTime}</div>
               <Divider orientation="vertical" flexItem />
-              {/* <IconButton className="btn">
-                <BookmarkBorderIcon className="btn" />
-              </IconButton> */}
               <Button borderRadius="40%" margin="0" padding="0">
                 <BookmarkBorderIcon className="btn" />
               </Button>
@@ -365,7 +478,7 @@ const page = ({ params }) => {
 
         <div className="btnContent">
           <Button>
-            <SearchIcon />
+            <Search />
           </Button>
           <Button>
             <LocalPhoneOutlinedIcon />
@@ -381,124 +494,139 @@ const page = ({ params }) => {
 
       <div className="containerChat" ref={containerRef}>
         <div className="chats">
-          {chats?.map((item, index) => (
-            <div
-              key={item._id || Date.parse(item.createdAt).toString() + index}
-              className={`chatContent ${
-                item.senderInfo?._id === me?._id ? "myChat" : "yourChat"
-              }`}
-            >
-              {item.senderInfo?._id !== me?._id && (
-                <div className="imgSender">
-                  {(index === 0 ||
-                    item.senderInfo?._id !=
-                      chats[index - 1]?.senderInfo?._id) && (
-                    <img
-                      src={item.senderInfo?.avatar}
-                      className="imgAvtSender"
-                    />
-                  )}
-                </div>
-              )}
-              <Popover
-                arrow={false}
-                placement={
-                  item.senderInfo?._id !== me?._id ? "rightBottom" : "leftBottom"
-                }
-                content={
-                  <Popover
-                    placement={
-                      item.senderInfo?._id !== me?._id ? "topLeft" : "topRight"
-                    }
-                    arrow={false}
-                    content={() => showFunctionChat(item.content)}
-                    // open={openPopover} 
-                    // onOpenChange={(newOpen) => setOpenPopover(newOpen)}
-                    trigger="click"
-                  >
-                    <MoreHorizIcon
-                      style={{
-                        padding: "1px",
-                        backgroundColor: "transparent",
-                        height: "20px",
-                      }}
-                      fontSize="small"
-                    />
-                  </Popover>
-                }
-              >
+          {chats?.map((item, index) => {
+            if (item.deletedFor?.includes(currentUser?.uid))
+              return (
                 <div
-                  className="chat"
-                  color={"#2db7f5"}
-                  style={{
-                    backgroundColor:
-                      item.senderInfo?._id === me?._id ? "#E5EFFF" : "white",
-                  }}
-                >
-                  <div>
-                    {item.senderInfo?._id !== me?._id && (
-                      <p className="chatName">{item.senderInfo?.name}</p>
-                    )}
-                    {item.content.text !== undefined ? (
-                      <p
-                        className="chatText"
-                        style={{ whiteSpace: "pre-wrap" }}
-                      >
-                        {item.content.text}
-                      </p>
-                    ) : item.content.image ? (
+                  key={
+                    item._id || Date.parse(item.createdAt).toString() + index
+                  }
+                  style={{ display: "none" }}
+                />
+              );
+            return (
+              <div
+                key={item._id || Date.parse(item.createdAt).toString() + index}
+                className={`chatContent ${
+                  item.senderId === me?._id ? "myChat" : "yourChat"
+                }`}
+              >
+                {item.senderId !== me?._id && (
+                  <div className="imgSender">
+                    {(index === 0 ||
+                      item.senderId != chats[index - 1]?.senderId) && (
                       <img
-                        src={item.content.image}
-                        alt="Chat"
-                        className="chatImg"
+                        src={item.senderInfo?.avatar}
+                        className="imgAvtSender"
+                        onClick={() => handleOpenModal(item.senderId)}
                       />
-                    ) : (
-                      <div className="chatFile">
-                        <img
-                          src={checkIconFile(item)}
-                          alt="word"
-                          className="iconFile"
-                        />
-                        <div className="fileContent">
-                          <Text
-                            style={{
-                              maxWidth: "95%",
-                              fontSize: "14px",
-                              fontWeight: "bold",
-                            }}
-                            ellipsis={{
-                              suffix: item.content?.file.name.slice(-6).trim(),
-                              tooltip: (
-                                <div style={{ fontSize: "10px" }}>
-                                  {item.content?.file.name}
-                                </div>
-                              ),
-                            }}
-                          >
-                            {item.content?.file.name.slice(
-                              0,
-                              item.content?.file.name.length - 6
-                            )}
-                          </Text>
-                          <p>{item.content?.file.size}</p>
-                        </div>
-                        <a href={item.content?.file.url} download>
-                          <FileDownloadOutlinedIcon className="iconT" />
-                        </a>
-                      </div>
                     )}
-                    {/* check hour, giờ, userSend */}
-                    <p className="chatTime">
-                      {new Date(item.createdAt).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </p>
                   </div>
-                </div>
-              </Popover>
-            </div>
-          ))}
+                )}
+                <Popover
+                  arrow={false}
+                  placement={
+                    item.senderId !== me?._id ? "rightBottom" : "leftBottom"
+                  }
+                  content={
+                    <Popover
+                      arrow={false}
+                      open={openPopover}
+                      placement={
+                        item.senderId !== me?._id ? "topLeft" : "topRight"
+                      }
+                      content={() => showFunctionChat(item)}
+                      onOpenChange={(newOpen) => setOpenPopover(newOpen)}
+                      trigger="click"
+                    >
+                      <MoreHoriz
+                        style={{
+                          padding: "1px",
+                          backgroundColor: "transparent",
+                          height: "20px",
+                        }}
+                        fontSize="small"
+                      />
+                    </Popover>
+                  }
+                >
+                  <div
+                    className="chat"
+                    color={"#2db7f5"}
+                    style={{
+                      backgroundColor:
+                        item.senderId === me?._id ? "#E5EFFF" : "white",
+                    }}
+                  >
+                    <div>
+                      {item.senderId !== me?._id && (
+                        <p className="chatName">{item.senderInfo?.name}</p>
+                      )}
+                      {item.content.text !== undefined ? (
+                        <p
+                          className="chatText"
+                          style={{ whiteSpace: "pre-wrap" }}
+                        >
+                          {item.type === "deleted"
+                            ? "Tin nhắn đã bị thu hồi"
+                            : item.content.text}
+                        </p>
+                      ) : item.content.image ? (
+                        <img
+                          src={item.content.image}
+                          alt="Chat"
+                          className="chatImg"
+                        />
+                      ) : (
+                        <div className="chatFile">
+                          <img
+                            src={checkIconFile(item)}
+                            alt="word"
+                            className="iconFile"
+                          />
+                          <div className="fileContent">
+                            <Text
+                              style={{
+                                maxWidth: "95%",
+                                fontSize: "14px",
+                                fontWeight: "bold",
+                              }}
+                              ellipsis={{
+                                suffix: item.content?.file.name
+                                  .slice(-6)
+                                  .trim(),
+                                tooltip: (
+                                  <div style={{ fontSize: "10px" }}>
+                                    {item.content?.file.name}
+                                  </div>
+                                ),
+                              }}
+                            >
+                              {item.content?.file.name.slice(
+                                0,
+                                item.content?.file.name.length - 6
+                              )}
+                            </Text>
+                            <p>{formatSizeFile(item.content?.file.size)}</p>
+                          </div>
+                          <a href={item.content?.file.url} download>
+                            <FileDownloadOutlinedIcon className="iconT" />
+                          </a>
+                        </div>
+                      )}
+                      {/* check hour, giờ, userSend */}
+                      <p className="chatTime">
+                        {new Date(item.createdAt).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                </Popover>
+              </div>
+            );
+          })}
           {/* {img.map((chat, index) => (
          <img
            key={index}
@@ -585,6 +713,7 @@ const page = ({ params }) => {
           </div>
         </div>
       </div>
+
       {/* </Spin> */}
     </div>
   );

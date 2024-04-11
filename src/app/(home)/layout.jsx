@@ -17,13 +17,14 @@ import axiosPrivate from "@/apis/axios";
 import { SocketContext } from "@/context/SocketProvider";
 import userApis from "@/apis/userApis";
 import { useSocket } from "../../context/SocketProvider";
+import openNotificationWithIcon from "@/components/OpenNotificationWithIcon";
 const Layout = ({ children, params }) => {
   const [Active, setActive] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const currentUser = useContext(AuthContext);
-  const {socket} = useSocket(); 
+  const { socket } = useSocket();
   const [conversationId, setConversationId] = useState(params.id);
   const [conversation, setConversation] = useState(null); //[currentUser?.uid, receiverId
   const [currentConversation, setCurrentConversation] = useState(null);
@@ -50,7 +51,6 @@ const Layout = ({ children, params }) => {
       if (currentUser) {
         setIsAuthenticated(true);
         const user1 = await userApis.getUserById(currentUser.uid);
-        console.log(user1);
         setUser(user1);
       } else setIsAuthenticated(false);
       setIsLoading(false);
@@ -62,8 +62,21 @@ const Layout = ({ children, params }) => {
     else if (Active) router.push(`/${Active}`);
   }, [Active, isAuthenticated]);
 
-  console.log("user:");
-  console.log(user);
+  useEffect(() => {
+    socket.on("receiveFriendRequest", (data) => {
+      console.log("Socket connected received", data);
+      openNotificationWithIcon("success", "Thông báo", `${data.name} đã gửi lời mời kết bạn`);
+    });
+    socket.on("acceptFriendRequest", (data) => {
+      console.log("Socket connected accept", data);
+      openNotificationWithIcon("success", "Thông báo", `${data.name} đã chấp nhận lời mời kết bạn`);
+    });
+    socket.on("cancelFriendRequest", (data) => {
+      console.log("Socket connected cancel", data);
+      openNotificationWithIcon("success", "Thông báo", `${data.name} đã hủy lời mời kết bạn với bạn`);
+    });
+  });
+
   if (isLoading) return <Loading />;
   return (
     <div className="container">

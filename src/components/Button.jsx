@@ -2,6 +2,7 @@ import styled from "@emotion/styled";
 
 const StyledButton = styled.button`
   ${({
+    hidden,
     width,
     bgColor,
     disabled,
@@ -14,7 +15,7 @@ const StyledButton = styled.button`
     size,
     weight,
   }) => `
-  display: flex;
+  display: ${hidden ? "none" : "flex"};
   align-items: center;
   width: ${width};
   color: ${color};
@@ -51,6 +52,7 @@ export default function Button(props) {
     color = "text-white",
     border = "",
     className = "",
+    hidden = false,
   } = props;
 
   return (
@@ -69,6 +71,7 @@ export default function Button(props) {
       size={size}
       weight={weight}
       onClick={onClick}
+      hidden={hidden ? "hidden" : ""}
     >
       {children}
     </StyledButton>
