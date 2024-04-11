@@ -317,7 +317,7 @@
   }
 }
 
-.ant-popover-inner{
+.ant-popover-inner {
   padding: 5px !important;
   padding-bottom: 0px !important;
 }
@@ -327,4 +327,10 @@
   width: 20px;
   height: 20px;
   border-radius: 50% !important;
+}
+
+.forwardFriend {
+  &:hover {
+    background-color: #909294;
+  }
 }

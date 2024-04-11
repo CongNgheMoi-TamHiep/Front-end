@@ -43,6 +43,10 @@ import UserConversationApi from "@/apis/userConversationApi";
 import ModalProfileUser from "@/components/ModalProfileUser";
 import { useSocket } from "@/context/SocketProvider";
 import openNotificationWithIcon from "@/components/OpenNotificationWithIcon";
+import { useMutation } from "react-query";
+import FriendApi from "@/apis/FriendApi";
+import imageDefault from "@/constants/imgDefault";
+
 const lastTime = "Truy cập 1 phút trước";
 
 const page = ({ params }) => {
@@ -73,6 +77,9 @@ const page = ({ params }) => {
   const [openPopover, setOpenPopover] = useState(false);
   const [openModalForward, setOpenModalForward] = useState(false);
   const [showModalProfile, setShowModalProfile] = useState(false);
+  const [forwardSelected, setForwardSelected] = useState([]);
+  const [friends, setFriends] = useState([]);
+  const [itemForward, setItemForward] = useState();
 
   // Xử lý sự kiện click để mở modal thông tin của userNhan
   const handleOpenModal = async (id) => {
@@ -89,6 +96,19 @@ const page = ({ params }) => {
   const handleCloseModal = () => {
     setShowModalProfile(false);
   };
+
+  const { mutate: getFriends } = useMutation(
+    "friends",
+    UserConversationApi.getUserConversationByUserId,
+    {
+      onSuccess: (data) => {
+        setFriends(data.conversations);
+      },
+      onError: (error) => {
+        console.log(error);
+      },
+    }
+  );
 
   useEffect(() => {
     const fetchData = async () => {
@@ -127,6 +147,7 @@ const page = ({ params }) => {
       // }));
     };
     fetchData();
+    getFriends(currentUser?.uid);
   }, []);
 
   useEffect(() => {
@@ -142,6 +163,7 @@ const page = ({ params }) => {
   }, []);
 
   useEffect(() => {
+    if (chatReceived?.conversationId !== conversationId) return;
     if (chatReceived) setChat((prevChats) => [...prevChats, chatReceived]);
   }, [chatReceived]);
 
@@ -203,6 +225,7 @@ const page = ({ params }) => {
           onClick={() => {
             setOpenModalForward(true);
             setOpenPopover(false);
+            setItemForward(item.content);
           }}
           hidden={item.type === "deleted"}
         >
@@ -308,40 +331,25 @@ const page = ({ params }) => {
   };
 
   const handleFileChange = async (info) => {
-    try {
-      if (info.file) {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          console.log(info.file);
-          const fmData = new FormData();
-          fmData.append("file", info.file);
-          ChatApi.sendFile(fmData, "file", conversationId, currentUser?.uid);
-          // socket.emit("sendMessage", {
-          //   conversationId,
-          //   senderId: currentUser?.uid,
-          //   content: {
-          //     file: {
-          //       url: reader.result,
-          //       size: formatFileSize(info?.file.size) || 35,
-          //       name: info?.file.name || "text.txt",
-          //     },
-          //   },
-          //   senderInfo: {
-          //     _id: currentUser?.uid,
-          //     name: me.name,
-          //     avatar: me.avatar,
-          //   },
-          //   createdAt: new Date(),
-          // });
-        };
-        reader.readAsDataURL(info.file);
-      }
-    } catch (error) {
-      openNotificationWithIcon(
-        "error",
-        "Error",
-        "You can only send a maximum of 20MB"
-      );
+    if (info.file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        console.log(info.file);
+        const fmData = new FormData();
+        fmData.append("file", info.file);
+        ChatApi.sendFile(fmData, "file", conversationId, currentUser?.uid)
+          .then((data) => {
+            console.log(data);
+          })
+          .catch((error) =>
+            openNotificationWithIcon(
+              "error",
+              "Error",
+              "You can only send a maximum of 20MB"
+            )
+          );
+      };
+      reader.readAsDataURL(info.file);
     }
   };
 
@@ -352,7 +360,17 @@ const page = ({ params }) => {
         reader.onloadend = () => {
           const fmData = new FormData();
           fmData.append("file", info.file);
-          ChatApi.sendFile(fmData, "image", conversationId, currentUser?.uid);
+          ChatApi.sendFile(fmData, "image", conversationId, currentUser?.uid)
+            .then((data) => {
+              console.log(data);
+            })
+            .catch((error) =>
+              openNotificationWithIcon(
+                "error",
+                "Error",
+                "You can only send a maximum of 20MB"
+              )
+            );
           // socket.emit("sendMessage", {
           //   conversationId,
           //   senderId: currentUser?.uid,
@@ -376,6 +394,16 @@ const page = ({ params }) => {
     }
   };
 
+  const hanldForward = async () => {
+    for (let item of forwardSelected) {
+      await axiosPrivate.post(`/chat`, {
+        conversationId: item.conversationId,
+        senderId: currentUser?.uid,
+        content: itemForward,
+      });
+    }
+  };
+
   const formatSizeFile = (size) => {
     if (size < 1024) return size + " B";
     if (size < 1024 * 1024) return (size / 1024).toFixed(2) + " KB";
@@ -385,7 +413,7 @@ const page = ({ params }) => {
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
   };
-  const [forwardSelected, setForwardSelected] = useState([]);
+
   return (
     <div className="conversationChat">
       <Modal
@@ -393,7 +421,8 @@ const page = ({ params }) => {
         title={<h3>Share</h3>}
         width={"400px"}
         height={"80vh"}
-        onOk={() => console.log(forwardSelected)}
+        // onOk={() => console.log(forwardSelected)}
+        onOk={hanldForward}
         onCancel={() => setOpenModalForward(false)}
       >
         <Flex vertical={true}>
@@ -405,39 +434,27 @@ const page = ({ params }) => {
             prefix={<Search style={{ fontSize: "20px" }} />}
           />
           <Checkbox.Group
-            style={{ width: "100%" }}
+            style={{ width: "100%", marginTop: "10px" }}
             onChange={setForwardSelected}
           >
-            <Flex vertical={true}>
-              <p>Recent</p>
-              {Array.from({ length: 2 }).map((_, index) => (
-                <Checkbox key={index} style={{ width: "100%" }} value={index}>
-                  <Flex align="center">
-                    <img
-                      src="https://cdn-icons-png.flaticon.com/128/1375/1375106.png"
-                      alt=""
-                      width={50}
-                      height={50}
-                    />
-                    <p>Nguyễn Văn A</p>
-                  </Flex>
-                </Checkbox>
-              ))}
-              <p>Contacts</p>
-              {Array.from({ length: 1 }).map((_, index) => (
+            <Flex vertical={true} style={{ width: "100%" }} gap={5}>
+              {friends.length == 0 && <p>Empty</p>}
+              {friends.map((item, index) => (
                 <Checkbox
                   key={index}
-                  style={{ width: "100%" }}
-                  value={index + 2}
+                  // style={{ width: "100%" }}
+                  value={item}
+                  className="forwardFriend"
                 >
-                  <Flex align="center">
+                  <Flex align="center" gap={10}>
                     <img
-                      src="https://cdn-icons-png.flaticon.com/128/1375/1375106.png"
+                      src={item?.user ? item.user?.avatar : item?.image}
                       alt=""
-                      width={50}
-                      height={50}
+                      width={45}
+                      height={45}
+                      style={{ borderRadius: "50%" }}
                     />
-                    <p>Nguyễn Văn B</p>
+                    <p>{item?.name || item.user.name}</p>
                   </Flex>
                 </Checkbox>
               ))}

@@ -1,11 +1,13 @@
 import axiosPrivate from "./axios";
 
-export default FriendApi = {
+const FriendApi = {
   getUserPhoneBook(userId) {
     return axiosPrivate.get(`/friens/phonedBook/${userId}`);
   },
 
   getFriends(userId) {
-    return axiosPrivate.get(`/friens/${userId}`);
+    return axiosPrivate.get(`/friends/${userId}`);
   }
 };
+
+export default FriendApi;

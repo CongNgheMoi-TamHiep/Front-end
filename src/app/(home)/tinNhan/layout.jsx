@@ -305,7 +305,13 @@ const Layout = ({ children }) => {
       <div className="tinNhan">
         <div className="conversations">
           <Row
-            style={{ width: "100%", marginBottom: "5px" }}
+            style={{
+              width: "100%",
+              marginBottom: "5px",
+              zIndex: 1,
+              position: "sticky",
+              top: 0,
+            }}
             justify={"center"}
           >
             <Col span={19}>
@@ -328,85 +334,98 @@ const Layout = ({ children }) => {
               </Button>
             </Col>
           </Row>
-
-          {filteredConversations?.map((item) => {
-            {
-              /* {conversations?.map((item) => { */
-            }
-
-            return (
-              <div
-                key={item.conversationId}
-                className={`userConversation ${
-                  currentConversation &&
-                  currentConversation.conversationId === item.conversationId
-                    ? "active"
-                    : ""
-                }`}
-                onClick={() => handleRouteToDetailConversation(item)}
-              >
-                <div className="avatar">
-                  <img
-                    className="avatar-img"
-                    src={
-                      item?.user?.avatar ||
-                      item?.image ||
-                      "https://images.pexels.com/photos/6534399/pexels-photo-6534399.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
-                    }
-                    alt=""
-                    width={60}
-                    height={60}
-                  />
-                </div>
-                <div className="info" style={{ flex: 1 }}>
+          <div
+            style={{
+              flexGrow: 1,
+              overflow: "auto",
+              overflowY: "auto",
+              overflowX: "hidden",
+              scrollbarWidth: "none",
+              msOverflowStyle: "none",
+            }}
+          >
+            {filteredConversations
+              .sort((b, a) => {
+                return (
+                  new Date(a.lastMess.createdAt) -
+                  new Date(b.lastMess.createdAt)
+                );
+              })
+              ?.map((item) => {
+                return (
                   <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                    }}
+                    key={item.conversationId}
+                    className={`userConversation ${
+                      currentConversation &&
+                      currentConversation.conversationId === item.conversationId
+                        ? "active"
+                        : ""
+                    }`}
+                    onClick={() => handleRouteToDetailConversation(item)}
                   >
-                    <div
-                      className="name"
-                      style={{ fontWeight: "bold", fontSize: "16px" }}
-                    >
-                      {item?.user?.name || item?.name}
+                    <div className="avatar">
+                      <img
+                        className="avatar-img"
+                        src={
+                          item?.user?.avatar ||
+                          item?.image ||
+                          "https://images.pexels.com/photos/6534399/pexels-photo-6534399.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
+                        }
+                        alt=""
+                        width={60}
+                        height={60}
+                      />
                     </div>
-                    <div>
-                      {item.lastMess && (
-                        <span
-                          style={{
-                            fontSize: "13px",
-                            fontWeight: "normal",
-                          }}
+                    <div className="info" style={{ flex: 1 }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                        }}
+                      >
+                        <div
+                          className="name"
+                          style={{ fontWeight: "bold", fontSize: "16px" }}
                         >
-                          {formatTimeDifference(
-                            new Date(item.lastMess.createdAt)
+                          {item?.user?.name || item?.name}
+                        </div>
+                        <div>
+                          {item.lastMess && (
+                            <span
+                              style={{
+                                fontSize: "13px",
+                                fontWeight: "normal",
+                              }}
+                            >
+                              {formatTimeDifference(
+                                new Date(item.lastMess.createdAt)
+                              )}
+                            </span>
                           )}
-                        </span>
-                      )}
+                        </div>
+                      </div>
+                      <div className="lastMess">
+                        {item.type === "couple" &&
+                          (item.lastMess?.senderId === currentUser?.uid
+                            ? "Bạn: "
+                            : item?.user?.name + ": ")}
+                        {item.type === "group" &&
+                          (item.lastMess?.senderId === currentUser?.uid
+                            ? "Bạn: "
+                            : item?.member.find(
+                                (i) => i._id === item.lastMess.senderId
+                              ).name + ": ")}
+                        {item.lastMess?.content.text
+                          ? item.lastMess?.content.text
+                          : item.lastMess?.content.file
+                          ? `📄${item.lastMess?.content.file.name}`
+                          : `🏞️Photo`}
+                      </div>
                     </div>
                   </div>
-                  <div className="lastMess">
-                    {item.type === "couple" &&
-                      (item.lastMess?.senderId === currentUser?.uid
-                        ? "Bạn: "
-                        : item?.user?.name + ": ")}
-                    {item.type === "group" &&
-                      (item.lastMess?.senderId === currentUser?.uid
-                        ? "Bạn: "
-                        : item?.member.find(
-                            (i) => i._id === item.lastMess.senderId
-                          ).name + ": ")}
-                    {item.lastMess?.content.text
-                      ? item.lastMess?.content.text
-                      : item.lastMess?.content.file
-                      ? `📄${item.lastMess?.content.file.name}`
-                      : `🏞️Photo`}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+                );
+              })}
+          </div>
         </div>
         {children}
       </div>
