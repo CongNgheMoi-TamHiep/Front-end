@@ -7,7 +7,19 @@ import { useRouter } from "next/navigation";
 import BookmarkBorderIcon from "@mui/icons-material/BookmarkBorder";
 import { IconButton, Input, Tooltip } from "@mui/material";
 import Button from "@/components/Button";
-import { Popover, Spin, Upload, Modal, Flex, Checkbox } from "antd";
+import ReactPlayer from "react-player";
+import mime from "mime";
+import {
+  Popover,
+  Spin,
+  Upload,
+  Modal,
+  Flex,
+  Checkbox,
+  Row,
+  Col,
+  Image,
+} from "antd";
 import InputAntd from "antd/lib/input";
 import LocalPhoneOutlinedIcon from "@mui/icons-material/LocalPhoneOutlined";
 import VideocamOutlinedIcon from "@mui/icons-material/VideocamOutlined";
@@ -46,6 +58,7 @@ import openNotificationWithIcon from "@/components/OpenNotificationWithIcon";
 import { useMutation } from "react-query";
 import FriendApi from "@/apis/FriendApi";
 import imageDefault from "@/constants/imgDefault";
+import { set } from "date-fns";
 
 const lastTime = "Truy cập 1 phút trước";
 
@@ -72,7 +85,7 @@ const page = ({ params }) => {
   const [isOpenEmoji, setOpenEmoji] = useState(false);
   const [isFirst, setIsFirst] = useState(true);
   const [me, setMe] = useState(null);
-  const [searchTerm, setSearchTerm] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [userProfile, setUserProfile] = useState({});
   const [openPopover, setOpenPopover] = useState(false);
   const [openModalForward, setOpenModalForward] = useState(false);
@@ -156,8 +169,8 @@ const page = ({ params }) => {
 
   useEffect(() => {
     socket.on("getMessage", (chat) => {
-      console.log("chat socket: ");
-      console.log(chat);
+      // console.log("chat socket: ");
+      // console.log(chat);
       setChatReceived(chat);
     });
   }, []);
@@ -276,8 +289,10 @@ const page = ({ params }) => {
 
   const checkIconFile = (item) => {
     if (!item) return;
+    // console.log(item);
     const file = item.content?.file.name?.split(".");
-    const type = file[file.length - 1];
+    const type = file[file?.length - 1];
+    // const type = "a";
     const wordExtensions = ["doc", "docm", "docx", "dot", "dotx"];
     const excelExtensions = [
       "xls",
@@ -316,7 +331,10 @@ const page = ({ params }) => {
       "svg",
       "webp",
     ];
+    const videoExtensions = ["mp4", "mov", "avi", "wmv", "flv", "mkv", "webm"];
 
+    if (videoExtensions.includes(type))
+      return "https://cdn-icons-png.flaticon.com/128/3074/3074767.png";
     if (imageExtensions.includes(type))
       return "https://cdn-icons-png.flaticon.com/128/1375/1375106.png";
     if (wordExtensions.includes(type))
@@ -331,13 +349,24 @@ const page = ({ params }) => {
   };
 
   const handleFileChange = async (info) => {
+    const videoExtensions = ["mp4", "mov", "avi", "wmv", "flv", "mkv", "webm"];
+
     if (info.file) {
       const reader = new FileReader();
       reader.onloadend = () => {
         console.log(info.file);
+        const file = info?.file.name?.split(".");
+        const type = file[file?.length - 1];
+        // console.log(videoExtensions.includes(type) ? "video" : "file");
         const fmData = new FormData();
         fmData.append("file", info.file);
-        ChatApi.sendFile(fmData, "file", conversationId, currentUser?.uid)
+        ChatApi.sendFile(
+          fmData,
+          // "file",
+          videoExtensions.includes(type) ? "video" : "file",
+          conversationId,
+          currentUser?.uid
+        )
           .then((data) => {
             console.log(data);
           })
@@ -402,6 +431,9 @@ const page = ({ params }) => {
         content: itemForward,
       });
     }
+
+    setOpenModalForward(false);
+    setForwardSelected([]);
   };
 
   const formatSizeFile = (size) => {
@@ -414,54 +446,33 @@ const page = ({ params }) => {
     setSearchTerm(event.target.value);
   };
 
+  const showManyImage = (images) => {
+    // const te = [{}, {}, {}, {}, {}, {}, {}, {}, {}, {},];
+    return (
+      <Row gutter={[4, 4]} style={{ width: "360px" }}>
+        {images.map((value, index) => {
+          return (
+            <Col span={8} key={index}>
+              <Image src={value.url} height={120} width={120} />
+            </Col>
+          );
+        })}
+      </Row>
+    );
+  };
+
+  const dataFriends = friends
+    .sort((a, b) =>
+      (a?.name || a.user?.name).localeCompare(b?.name || b.user?.name)
+    )
+    .filter((friend) => {
+      return (friend?.name || friend.user?.name)
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
+    });
+
   return (
     <div className="conversationChat">
-      <Modal
-        open={openModalForward}
-        title={<h3>Share</h3>}
-        width={"400px"}
-        height={"80vh"}
-        // onOk={() => console.log(forwardSelected)}
-        onOk={hanldForward}
-        onCancel={() => setOpenModalForward(false)}
-      >
-        <Flex vertical={true}>
-          <InputAntd
-            size="middle"
-            placeholder="Tìm kiếm"
-            value={searchTerm}
-            onChange={handleSearchChange}
-            prefix={<Search style={{ fontSize: "20px" }} />}
-          />
-          <Checkbox.Group
-            style={{ width: "100%", marginTop: "10px" }}
-            onChange={setForwardSelected}
-          >
-            <Flex vertical={true} style={{ width: "100%" }} gap={5}>
-              {friends.length == 0 && <p>Empty</p>}
-              {friends.map((item, index) => (
-                <Checkbox
-                  key={index}
-                  // style={{ width: "100%" }}
-                  value={item}
-                  className="forwardFriend"
-                >
-                  <Flex align="center" gap={10}>
-                    <img
-                      src={item?.user ? item.user?.avatar : item?.image}
-                      alt=""
-                      width={45}
-                      height={45}
-                      style={{ borderRadius: "50%" }}
-                    />
-                    <p>{item?.name || item.user.name}</p>
-                  </Flex>
-                </Checkbox>
-              ))}
-            </Flex>
-          </Checkbox.Group>
-        </Flex>
-      </Modal>
       {/* <Spin spinning={false}> */}
       <div className="titleHeader">
         <div className="contentTitle">
@@ -588,13 +599,13 @@ const page = ({ params }) => {
                             ? "Tin nhắn đã bị thu hồi"
                             : item.content.text}
                         </p>
-                      ) : item.content.image ? (
+                      ) : item.content?.image ? (
                         <img
                           src={item.content.image}
                           alt="Chat"
                           className="chatImg"
                         />
-                      ) : (
+                      ) : item.content?.file?.url ? (
                         <div className="chatFile">
                           <img
                             src={checkIconFile(item)}
@@ -630,6 +641,15 @@ const page = ({ params }) => {
                             <FileDownloadOutlinedIcon className="iconT" />
                           </a>
                         </div>
+                      ) : item.content?.video ? (
+                        <ReactPlayer
+                          url={item.content.video}
+                          controls={true}
+                          maxWidth="300px"
+                          style={{ resize: "cover" }}
+                        />
+                      ) : (
+                        showManyImage(item.content.images)
                       )}
                       {/* check hour, giờ, userSend */}
                       <p className="chatTime">
@@ -730,6 +750,93 @@ const page = ({ params }) => {
           </div>
         </div>
       </div>
+
+      <Modal
+        open={openModalForward}
+        title={<h3>Share</h3>}
+        width={"400px"}
+        // onOk={() => console.log(forwardSelected)}
+        onOk={hanldForward}
+        onCancel={() => setOpenModalForward(false)}
+      >
+        <Flex
+          vertical={true}
+          style={{
+            maxHeight: "55vh",
+            minHeight: "55vh",
+            overflowY: "auto",
+            overflowX: "hidden",
+            scrollbarWidth: "none",
+            msOverflowStyle: "none",
+          }}
+        >
+          <InputAntd
+            size="middle"
+            placeholder="Tìm kiếm"
+            value={searchTerm}
+            onChange={handleSearchChange}
+            prefix={
+              <Search
+                style={{
+                  fontSize: "20px",
+                  zIndex: 1,
+                  position: "sticky",
+                  top: 0,
+                }}
+              />
+            }
+          />
+          <Checkbox.Group
+            style={{
+              width: "100%",
+              // height: "100%",
+              marginTop: "10px",
+              flexGrow: 1,
+              overflow: "auto",
+              overflowY: "auto",
+              overflowX: "hidden",
+              scrollbarWidth: "none",
+              msOverflowStyle: "none",
+            }}
+            onChange={setForwardSelected}
+          >
+            <Flex
+              vertical={true}
+              style={{
+                width: "100%",
+                // maxHeight: "100%",
+                overflow: "auto",
+                overflowY: "auto",
+                overflowX: "hidden",
+                scrollbarWidth: "none",
+                msOverflowStyle: "none",
+              }}
+              gap={5}
+            >
+              {friends.length == 0 && <p>Empty</p>}
+              {dataFriends.map((item, index) => (
+                <Checkbox
+                  key={index}
+                  // style={{ width: "100%" }}
+                  value={item}
+                  className="forwardFriend"
+                >
+                  <Flex align="center" gap={10}>
+                    <img
+                      src={item?.user ? item.user?.avatar : item?.image}
+                      alt=""
+                      width={45}
+                      height={45}
+                      style={{ borderRadius: "50%" }}
+                    />
+                    <p>{item?.name || item.user.name}</p>
+                  </Flex>
+                </Checkbox>
+              ))}
+            </Flex>
+          </Checkbox.Group>
+        </Flex>
+      </Modal>
 
       {/* </Spin> */}
     </div>

@@ -10,6 +10,7 @@ import { AuthContext } from "@/context/AuthProvider";
 import { useRouter } from "next/navigation";
 import CombineUserId from "@/utils/CombineUserId";
 import ConversationApi from "@/apis/ConversationApi";
+import FriendApi from "@/apis/FriendApi";
 
 const FriendPage = () => {
   const [friends, setFriends] = useState([]);
@@ -21,8 +22,9 @@ const FriendPage = () => {
 
   useEffect(() => {
     const fetchdata = async () => {
-      const users = await userApis.getAllUsers();
-      setFriends(users.filter((user) => user._id !== currentUser?.uid));
+      const users = await FriendApi.getFriends(currentUser.uid);
+      // console.log(users);
+      setFriends(users);
     };
     fetchdata();
   }, [currentUser?.uid]);
@@ -111,11 +113,11 @@ const FriendPage = () => {
         </div>
 
         <div className="listF">
-          {filteredFriends.map((item) => (
+          {filteredFriends.map((item, index) => (
             <div
-              key={item._id}
+              key={item.userId + index}
               className="itemF"
-              onClick={() => handleDirectToConversation(item._id)}
+              onClick={() => handleDirectToConversation(item.userId)}
             >
               <img
                 className="avatar-img"

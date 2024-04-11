@@ -6,7 +6,7 @@ const ChatApi = {
     return axiosPrivate(`/chat/${id}`);
   },
 
-  sendFile({file, type, conversationId, senderId}) {
+  sendFile(file, type, conversationId, senderId) {
     return axiosPrivate.post(`/chat/files`, file, {
       params: {
         type,

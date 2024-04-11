@@ -21,8 +21,13 @@ import { ca } from "date-fns/locale";
 import { useSocket } from "../../../context/SocketProvider";
 import ModalProfileUser from "@/components/ModalProfileUser";
 import { set } from "date-fns";
+import { useMutation } from "react-query";
+import FriendApi from "@/apis/FriendApi";
+import { Typography } from "antd";
 
 const Layout = ({ children }) => {
+  const { Text } = Typography;
+
   const router = useRouter();
   const currentUser = React.useContext(AuthContext);
   const [conversations, setConversations] = useState([]);
@@ -35,43 +40,51 @@ const Layout = ({ children }) => {
   const [openModalCreateGroup, setOpenModalCreateGroup] = useState(false);
   const [userProfile, setUserProfile] = useState({});
   const [openModalAddFriend, setOpenModalAddFriend] = useState(false);
-  const [openModalConfirmAddFriend, setOpenModalConfirmAddFriend] = useState(false);
-  const {socket} = useSocket(); 
+  const [openModalConfirmAddFriend, setOpenModalConfirmAddFriend] =
+    useState(false);
+  const { socket } = useSocket();
   const [newConversation, setNewConversation] = useState(null);
   const [showModalProfile, setShowModalProfile] = useState(false);
+
   const handleRouteToDetailConversation = (item) => {
     setCurrentConversation(item);
-    console.log(item.conversationId);
     router.push(`/tinNhan/${item.conversationId}`);
+  };
+
+  const { mutate: getPhoneBook, data: phoneBook } = useMutation(
+    "getPhoneBook",
+    FriendApi.getUserPhoneBook
+  );
+
+  const fetchData = async () => {
+    const userConversations =
+      await UserConversationApi.getUserConversationByUserId(currentUser?.uid);
+    setConversations(userConversations.conversations);
+    // console.log(userConversations.conversations);
+    const user1 = await userApis.getUserById(currentUser.uid);
+    setUser(user1);
   };
 
   useEffect(() => {
     socket.on("getMessage", (chat) => {
+      console.log("getMessage", chat);
       setChatReceived(chat);
     });
     socket.on("newConversation", (conversation) => {
-      console.log("newConversation: ")
-      console.log(conversation)
+      console.log("newConversation: ");
+      console.log(conversation);
       setNewConversation(conversation);
-    }); 
-
-    const fetchData = async () => {
-      const userConversations =
-        await UserConversationApi.getUserConversationByUserId(currentUser?.uid);
-      setConversations(userConversations.conversations);
-      // console.log(userConversations.conversations);
-      const user1 = await userApis.getUserById(currentUser.uid);
-      setUser(user1);
-    };
+    });
 
     fetchData();
+    getPhoneBook(currentUser?.uid);
   }, []);
 
-  useEffect(() => { 
+  useEffect(() => {
     if (newConversation) {
       setConversations([newConversation, ...conversations]);
     }
-  }, [newConversation])
+  }, [newConversation]);
   useEffect(() => {
     // console.log(conversations);
     // console.log(chatReceived);
@@ -116,22 +129,41 @@ const Layout = ({ children }) => {
   //   return () => clearTimeout(timer);
   // }, [number]);
 
-  const filteredConversations = conversations.sort((b,a)=> new Date(a.lastMess.createdAt) - new Date(b.lastMess.createdAt))?.filter((item) => {
-    const searchValue = searchTerm.toLowerCase();
-    if (item) {
-      const userName = item.user?.name || "";
-      const groupName = item.name || "";
-      return (
-        userName.toLowerCase().includes(searchValue) ||
-        groupName.toLowerCase().includes(searchValue)
-      );
-    }
-    return false;
-  });
+  const filteredConversations = conversations
+    ?.sort(
+      (b, a) => new Date(a.lastMess.createdAt) - new Date(b.lastMess.createdAt)
+    )
+    ?.filter((item) => {
+      const searchValue = searchTerm.toLowerCase();
+      if (item) {
+        const userName = item.user?.name || "";
+        const groupName = item.name || "";
+        return (
+          userName.toLowerCase().includes(searchValue) ||
+          groupName.toLowerCase().includes(searchValue)
+        );
+      }
+      return false;
+    });
+
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 10000); // 10000 milliseconds = 10 seconds
+
+    // Hủy bỏ timer khi component unmount
+    return () => clearInterval(timer);
+  }, []);
 
   const formatTimeDifference = (createdAt) => {
-    const currentTime = new Date();
-    const differenceInSeconds = Math.floor((currentTime - createdAt) / 1000);
+    const differenceInSeconds = Math.floor(
+      (currentTime - createdAt + 7000) / 1000
+    );
+    if (differenceInSeconds < 0) {
+      return "5 giây";
+    }
     if (differenceInSeconds < 60) {
       return `${differenceInSeconds} giây`;
     } else if (differenceInSeconds < 3600) {
@@ -355,7 +387,7 @@ const Layout = ({ children }) => {
             }}
           >
             {filteredConversations
-              .sort((b, a) => {
+              ?.sort((b, a) => {
                 return (
                   new Date(a.lastMess.createdAt) -
                   new Date(b.lastMess.createdAt)
@@ -414,7 +446,24 @@ const Layout = ({ children }) => {
                           )}
                         </div>
                       </div>
-                      <div className="lastMess">
+                      <Text
+                        style={{
+                          width: "270px",
+                          fontSize: "14px",
+                        }}
+                        className="lastMess"
+                        ellipsis={{
+                          tooltip: (
+                            <div style={{ fontSize: "10px" }}>
+                              {item.lastMess?.content.text
+                                ? item.lastMess?.content.text
+                                : item.lastMess?.content.file
+                                ? `📄${item.lastMess?.content.file.name}`
+                                : `🏞️Photo`}
+                            </div>
+                          ),
+                        }}
+                      >
                         {item.type === "couple" &&
                           (item.lastMess?.senderId === currentUser?.uid
                             ? "Bạn: "
@@ -430,7 +479,7 @@ const Layout = ({ children }) => {
                           : item.lastMess?.content.file
                           ? `📄${item.lastMess?.content.file.name}`
                           : `🏞️Photo`}
-                      </div>
+                      </Text>
                     </div>
                   </div>
                 );
@@ -447,6 +496,7 @@ const Layout = ({ children }) => {
           setOpenModalAddFriend(false);
           setUserFind(undefined);
           setNumber("");
+          console.log(phoneBook);
         }}
         footer={null}
         width={"33%"}

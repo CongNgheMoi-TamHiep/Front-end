@@ -2,7 +2,7 @@ import axiosPrivate from "./axios";
 
 const FriendApi = {
   getUserPhoneBook(userId) {
-    return axiosPrivate.get(`/friens/phonedBook/${userId}`);
+    return axiosPrivate.get(`/friends/phoneBook/${userId}`);
   },
 
   getFriends(userId) {
