@@ -35,10 +35,10 @@ const Layout = ({ children }) => {
   const [openModalCreateGroup, setOpenModalCreateGroup] = useState(false);
   const [userProfile, setUserProfile] = useState({});
   const [openModalAddFriend, setOpenModalAddFriend] = useState(false);
+  const [openModalConfirmAddFriend, setOpenModalConfirmAddFriend] = useState(false);
+  const {socket} = useSocket(); 
+  const [newConversation, setNewConversation] = useState(null);
   const [showModalProfile, setShowModalProfile] = useState(false);
-  const [openModalConfirmAddFriend, setOpenModalConfirmAddFriend] =
-    useState(false);
-  const { socket } = useSocket();
   const handleRouteToDetailConversation = (item) => {
     setCurrentConversation(item);
     console.log(item.conversationId);
@@ -49,6 +49,11 @@ const Layout = ({ children }) => {
     socket.on("getMessage", (chat) => {
       setChatReceived(chat);
     });
+    socket.on("newConversation", (conversation) => {
+      console.log("newConversation: ")
+      console.log(conversation)
+      setNewConversation(conversation);
+    }); 
 
     const fetchData = async () => {
       const userConversations =
@@ -62,6 +67,11 @@ const Layout = ({ children }) => {
     fetchData();
   }, []);
 
+  useEffect(() => { 
+    if (newConversation) {
+      setConversations([newConversation, ...conversations]);
+    }
+  }, [newConversation])
   useEffect(() => {
     // console.log(conversations);
     // console.log(chatReceived);
@@ -106,7 +116,7 @@ const Layout = ({ children }) => {
   //   return () => clearTimeout(timer);
   // }, [number]);
 
-  const filteredConversations = conversations?.filter((item) => {
+  const filteredConversations = conversations.sort((b,a)=> new Date(a.lastMess.createdAt) - new Date(b.lastMess.createdAt))?.filter((item) => {
     const searchValue = searchTerm.toLowerCase();
     if (item) {
       const userName = item.user?.name || "";
