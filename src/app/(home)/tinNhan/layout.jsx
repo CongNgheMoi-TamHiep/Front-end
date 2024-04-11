@@ -20,6 +20,7 @@ import PhotoOutlinedIcon from "@mui/icons-material/PhotoOutlined";
 import { ca } from "date-fns/locale";
 import { useSocket } from "../../../context/SocketProvider";
 import ModalProfileUser from "@/components/ModalProfileUser";
+import { set } from "date-fns";
 
 const Layout = ({ children }) => {
   const router = useRouter();
@@ -242,7 +243,7 @@ const Layout = ({ children }) => {
         key={key}
         onClick={() => {
           setShowModalProfile(true);
-          setUserFind(item)
+          setUserFind(item);
         }}
       >
         <Row justify={"space-around"} style={{ width: "100%" }}>
@@ -413,7 +414,11 @@ const Layout = ({ children }) => {
       <Modal
         open={openModalAddFriend}
         title={<h3>Add friend</h3>}
-        onCancel={() => setOpenModalAddFriend(false)}
+        onCancel={() => {
+          setOpenModalAddFriend(false);
+          setUserFind(undefined);
+          setNumber("");
+        }}
         footer={null}
         width={"33%"}
       >
@@ -499,7 +504,11 @@ const Layout = ({ children }) => {
           >
             <Button
               key="back"
-              onClick={() => setOpenModalAddFriend(false)}
+              onClick={() => {
+                setOpenModalAddFriend(false);
+                setUserFind(undefined);
+                setNumber("");
+              }}
               bgColor="#DFE2E7"
               bgColorHover="#C7CACF"
               color="black"

@@ -308,56 +308,78 @@ const page = ({ params }) => {
   };
 
   const handleFileChange = async (info) => {
-    if (info.file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        console.log(info.file);
-        const fmData = new FormData();
-        fmData.append("file", info.file);
-        ChatApi.sendFile(fmData, "file", conversationId, currentUser?.uid);
-        // socket.emit("sendMessage", {
-        //   conversationId,
-        //   senderId: currentUser?.uid,
-        //   content: {
-        //     file: {
-        //       url: reader.result,
-        //       size: formatFileSize(info?.file.size) || 35,
-        //       name: info?.file.name || "text.txt",
-        //     },
-        //   },
-        //   senderInfo: {
-        //     _id: currentUser?.uid,
-        //     name: me.name,
-        //     avatar: me.avatar,
-        //   },
-        //   createdAt: new Date(),
-        // });
-      };
-      reader.readAsDataURL(info.file);
+    try {
+      if (info.file) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          console.log(info.file);
+          const fmData = new FormData();
+          fmData.append("file", info.file);
+          ChatApi.sendFile(fmData, "file", conversationId, currentUser?.uid);
+          // socket.emit("sendMessage", {
+          //   conversationId,
+          //   senderId: currentUser?.uid,
+          //   content: {
+          //     file: {
+          //       url: reader.result,
+          //       size: formatFileSize(info?.file.size) || 35,
+          //       name: info?.file.name || "text.txt",
+          //     },
+          //   },
+          //   senderInfo: {
+          //     _id: currentUser?.uid,
+          //     name: me.name,
+          //     avatar: me.avatar,
+          //   },
+          //   createdAt: new Date(),
+          // });
+        };
+        reader.readAsDataURL(info.file);
+      }
+    } catch (error) {
+      openNotificationWithIcon(
+        "error",
+        "Error",
+        "You can only send a maximum of 20MB"
+      );
     }
   };
 
   const handleImgChange = async (info) => {
-    if (info.file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const fmData = new FormData();
-        fmData.append("file", info.file);
-        ChatApi.sendFile(fmData, "image", conversationId, currentUser?.uid);
-        // socket.emit("sendMessage", {
-        //   conversationId,
-        //   senderId: currentUser?.uid,
-        //   content: { image: reader.result },
-        //   senderInfo: {
-        //     _id: currentUser?.uid,
-        //     name: me.name,
-        //     avatar: me.avatar,
-        //   },
-        //   createdAt: new Date(),
-        // });
-      };
-      reader.readAsDataURL(info.file);
+    try {
+      if (info.file) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const fmData = new FormData();
+          fmData.append("file", info.file);
+          ChatApi.sendFile(fmData, "image", conversationId, currentUser?.uid);
+          // socket.emit("sendMessage", {
+          //   conversationId,
+          //   senderId: currentUser?.uid,
+          //   content: { image: reader.result },
+          //   senderInfo: {
+          //     _id: currentUser?.uid,
+          //     name: me.name,
+          //     avatar: me.avatar,
+          //   },
+          //   createdAt: new Date(),
+          // });
+        };
+        reader.readAsDataURL(info.file);
+      }
+    } catch (error) {
+      openNotificationWithIcon(
+        "error",
+        "Error",
+        "You can only send a maximum of 20MB"
+      );
     }
+  };
+
+  const formatSizeFile = (size) => {
+    if (size < 1024) return size + " B";
+    if (size < 1024 * 1024) return (size / 1024).toFixed(2) + " KB";
+    return (size / (1024 * 1024)).toFixed(2) + " MB";
   };
 
   const handleSearchChange = (event) => {
@@ -585,7 +607,7 @@ const page = ({ params }) => {
                                 item.content?.file.name.length - 6
                               )}
                             </Text>
-                            <p>{item.content?.file.size}</p>
+                            <p>{formatSizeFile(item.content?.file.size)}</p>
                           </div>
                           <a href={item.content?.file.url} download>
                             <FileDownloadOutlinedIcon className="iconT" />
