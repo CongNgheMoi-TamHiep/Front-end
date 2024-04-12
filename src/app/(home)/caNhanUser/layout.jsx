@@ -84,7 +84,7 @@ const Layout = ({ children }) => {
 
   return (
     <div className="tinNhan">
-      <div className="conversations">
+      <div className="conversations" style={{ overflowY: "auto" }}>
         <div className="search-div">
           <input
             type="text"
