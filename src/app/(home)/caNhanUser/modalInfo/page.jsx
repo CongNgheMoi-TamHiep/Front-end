@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 const ModalInfo = ({
   show,
@@ -11,6 +12,8 @@ const ModalInfo = ({
   setNewDateOfBirth,
   handleUpdateUserInfo,
 }) => {
+  const { t } = useTranslation();
+
   if (!show) {
     return null;
   }
@@ -21,9 +24,9 @@ const ModalInfo = ({
         <span className="modal-close" onClick={handleClose}>
           &times;
         </span>
-        <h2>Thông tin cá nhân</h2>
+        <h2>{t("personal_info")}</h2>
         <div className="form-group">
-          <label htmlFor="name">Tên:</label>
+          <label htmlFor="name">{t("name")}:</label>
           <input
             type="text"
             id="name"
@@ -32,18 +35,18 @@ const ModalInfo = ({
           />
         </div>
         <div className="form-group">
-          <label htmlFor="gender">Giới tính:</label>
+          <label htmlFor="gender">{t("gender")}:</label>
           <select
             id="gender"
             value={newGender}
             onChange={(e) => setNewGender(e.target.value)}
           >
-            <option value="male">male</option>
-            <option value="female">female</option>
+            <option value="male">{t("male")}</option>
+            <option value="female">{t("female")}</option>
           </select>
         </div>
         <div className="form-group">
-          <label htmlFor="dateOfBirth">Ngày sinh:</label>
+          <label htmlFor="dateOfBirth">{t("date_of_birth")}:</label>
           <input
             type="date"
             id="dateOfBirth"
@@ -51,7 +54,7 @@ const ModalInfo = ({
             onChange={(e) => setNewDateOfBirth(e.target.value)}
           />
         </div>
-        <button onClick={handleUpdateUserInfo}>Submit</button>
+        <button onClick={handleUpdateUserInfo}>{t("submit")}</button>
       </div>
     </div>
   );

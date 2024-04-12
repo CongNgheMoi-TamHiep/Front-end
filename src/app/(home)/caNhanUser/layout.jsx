@@ -9,15 +9,17 @@ import { AuthContext } from "@/context/AuthProvider";
 import { SocketContext } from "@/context/SocketProvider";
 import SearchIcon from "@mui/icons-material/Search";
 import { useSocket } from "../../../context/SocketProvider";
+import { useTranslation } from "react-i18next";
 
 const Layout = ({ children }) => {
+  const { t } = useTranslation();
   const router = useRouter();
   const currentUser = React.useContext(AuthContext);
   const [conversations, setConversations] = useState([]);
   const [currentConversation, setCurrentConversation] = useState(null);
   const [chatReceived, setChatReceived] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const {socket} = useSocket(); 
+  const { socket } = useSocket();
 
   const handleRouteToDetailConversation = (item) => {
     setCurrentConversation(item);
@@ -67,16 +69,16 @@ const Layout = ({ children }) => {
     const currentTime = new Date();
     const differenceInSeconds = Math.floor((currentTime - createdAt) / 1000);
     if (differenceInSeconds < 60) {
-      return `${differenceInSeconds} giây`;
+      return `${differenceInSeconds} ${t("seconds")}`;
     } else if (differenceInSeconds < 3600) {
       const minutes = Math.floor(differenceInSeconds / 60);
-      return `${minutes} phút`;
+      return `${minutes} ${t("minutes")}`;
     } else if (differenceInSeconds < 86400) {
       const hours = Math.floor(differenceInSeconds / 3600);
-      return `${hours} giờ`;
+      return `${hours} ${t("hours")}`;
     } else {
       const days = Math.floor(differenceInSeconds / 86400);
-      return `${days} ngày`;
+      return `${days} ${t("days")}`;
     }
   };
 
@@ -86,7 +88,7 @@ const Layout = ({ children }) => {
         <div className="search-div">
           <input
             type="text"
-            placeholder="Tìm kiếm"
+            placeholder={t("search_placeholder")}
             value={searchTerm}
             onChange={handleSearchChange}
           />
