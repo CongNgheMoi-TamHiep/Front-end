@@ -20,6 +20,7 @@ import PhotoOutlinedIcon from "@mui/icons-material/PhotoOutlined";
 import { ca } from "date-fns/locale";
 import { useSocket } from "../../../context/SocketProvider";
 import ModalProfileUser from "@/components/ModalProfileUser";
+import ModalAddMembersGroup from "@/components/ModalAddMembersGroup";
 import { set } from "date-fns";
 import { useMutation } from "react-query";
 import FriendApi from "@/apis/FriendApi";
@@ -182,6 +183,13 @@ const Layout = ({ children }) => {
 
   const openModelCreateGroup = () => {
     setOpenModalCreateGroup(true);
+  };
+  const handleCloseGroupModal = () => {
+    setOpenModalCreateGroup(false);
+  };
+  const handleCreateGroup = (selectedMembers) => {
+    console.log("Selected members:", selectedMembers);
+    handleCloseGroupModal();
   };
 
   const handleSearchChange = (event) => {
@@ -606,6 +614,12 @@ const Layout = ({ children }) => {
           </Flex>
         </div>
       </Modal>
+
+      <ModalAddMembersGroup
+        visible={openModalCreateGroup}
+        onCancel={handleCloseGroupModal}
+        onAddMembers={handleCreateGroup}
+      />
 
       <ModalProfileUser
         isOpen={showModalProfile}
