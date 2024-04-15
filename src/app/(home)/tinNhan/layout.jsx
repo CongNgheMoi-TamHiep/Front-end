@@ -12,7 +12,16 @@ import { SocketContext } from "@/context/SocketProvider";
 import SearchIcon from "@mui/icons-material/Search";
 import GroupAddSharpIcon from "@mui/icons-material/GroupAddSharp";
 import PersonAddAltSharpIcon from "@mui/icons-material/PersonAddAltSharp";
-import { Col, Input, Row, Space, Modal, Divider, Flex } from "antd";
+import {
+  Col,
+  Input,
+  Row,
+  Space,
+  Modal,
+  Divider,
+  Flex,
+  notification,
+} from "antd";
 import { MuiTelInput } from "mui-tel-input";
 import ModalConfirmAddFriend from "@/components/ModalConfirmAddFriend";
 import openNotificationWithIcon from "@/components/OpenNotificationWithIcon";
@@ -26,6 +35,7 @@ import { useMutation } from "react-query";
 import FriendApi from "@/apis/FriendApi";
 import { Typography } from "antd";
 import { useTranslation } from "react-i18next";
+import ConversationApi from "@/apis/ConversationApi";
 
 const Layout = ({ children }) => {
   const { Text } = Typography;
@@ -187,9 +197,36 @@ const Layout = ({ children }) => {
   const handleCloseGroupModal = () => {
     setOpenModalCreateGroup(false);
   };
-  const handleCreateGroup = (selectedMembers) => {
-    console.log("Selected members:", selectedMembers);
-    handleCloseGroupModal();
+  const handleCreateGroup = async (groupName, selectedMembers, groupImage) => {
+    try {
+      const membersWithId = selectedMembers.map((member) => ({ _id: member }));
+      const administratorsWithId = [currentUser.uid].map((admin) => ({
+        _id: admin,
+      }));
+
+      const combinedMembers = [...membersWithId, ...administratorsWithId];
+      const newConversation = {
+        name: groupName,
+        members: combinedMembers,
+        administrators: administratorsWithId,
+        image: groupImage,
+      };
+
+      const response = await ConversationApi.importConversation(
+        newConversation
+      );
+
+      console.log("newConversation:", newConversation);
+
+      handleCloseGroupModal();
+    } catch (error) {
+      console.error("Error creating conversation:", error);
+
+      notification.error({
+        message: "Error",
+        description: "Không tạo được nhóm. Vui lòng thử lại sau.",
+      });
+    }
   };
 
   const handleSearchChange = (event) => {

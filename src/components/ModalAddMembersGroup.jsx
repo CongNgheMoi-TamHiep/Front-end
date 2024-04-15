@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Modal, Button, Checkbox, Input, Col, Row, notification } from "antd"; // Thêm notification từ Ant Design
+import { Modal, Button, Checkbox, Input, notification } from "antd";
 import FriendApi from "@/apis/FriendApi";
 import { AuthContext } from "../context/AuthProvider";
 import { MuiTelInput } from "mui-tel-input";
@@ -8,7 +8,6 @@ import { useTranslation } from "react-i18next";
 
 const ModalAddMembersGroup = ({ visible, onCancel, onAddMembers }) => {
   const [selectedMembers, setSelectedMembers] = useState([]);
-  const [searchInput, setSearchInput] = useState("");
   const [friends, setFriends] = useState([]);
   const currentUser = useContext(AuthContext);
 
@@ -16,13 +15,14 @@ const ModalAddMembersGroup = ({ visible, onCancel, onAddMembers }) => {
   const [number, setNumber] = useState("");
   const [userFind, setUserFind] = useState(undefined);
 
+  const [groupName, setGroupName] = useState("");
+  const [groupImage, setGroupImage] = useState("");
+
   const handleMemberSelection = (memberId, checked) => {
     setSelectedMembers((prevSelected) => {
       if (checked) {
-        // Truy xuất userId từ userFind hoặc memberId
         const idToAdd =
           userFind && userFind.userId ? userFind.userId : memberId;
-        console.log(idToAdd);
         return [...prevSelected, idToAdd];
       } else {
         return prevSelected.filter((id) => id !== memberId);
@@ -31,7 +31,14 @@ const ModalAddMembersGroup = ({ visible, onCancel, onAddMembers }) => {
   };
 
   const handleAddMembers = () => {
-    onAddMembers(selectedMembers);
+    if (selectedMembers.length < 2) {
+      notification.error({
+        message: "Error",
+        description: "Bạn cần chọn ít nhất 2 thành viên để tạo nhóm.",
+      });
+      return;
+    }
+    onAddMembers(groupName, selectedMembers, groupImage);
     onCancel();
   };
 
@@ -72,7 +79,18 @@ const ModalAddMembersGroup = ({ visible, onCancel, onAddMembers }) => {
         </Button>,
       ]}
     >
-      <Input placeholder="Name Group" style={{ marginBottom: "10px" }} />
+      <Input
+        placeholder="Group Image URL"
+        style={{ marginBottom: "10px" }}
+        value={groupImage}
+        onChange={(e) => setGroupImage(e.target.value)}
+      />
+      <Input
+        placeholder="Name Group"
+        style={{ marginBottom: "10px" }}
+        value={groupName}
+        onChange={(e) => setGroupName(e.target.value)}
+      />
 
       <MuiTelInput
         size="small"
@@ -160,6 +178,7 @@ const ModalAddMembersGroup = ({ visible, onCancel, onAddMembers }) => {
               marginBottom: "10px",
               display: "flex",
               alignItems: "center",
+              // overflowY: "auto",
             }}
           >
             <img
