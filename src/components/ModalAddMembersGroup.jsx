@@ -16,7 +16,6 @@ const ModalAddMembersGroup = ({ visible, onCancel, onAddMembers }) => {
   const [userFind, setUserFind] = useState(undefined);
 
   const [groupName, setGroupName] = useState("");
-  const [groupImage, setGroupImage] = useState("");
 
   const handleMemberSelection = (memberId, checked) => {
     setSelectedMembers((prevSelected) => {
@@ -38,7 +37,7 @@ const ModalAddMembersGroup = ({ visible, onCancel, onAddMembers }) => {
       });
       return;
     }
-    onAddMembers(groupName, selectedMembers, groupImage);
+    onAddMembers(groupName, selectedMembers);
     onCancel();
   };
 
@@ -79,12 +78,6 @@ const ModalAddMembersGroup = ({ visible, onCancel, onAddMembers }) => {
         </Button>,
       ]}
     >
-      <Input
-        placeholder="Group Image URL"
-        style={{ marginBottom: "10px" }}
-        value={groupImage}
-        onChange={(e) => setGroupImage(e.target.value)}
-      />
       <Input
         placeholder="Name Group"
         style={{ marginBottom: "10px" }}

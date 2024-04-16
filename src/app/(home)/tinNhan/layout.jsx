@@ -197,24 +197,21 @@ const Layout = ({ children }) => {
   const handleCloseGroupModal = () => {
     setOpenModalCreateGroup(false);
   };
-  const handleCreateGroup = async (groupName, selectedMembers, groupImage) => {
+  const handleCreateGroup = async (groupName, selectedMembers) => {
     try {
       const membersWithId = selectedMembers.map((member) => ({ _id: member }));
-      const administratorsWithId = [currentUser.uid].map((admin) => ({
+      const currentUserWithId = [currentUser.uid].map((admin) => ({
         _id: admin,
       }));
 
-      const combinedMembers = [...membersWithId, ...administratorsWithId];
+      const combinedMembers = [...membersWithId, ...currentUserWithId];
       const newConversation = {
         name: groupName,
         members: combinedMembers,
-        administrators: administratorsWithId,
-        image: groupImage,
       };
 
-      const response = await ConversationApi.importConversation(
-        newConversation
-      );
+      // const response = await axiosPrivate.post(`/group`, newConversation);
+      // router.push(`/tinNhan/${response.data._id}`);
 
       console.log("newConversation:", newConversation);
 
@@ -511,12 +508,12 @@ const Layout = ({ children }) => {
                           (item.lastMess?.senderId === currentUser?.uid
                             ? t("You")
                             : item?.user?.name + ": ")}
-                        {item.type === "group" &&
+                        {/* {item.type === "group" &&
                           (item.lastMess?.senderId === currentUser?.uid
                             ? t("You")
                             : item?.member.find(
                                 (i) => i._id === item.lastMess.senderId
-                              ).name + ": ")}
+                              ).name + ": ")} */}
                         {item.lastMess?.content.text
                           ? item.lastMess?.content.text
                           : item.lastMess?.content.file
