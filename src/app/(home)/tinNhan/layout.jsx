@@ -36,6 +36,8 @@ import FriendApi from "@/apis/FriendApi";
 import { Typography } from "antd";
 import { useTranslation } from "react-i18next";
 import ConversationApi from "@/apis/ConversationApi";
+import axiosPrivate from "@/apis/axios";
+import Group from "@/apis/Group";
 
 const Layout = ({ children }) => {
   const { Text } = Typography;
@@ -205,16 +207,20 @@ const Layout = ({ children }) => {
       }));
 
       const combinedMembers = [...membersWithId, ...currentUserWithId];
-      const newConversation = {
+      const newGroup = {
         name: groupName,
-        members: combinedMembers,
+        members: membersWithId,
       };
 
-      // const response = await axiosPrivate.post(`/group`, newConversation);
-      // router.push(`/tinNhan/${response.data._id}`);
+      const response = await await Group.create(newGroup);
+      console.log("New group created:", response);
+      router.push(`/tinNhan/${response?._id}`);
 
-      console.log("newConversation:", newConversation);
-
+      // console.log("newGroup:", newGroup);
+      notification.success({
+        message: "Success",
+        description: "Tạo nhóm thành công.",
+      });
       handleCloseGroupModal();
     } catch (error) {
       console.error("Error creating conversation:", error);

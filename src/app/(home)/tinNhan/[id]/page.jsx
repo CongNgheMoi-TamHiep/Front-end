@@ -59,6 +59,7 @@ import { useMutation } from "react-query";
 import FriendApi from "@/apis/FriendApi";
 import imageDefault from "@/constants/imgDefault";
 import { set } from "date-fns";
+import ModalSettingGroup from "@/components/ModalSettingGroup";
 
 const lastTime = "Truy cập 1 phút trước";
 
@@ -105,9 +106,23 @@ const page = ({ params }) => {
     setShowModalProfile(true);
   };
 
-  // Xử lý sự kiện đóng modal
   const handleCloseModal = () => {
     setShowModalProfile(false);
+  };
+
+  const [openModalSettingGroup, setOpenModalSettingGroup] = useState(false);
+  const [isGroupConversation, setIsGroupConversation] = useState(false);
+
+  const handleOpenModalSettingGroup = () => {
+    if (isGroupConversation) {
+      setOpenModalSettingGroup(true);
+    } else {
+      console.log("Chỉ group được mở modal");
+    }
+  };
+
+  const handleCloseModalSettingGroup = () => {
+    setOpenModalSettingGroup(false);
   };
 
   const { mutate: getFriends } = useMutation(
@@ -122,7 +137,6 @@ const page = ({ params }) => {
       },
     }
   );
-
   useEffect(() => {
     const fetchData = async () => {
       //fetch user
@@ -158,6 +172,7 @@ const page = ({ params }) => {
       // setChat(chatReponse.sort((a, b) => {
       //     return new Date(a.createdAt) - new Date(b.createdAt);
       // }));
+      setIsGroupConversation(conversationResponse?.type === "group");
     };
     fetchData();
     getFriends(currentUser?.uid);
@@ -471,6 +486,10 @@ const page = ({ params }) => {
         .includes(searchTerm.toLowerCase());
     });
 
+  const handleCallVideo = (conversationId) => {
+    router.push(`/VideoCall/${conversationId}`);
+  };
+
   return (
     <div className="conversationChat">
       {/* <Spin spinning={false}> */}
@@ -511,14 +530,19 @@ const page = ({ params }) => {
           <Button>
             <LocalPhoneOutlinedIcon />
           </Button>
-          <Button>
+          <Button onClick={() => handleCallVideo(conversationId)}>
             <VideocamOutlinedIcon />
           </Button>
-          <Button>
+          <Button onClick={handleOpenModalSettingGroup}>
             <WidthNormalIcon />
           </Button>
         </div>
       </div>
+      <ModalSettingGroup
+        visible={openModalSettingGroup}
+        onCancel={handleCloseModalSettingGroup}
+        conversationId={conversationId}
+      />
 
       <div className="containerChat" ref={containerRef}>
         <div className="chats">

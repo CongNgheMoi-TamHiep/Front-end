@@ -13,6 +13,7 @@
     "@emotion/styled": "^11.11.0",
     "@mui/icons-material": "^5.15.3",
     "@mui/material": "^5.15.4",
+    "agora-react-uikit": "^1.2.0",
     "antd": "^5.12.8",
     "axios": "^1.6.5",
     "axios-retry": "^4.0.0",
