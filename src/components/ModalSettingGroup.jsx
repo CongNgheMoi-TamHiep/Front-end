@@ -8,18 +8,36 @@ const ModalSettingGroup = ({ visible, onCancel, conversationId }) => {
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [disbandModalVisible, setDisbandModalVisible] = useState(false);
   const [memberModalVisible, setMemberModalVisible] = useState(false);
-  const [members, setMembers] = useState([
-    "member1@gmail.com",
-    "member2@gmail.com",
-    "member3@gmail.com",
-  ]);
+  const [members, setMembers] = useState([]);
   const [pendingMembers, setPendingMembers] = useState([
     "newmember@example.com",
   ]);
   const [transferOwnershipModalVisible, setTransferOwnershipModalVisible] =
     useState(false);
-  const handleTransferOwnership = (selectedMember) => {
-    console.log("Transfer ownership to:", selectedMember);
+
+  useEffect(() => {
+    const fetchMembers = async () => {
+      try {
+        const response = await Group.getMembers(conversationId);
+        setMembers(response);
+      } catch (error) {
+        console.error("Error fetching members:", error);
+      }
+    };
+
+    if (visible) {
+      fetchMembers();
+    }
+  }, [visible, conversationId]);
+  const handleTransferOwnership = async (selectedMember) => {
+    try {
+      await Group.transferAdmin(conversationId, { userId: selectedMember });
+      // router.push(`/tinNhan/${conversationId}`);
+      window.location.reload();
+      console.log("Transfer ownership to:", selectedMember);
+    } catch (error) {
+      console.error("Error transferring ownership:", error);
+    }
   };
 
   const handleAddMember = (member) => {
@@ -245,9 +263,9 @@ const ModalSettingGroup = ({ visible, onCancel, conversationId }) => {
           value={selectedMember}
           onChange={(value) => setSelectedMember(value)}
         >
-          {members.map((member, index) => (
-            <Select.Option key={index} value={member}>
-              {member}
+          {members.map((member) => (
+            <Select.Option key={member._id} value={member._id}>
+              {member.name}
             </Select.Option>
           ))}
         </Select>
