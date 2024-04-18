@@ -25,8 +25,11 @@ const Group = {
       userId
     );
   },
-  async adDeputy(conversationId, userId) {
+  async addDeputy(conversationId, userId) {
     return axiosPrivate.patch(`/group/addDeputy/${conversationId}`, userId);
+  },
+  async memberOutGroup(conversationId) {
+    return axiosPrivate.patch(`/group/outGroup/${conversationId}`);
   },
 };
 

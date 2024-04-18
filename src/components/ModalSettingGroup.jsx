@@ -52,15 +52,19 @@ const ModalSettingGroup = ({ visible, onCancel, conversationId }) => {
   };
   const handleAddGroupDeputy = async (selectedMember) => {
     try {
-      await Group.adDeputy(conversationId, { userId: selectedMember });
+      await Group.addDeputy(conversationId, { userId: selectedMember });
       // router.push(`/tinNhan/${conversationId}`);
-      window.location.reload();
-      console.log("Add deputy to:", selectedMember);
+      // console.log("Add deputy to:", selectedMember);
+      notification.success({
+        description: "Thêm phó nhóm thành công.",
+      });
     } catch (error) {
       console.error("Error add deputy :", error);
+      notification.error({
+        description: "Thêm phó nhóm thất bại.",
+      });
     }
   };
-
   const handleAddMember = (member) => {
     setMembers((prevMembers) => [...prevMembers, member]);
   };
