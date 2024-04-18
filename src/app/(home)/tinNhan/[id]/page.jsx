@@ -178,9 +178,10 @@ const page = ({ params }) => {
     getFriends(currentUser?.uid);
   }, []);
 
-  useEffect(() => {
-    socket.emit("joinRoom", conversationId);
-  }, [conversationId, isFirst, socket]);
+  //chuyển socket joiiRoom ra trang ngoài
+  // useEffect(() => {
+  //   socket.emit("joinRoom", conversationId);
+  // }, [conversationId, isFirst, socket]);
 
   useEffect(() => {
     socket.on("getMessage", (chat) => {

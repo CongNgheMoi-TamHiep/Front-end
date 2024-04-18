@@ -95,6 +95,16 @@ const Layout = ({ children }) => {
     getPhoneBook(currentUser?.uid);
   }, []);
 
+// Chuyển socket ra ngoài
+  useEffect(() => {
+    if(conversations) {
+      conversations.map((item) => {
+        if(!item?.deleted)
+        socket.emit("joinRoom", item.conversationId);
+      })
+    }
+  }, [conversations, socket])
+
   useEffect(() => {
     if (newConversation) {
       setConversations([newConversation, ...conversations]);
@@ -384,7 +394,7 @@ const Layout = ({ children }) => {
   const handleCloseModal = () => {
     setShowModalProfile(false);
   };
-
+  console.log(socket.id)
   return (
     <>
       <div className="nameUser">
@@ -440,6 +450,8 @@ const Layout = ({ children }) => {
                 );
               })
               ?.map((item) => {
+                console.log("item:")
+                console.log(item)
                 return (
                   <div
                     key={item.conversationId}
@@ -516,10 +528,10 @@ const Layout = ({ children }) => {
                             : item?.user?.name + ": ")}
                         {/* {item.type === "group" &&
                           (item.lastMess?.senderId === currentUser?.uid
-                            ? t("You")
+                            ? "Bạn: "
                             : item?.member.find(
                                 (i) => i._id === item.lastMess.senderId
-                              ).name + ": ")} */}
+                              ).name + ": ")}
                         {item.lastMess?.content.text
                           ? item.lastMess?.content.text
                           : item.lastMess?.content.file
