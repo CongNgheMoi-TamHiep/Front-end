@@ -1,5 +1,14 @@
 /* eslint-disable react/jsx-key */
-import { Modal, Button, Input, List, Switch, Select, Checkbox } from "antd";
+import {
+  Modal,
+  Button,
+  Input,
+  List,
+  Switch,
+  Select,
+  Checkbox,
+  notification,
+} from "antd";
 import React, { useEffect, useState } from "react";
 import Group from "@/apis/Group";
 import { useRouter } from "next/navigation";
@@ -13,6 +22,8 @@ const ModalSettingGroup = ({ visible, onCancel, conversationId }) => {
     "newmember@example.com",
   ]);
   const [transferOwnershipModalVisible, setTransferOwnershipModalVisible] =
+    useState(false);
+  const [addGroupDeputyModalVisible, setAddGroupDeputyModalVisible] =
     useState(false);
 
   useEffect(() => {
@@ -39,13 +50,19 @@ const ModalSettingGroup = ({ visible, onCancel, conversationId }) => {
       console.error("Error transferring ownership:", error);
     }
   };
+  const handleAddGroupDeputy = async (selectedMember) => {
+    try {
+      await Group.adDeputy(conversationId, { userId: selectedMember });
+      // router.push(`/tinNhan/${conversationId}`);
+      window.location.reload();
+      console.log("Add deputy to:", selectedMember);
+    } catch (error) {
+      console.error("Error add deputy :", error);
+    }
+  };
 
   const handleAddMember = (member) => {
     setMembers((prevMembers) => [...prevMembers, member]);
-  };
-
-  const handleRemoveMember = (member) => {
-    setMembers((prevMembers) => prevMembers.filter((m) => m !== member));
   };
 
   const handleApproveMember = (member) => {
@@ -115,7 +132,6 @@ const ModalSettingGroup = ({ visible, onCancel, conversationId }) => {
     onCancel,
     conversationId,
     onAddMember,
-    onRemoveMember,
     onApproveMember,
     onRejectMember,
   }) => {
@@ -123,17 +139,7 @@ const ModalSettingGroup = ({ visible, onCancel, conversationId }) => {
     const [members, setMembers] = useState([]);
     const [pendingMembers, setPendingMembers] = useState([]);
 
-    // const handleAddMember = async () => {
-    //   if (newMemberName.trim() !== "") {
-    //     try {
-    //       await Group.addMember(conversationId, { userId: userId });
-    //       setNewMemberName("");
-    //       fetchMembers();
-    //     } catch (error) {
-    //       console.error("Error adding member:", error);
-    //     }
-    //   }
-    // };
+    const handleAddMember = async () => {};
 
     useEffect(() => {
       const fetchMembers = async () => {
@@ -149,6 +155,26 @@ const ModalSettingGroup = ({ visible, onCancel, conversationId }) => {
         fetchMembers();
       }
     }, [visible, conversationId]);
+
+    const handleRemoveMember = async (memberId) => {
+      try {
+        await Group.deleteMember(conversationId, memberId);
+        setMembers((prevMembers) =>
+          prevMembers.filter((member) => member._id !== memberId)
+        );
+        console.log("Member removed successfully:", memberId);
+        notification.success({
+          message: "Success",
+          description: "Đã xoá thành viên thành công.",
+        });
+      } catch (error) {
+        console.error("Error removing member:", error);
+        notification.error({
+          message: "Error",
+          description: "Xoá thành viên thất bại.",
+        });
+      }
+    };
 
     return (
       <Modal
@@ -212,7 +238,9 @@ const ModalSettingGroup = ({ visible, onCancel, conversationId }) => {
               <List.Item
                 key={member._id}
                 actions={[
-                  <Button onClick={() => onRemoveMember(member)}>Xóa</Button>,
+                  <Button onClick={() => handleRemoveMember(member._id)}>
+                    Xóa
+                  </Button>,
                 ]}
               >
                 <div style={{ display: "flex", alignItems: "center" }}>
@@ -235,6 +263,7 @@ const ModalSettingGroup = ({ visible, onCancel, conversationId }) => {
       </Modal>
     );
   };
+
   const TransferOwnershipModal = ({
     visible,
     onCancel,
@@ -272,6 +301,43 @@ const ModalSettingGroup = ({ visible, onCancel, conversationId }) => {
       </Modal>
     );
   };
+  const AddGroupDeputy = ({
+    visible,
+    onCancel,
+    members,
+    onAddGroupDeputy,
+    onSave,
+  }) => {
+    const [selectedMember, setSelectedMember] = useState(null);
+
+    const handleAddGroupDeputy = () => {
+      onAddGroupDeputy(selectedMember);
+      setSelectedMember(null);
+      onSave();
+    };
+
+    return (
+      <Modal
+        visible={visible}
+        onCancel={onCancel}
+        onOk={handleAddGroupDeputy}
+        title="Thêm phó nhóm"
+      >
+        <Select
+          style={{ width: "100%" }}
+          placeholder="Chọn thành viên"
+          value={selectedMember}
+          onChange={(value) => setSelectedMember(value)}
+        >
+          {members.map((member) => (
+            <Select.Option key={member._id} value={member._id}>
+              {member.name}
+            </Select.Option>
+          ))}
+        </Select>
+      </Modal>
+    );
+  };
 
   const DisbandGroupModal = ({ visible, onCancel, onOk, conversationId }) => {
     const handleConfirmDisband = async () => {
@@ -283,6 +349,10 @@ const ModalSettingGroup = ({ visible, onCancel, conversationId }) => {
         onOk();
       } catch (error) {
         console.error("Error disbanding group:", error);
+        notification.error({
+          message: "Lỗi",
+          description: "Bạn không phải admin nên không thể giải tán nhóm.",
+        });
       }
     };
 
@@ -304,7 +374,6 @@ const ModalSettingGroup = ({ visible, onCancel, conversationId }) => {
       </Modal>
     );
   };
-
   return (
     <Modal
       visible={visible}
@@ -349,6 +418,24 @@ const ModalSettingGroup = ({ visible, onCancel, conversationId }) => {
             onSave={() => setTransferOwnershipModalVisible(false)}
           />
         </div>
+        <div>
+          <div>
+            <Button
+              style={{ border: "none", padding: "0px", background: "#fff" }}
+              onClick={() => setAddGroupDeputyModalVisible(true)}
+            >
+              Thêm phó nhóm
+            </Button>
+          </div>
+
+          <AddGroupDeputy
+            visible={addGroupDeputyModalVisible}
+            onCancel={() => setAddGroupDeputyModalVisible(false)}
+            members={members}
+            onAddGroupDeputy={handleAddGroupDeputy}
+            onSave={() => setAddGroupDeputyModalVisible(false)}
+          />
+        </div>
 
         <div style={{ marginTop: "6px" }}>
           <span style={{ marginRight: "55px" }}>Duyệt Thành Viên</span>
@@ -358,15 +445,15 @@ const ModalSettingGroup = ({ visible, onCancel, conversationId }) => {
             // onClick={() => setMemberModalVisible(!memberModalVisible)}
           />
         </div>
-        <div style={{ marginTop: "6px" }}>
+        {/* <div style={{ marginTop: "6px" }}>
           <span style={{ marginRight: "30px" }}>Quyền sửa thông tin </span>
           <Switch checkedChildren="" unCheckedChildren="" />
-        </div>
+        </div> */}
 
-        <div style={{ marginTop: "6px" }}>
+        {/* <div style={{ marginTop: "6px" }}>
           <span style={{ marginRight: "40px" }}>Quyền gửi tin nhắn </span>
           <Switch checkedChildren="" unCheckedChildren="" />
-        </div>
+        </div> */}
         <div>
           <Button
             style={{ border: "none", padding: "0px", background: "#fff" }}
@@ -387,7 +474,6 @@ const ModalSettingGroup = ({ visible, onCancel, conversationId }) => {
         onCancel={() => setMemberModalVisible(false)}
         pendingMembers={pendingMembers}
         onAddMember={handleAddMember}
-        onRemoveMember={handleRemoveMember}
         onApproveMember={handleApproveMember}
         onRejectMember={handleRejectMember}
         conversationId={conversationId}

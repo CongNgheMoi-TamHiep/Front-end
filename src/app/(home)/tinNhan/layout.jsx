@@ -393,7 +393,7 @@ const Layout = ({ children }) => {
   const handleCloseModal = () => {
     setShowModalProfile(false);
   };
-  console.log(socket.id);
+  // console.log(socket.id);
   return (
     <>
       <div className="nameUser">

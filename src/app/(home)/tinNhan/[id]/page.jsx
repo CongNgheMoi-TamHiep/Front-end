@@ -155,11 +155,11 @@ const page = ({ params }) => {
         setConversation(conversationResponse);
       } else {
         userNhan1 = await userApis.getUserById(receiverId);
-        conversationId1 = CombineUserId(currentUser?.uid, userNhan1._id);
+        conversationId1 = CombineUserId(currentUser?.uid, userNhan1?._id);
         setConversationId(conversationId1);
       }
 
-      userNhan1 = await userApis.getUserById(userNhan1._id);
+      userNhan1 = await userApis.getUserById(userNhan1?._id);
       // console.log(userNhan1);
 
       me1 = await userApis.getUserById(currentUser?.uid);

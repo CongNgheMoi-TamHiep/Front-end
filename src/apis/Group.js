@@ -19,7 +19,15 @@ const Group = {
   async transferAdmin(conversationId, userId) {
     return axiosPrivate.patch(`/group/transferAdmin/${conversationId}`, userId);
   },
-  // console.log("");
+  async deleteMember(conversationId, userId) {
+    return axiosPrivate.delete(
+      `/group/removeMember/${conversationId}?userId=${userId}`,
+      userId
+    );
+  },
+  async adDeputy(conversationId, userId) {
+    return axiosPrivate.patch(`/group/addDeputy/${conversationId}`, userId);
+  },
 };
 
 export default Group;
