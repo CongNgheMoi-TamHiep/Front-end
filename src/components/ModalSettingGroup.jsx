@@ -9,15 +9,19 @@ import {
   Checkbox,
   notification,
 } from "antd";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import Group from "@/apis/Group";
 import { useRouter } from "next/navigation";
+import { AuthContext } from "@/context/AuthProvider";
 const ModalSettingGroup = ({ visible, onCancel, conversationId }) => {
   const router = useRouter();
+
+  const currentUser = useContext(AuthContext);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [disbandModalVisible, setDisbandModalVisible] = useState(false);
   const [memberModalVisible, setMemberModalVisible] = useState(false);
   const [members, setMembers] = useState([]);
+  const [roleCurrentUser, setRoleCurrentUser] = useState("");
   const [pendingMembers, setPendingMembers] = useState([
     "newmember@example.com",
   ]);
@@ -142,13 +146,22 @@ const ModalSettingGroup = ({ visible, onCancel, conversationId }) => {
     const [newMemberName, setNewMemberName] = useState("");
     const [members, setMembers] = useState([]);
     const [pendingMembers, setPendingMembers] = useState([]);
-
     const handleAddMember = async () => {};
 
     useEffect(() => {
       const fetchMembers = async () => {
         try {
           const response = await Group.getMembers(conversationId);
+          response.some((member) => {
+            if (
+              (member.role === "admin" || member.role === "deputy") &&
+              member._id === currentUser.uid
+            ) {
+              setRoleCurrentUser(member.role);
+              return true;
+            }
+            return false;
+          });
           setMembers(response);
         } catch (error) {
           console.error("Error fetching members:", error);
@@ -407,7 +420,12 @@ const ModalSettingGroup = ({ visible, onCancel, conversationId }) => {
         <div>
           <div>
             <Button
-              style={{ border: "none", padding: "0px", background: "#fff" }}
+              style={{
+                border: "none",
+                padding: "0px",
+                background: "#fff",
+                display: roleCurrentUser === "admin" ? "block" : "none",
+              }}
               onClick={() => setTransferOwnershipModalVisible(true)}
             >
               Chuyển quyền trưởng nhóm
@@ -425,7 +443,12 @@ const ModalSettingGroup = ({ visible, onCancel, conversationId }) => {
         <div>
           <div>
             <Button
-              style={{ border: "none", padding: "0px", background: "#fff" }}
+              style={{
+                border: "none",
+                padding: "0px",
+                background: "#fff",
+                display: roleCurrentUser === "admin" ? "block" : "none",
+              }}
               onClick={() => setAddGroupDeputyModalVisible(true)}
             >
               Thêm phó nhóm
@@ -441,7 +464,12 @@ const ModalSettingGroup = ({ visible, onCancel, conversationId }) => {
           />
         </div>
 
-        <div style={{ marginTop: "6px" }}>
+        <div
+          style={{
+            marginTop: "6px",
+            display: roleCurrentUser === "" ? "none" : "block",
+          }}
+        >
           <span style={{ marginRight: "55px" }}>Duyệt Thành Viên</span>
           <Switch
             checkedChildren=""
@@ -460,7 +488,12 @@ const ModalSettingGroup = ({ visible, onCancel, conversationId }) => {
         </div> */}
         <div>
           <Button
-            style={{ border: "none", padding: "0px", background: "#fff" }}
+            style={{
+              border: "none",
+              padding: "0px",
+              background: "#fff",
+              display: roleCurrentUser === "" ? "none" : "block",
+            }}
             onClick={() => setDisbandModalVisible(true)}
           >
             Giải tán nhóm

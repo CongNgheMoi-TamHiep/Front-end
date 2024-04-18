@@ -561,7 +561,7 @@ const page = ({ params }) => {
 
       <div className="containerChat" ref={containerRef}>
         <div className="chats">
-          {chats?.map((item, index) => {
+          {chats !== undefined && chats?.map((item, index) => {
             if (item.deletedFor?.includes(currentUser?.uid))
               return (
                 <div
