@@ -1,5 +1,5 @@
 "use client";
-import React, { use, useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import "./styles.scss";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -12,7 +12,16 @@ import { SocketContext } from "@/context/SocketProvider";
 import SearchIcon from "@mui/icons-material/Search";
 import GroupAddSharpIcon from "@mui/icons-material/GroupAddSharp";
 import PersonAddAltSharpIcon from "@mui/icons-material/PersonAddAltSharp";
-import { Col, Input, Row, Space, Modal, Divider, Flex } from "antd";
+import {
+  Col,
+  Input,
+  Row,
+  Space,
+  Modal,
+  Divider,
+  Flex,
+  notification,
+} from "antd";
 import { MuiTelInput } from "mui-tel-input";
 import ModalConfirmAddFriend from "@/components/ModalConfirmAddFriend";
 import openNotificationWithIcon from "@/components/OpenNotificationWithIcon";
@@ -20,13 +29,19 @@ import PhotoOutlinedIcon from "@mui/icons-material/PhotoOutlined";
 import { ca } from "date-fns/locale";
 import { useSocket } from "../../../context/SocketProvider";
 import ModalProfileUser from "@/components/ModalProfileUser";
+import ModalAddMembersGroup from "@/components/ModalAddMembersGroup";
 import { set } from "date-fns";
 import { useMutation } from "react-query";
 import FriendApi from "@/apis/FriendApi";
 import { Typography } from "antd";
+import { useTranslation } from "react-i18next";
+import ConversationApi from "@/apis/ConversationApi";
+import axiosPrivate from "@/apis/axios";
+import Group from "@/apis/Group";
 
 const Layout = ({ children }) => {
   const { Text } = Typography;
+  const { t } = useTranslation();
 
   const router = useRouter();
   const currentUser = React.useContext(AuthContext);
@@ -168,23 +183,19 @@ const Layout = ({ children }) => {
   }, []);
 
   const formatTimeDifference = (createdAt) => {
-    const differenceInSeconds = Math.floor(
-      (currentTime - createdAt + 7000) / 1000
-    );
-    if (differenceInSeconds < 0) {
-      return "5 giây";
-    }
+    const currentTime = new Date();
+    const differenceInSeconds = Math.floor((currentTime - createdAt) / 1000);
     if (differenceInSeconds < 60) {
-      return `${differenceInSeconds} giây`;
+      return `${differenceInSeconds} ${t("seconds")}`;
     } else if (differenceInSeconds < 3600) {
       const minutes = Math.floor(differenceInSeconds / 60);
-      return `${minutes} phút`;
+      return `${minutes} ${t("minutes")}`;
     } else if (differenceInSeconds < 86400) {
       const hours = Math.floor(differenceInSeconds / 3600);
-      return `${hours} giờ`;
+      return `${hours} ${t("hours")}`;
     } else {
       const days = Math.floor(differenceInSeconds / 86400);
-      return `${days} ngày`;
+      return `${days} ${t("days")}`;
     }
   };
 
@@ -194,6 +205,41 @@ const Layout = ({ children }) => {
 
   const openModelCreateGroup = () => {
     setOpenModalCreateGroup(true);
+  };
+  const handleCloseGroupModal = () => {
+    setOpenModalCreateGroup(false);
+  };
+  const handleCreateGroup = async (groupName, selectedMembers) => {
+    try {
+      const membersWithId = selectedMembers.map((member) => ({ _id: member }));
+      const currentUserWithId = [currentUser.uid].map((admin) => ({
+        _id: admin,
+      }));
+
+      const combinedMembers = [...membersWithId, ...currentUserWithId];
+      const newGroup = {
+        name: groupName,
+        members: membersWithId,
+      };
+
+      const response = await await Group.create(newGroup);
+      console.log("New group created:", response);
+      router.push(`/tinNhan/${response?._id}`);
+
+      // console.log("newGroup:", newGroup);
+      notification.success({
+        message: "Success",
+        description: "Tạo nhóm thành công.",
+      });
+      handleCloseGroupModal();
+    } catch (error) {
+      console.error("Error creating conversation:", error);
+
+      notification.error({
+        message: "Error",
+        description: "Không tạo được nhóm. Vui lòng thử lại sau.",
+      });
+    }
   };
 
   const handleSearchChange = (event) => {
@@ -217,12 +263,12 @@ const Layout = ({ children }) => {
               setUserFind({ ...userFind, state: "nofriend" });
               openNotificationWithIcon(
                 "success",
-                "Cancel request",
-                "Cancel request to friend"
+                t("Cancel request"),
+                t("Cancel request to friend")
               );
             }}
           >
-            Cancel request
+            {t("Cancel request")}
           </Button>
         );
       case "pending2":
@@ -237,12 +283,12 @@ const Layout = ({ children }) => {
               e.stopPropagation();
               openNotificationWithIcon(
                 "success",
-                "Accept",
-                "Accept friend request"
+                t("Accept"),
+                t("Accept friend request")
               );
             }}
           >
-            Accept
+            {t("Accept")}
           </Button>
         );
       case "declined1":
@@ -261,7 +307,7 @@ const Layout = ({ children }) => {
               setOpenModalConfirmAddFriend(true);
             }}
           >
-            Add friend
+            {t("Add friend")}
           </Button>
         );
 
@@ -277,12 +323,12 @@ const Layout = ({ children }) => {
               e.stopPropagation();
               openNotificationWithIcon(
                 "success",
-                "Calling",
-                "Calling to friend"
+                t("Calling"),
+                t("Calling to friend")
               );
             }}
           >
-            Call
+            {t("Call")}
           </Button>
         );
     }
@@ -323,10 +369,10 @@ const Layout = ({ children }) => {
           >
             <h4>{item?.name}</h4>
             {findGroup ? (
-              <p>In group a</p>
+              <p>{t("In group a")}</p>
             ) : (
               <p>
-                Phone number: <span>{number}</span>
+                {t("Phone number")}: <span>{number}</span>
               </p>
             )}
           </Col>
@@ -369,7 +415,7 @@ const Layout = ({ children }) => {
             <Col span={19}>
               <Input
                 size="middle"
-                placeholder="Searh"
+                placeholder={t("Search")}
                 value={searchTerm}
                 onChange={handleSearchChange}
                 prefix={<SearchIcon style={{ fontSize: "20px" }} />}
@@ -476,14 +522,14 @@ const Layout = ({ children }) => {
                       >
                         {item.type === "couple" &&
                           (item.lastMess?.senderId === currentUser?.uid
-                            ? "Bạn: "
+                            ? t("You")
                             : item?.user?.name + ": ")}
-                        {item.type === "group" &&
+                        {/* {item.type === "group" &&
                           (item.lastMess?.senderId === currentUser?.uid
-                            ? "Bạn: "
-                            : item?.members.find(
+                            ? t("You")
+                            : item?.member.find(
                                 (i) => i._id === item.lastMess.senderId
-                              )?.name + ": ")}
+                              ).name + ": ")} */}
                         {item.lastMess?.content.text
                           ? item.lastMess?.content.text
                           : item.lastMess?.content.file
@@ -501,7 +547,7 @@ const Layout = ({ children }) => {
 
       <Modal
         open={openModalAddFriend}
-        title={<h3>Add friend</h3>}
+        title={<h3>{t("Add friend")}</h3>}
         onCancel={() => {
           setOpenModalAddFriend(false);
           setUserFind(undefined);
@@ -535,7 +581,7 @@ const Layout = ({ children }) => {
             }}
             fullWidth
             id="phone"
-            placeholder="Phone number"
+            placeholder={t("Phone number")}
             name="phone"
             style={{
               position: "sticky",
@@ -557,7 +603,7 @@ const Layout = ({ children }) => {
           >
             {userFind !== undefined && (
               <div>
-                <p>Find friend via phone number</p>
+                <p>{t("Find friend via phone number")}</p>
                 <div>
                   {buttonAddFriend({
                     key: Date.now().toString(),
@@ -603,7 +649,7 @@ const Layout = ({ children }) => {
               color="black"
               padding="10px 25px"
             >
-              CANCEL
+              {t("CANCEL")}
             </Button>
             <Button
               key="submit"
@@ -613,11 +659,17 @@ const Layout = ({ children }) => {
               padding="10px 25px"
               onClick={() => getUserFriend()}
             >
-              SEARCH
+              {t("SEARCH")}
             </Button>
           </Flex>
         </div>
       </Modal>
+
+      <ModalAddMembersGroup
+        visible={openModalCreateGroup}
+        onCancel={handleCloseGroupModal}
+        onAddMembers={handleCreateGroup}
+      />
 
       <ModalProfileUser
         isOpen={showModalProfile}
