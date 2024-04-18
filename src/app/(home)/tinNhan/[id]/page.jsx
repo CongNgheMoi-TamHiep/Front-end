@@ -189,6 +189,12 @@ const page = ({ params }) => {
       // console.log(chat);
       setChatReceived(chat);
     });
+    socket.on("receive-call", (data) => {
+      console.log(data);
+      if (data.caller != currentUser?.uid) {
+        router.push(`/VideoCall/${data.channel}`);
+      }
+    });
   }, []);
 
   useEffect(() => {
@@ -488,6 +494,14 @@ const page = ({ params }) => {
     });
 
   const handleCallVideo = (conversationId) => {
+    console.log("object: ", {
+      channel: conversationId,
+      caller: currentUser.uid,
+    });
+    socket.emit("video-call", {
+      channel: conversationId,
+      caller: currentUser.uid,
+    });
     router.push(`/VideoCall/${conversationId}`);
   };
 

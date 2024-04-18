@@ -100,15 +100,14 @@ const Layout = ({ children }) => {
     getPhoneBook(currentUser?.uid);
   }, []);
 
-// Chuyển socket ra ngoài
-  useEffect(() => { 
-    if(conversations) { 
+  // Chuyển socket ra ngoài
+  useEffect(() => {
+    if (conversations) {
       conversations.map((item) => {
-        if(!item?.deleted)
-        socket.emit("joinRoom", item.conversationId);
-      })
+        if (!item?.deleted) socket.emit("joinRoom", item.conversationId);
+      });
     }
-  }, [conversations, socket])
+  }, [conversations, socket]);
 
   useEffect(() => {
     if (newConversation) {
@@ -161,7 +160,8 @@ const Layout = ({ children }) => {
 
   const filteredConversations = conversations
     ?.sort(
-      (b, a) => new Date(a.lastMess?.createdAt) - new Date(b.lastMess?.createdAt)
+      (b, a) =>
+        new Date(a.lastMess?.createdAt) - new Date(b.lastMess?.createdAt)
     )
     ?.filter((item) => {
       const searchValue = searchTerm.toLowerCase();
@@ -400,6 +400,10 @@ const Layout = ({ children }) => {
     setShowModalProfile(false);
   };
 
+  const filterPhoneBook = phoneBook?.filter(
+    (item) => !friends.map((f) => f.userId).includes(item.userId)
+  );
+
   return (
     <>
       <div className="nameUser">
@@ -624,7 +628,7 @@ const Layout = ({ children }) => {
                 <p>You may know</p>
                 {filterPhoneBook?.map((phone, index) => {
                   return (
-                    <div>
+                    <div key={index}>
                       {buttonAddFriend({
                         key: Date.now().toString() + index,
                         findGroup: true,

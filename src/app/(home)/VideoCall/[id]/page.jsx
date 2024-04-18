@@ -1,12 +1,17 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 
 import AgoraUIKit from "agora-react-uikit";
 import { useRouter } from "next/navigation";
+import { AuthContext } from "@/context/AuthProvider";
+import { useSocket } from "@/context/SocketProvider";
 
 const Page = (conversationId) => {
   const [videoCall, setVideoCall] = useState(false);
   const router = useRouter();
+  const currentUser = useContext(AuthContext);
+  const { socket } = useSocket();
+
   useEffect(() => {
     setVideoCall(true);
   }, [conversationId]);
@@ -20,21 +25,23 @@ const Page = (conversationId) => {
   const callbacks = {
     EndCall: () => {
       setVideoCall(false);
-      router.push("/tinNhan");
+      socket.emit("end-call", {
+        channel: conversationId.params.id,
+      });
+      window.location.href = `${window.location.origin}/tinNhan/${conversationId.params.id}`;
+      // window.location.reload();
     },
   };
 
   return (
     <div className="App">
-      {videoCall ? (
+      {videoCall && (
         <div style={{ display: "flex", width: "100vw", height: "100vh" }}>
           <AgoraUIKit rtcProps={rtcProps} callbacks={callbacks} />
         </div>
-      ) : null}
+      )}
     </div>
   );
 };
 
 export default Page;
-
-
