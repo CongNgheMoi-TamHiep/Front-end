@@ -95,15 +95,14 @@ const Layout = ({ children }) => {
     getPhoneBook(currentUser?.uid);
   }, []);
 
-// Chuyển socket ra ngoài
+  // Chuyển socket ra ngoài
   useEffect(() => {
-    if(conversations) {
+    if (conversations) {
       conversations.map((item) => {
-        if(!item?.deleted)
-        socket.emit("joinRoom", item.conversationId);
-      })
+        if (!item?.deleted) socket.emit("joinRoom", item.conversationId);
+      });
     }
-  }, [conversations, socket])
+  }, [conversations, socket]);
 
   useEffect(() => {
     if (newConversation) {
@@ -156,7 +155,8 @@ const Layout = ({ children }) => {
 
   const filteredConversations = conversations
     ?.sort(
-      (b, a) => new Date(a.lastMess.createdAt) - new Date(b.lastMess.createdAt)
+      (b, a) =>
+        new Date(a.lastMess?.createdAt) - new Date(b.lastMess?.createdAt)
     )
     ?.filter((item) => {
       const searchValue = searchTerm.toLowerCase();
@@ -394,7 +394,7 @@ const Layout = ({ children }) => {
   const handleCloseModal = () => {
     setShowModalProfile(false);
   };
-  console.log(socket.id)
+  console.log(socket.id);
   return (
     <>
       <div className="nameUser">
@@ -445,13 +445,11 @@ const Layout = ({ children }) => {
             {filteredConversations
               ?.sort((b, a) => {
                 return (
-                  new Date(a.lastMess.createdAt) -
-                  new Date(b.lastMess.createdAt)
+                  new Date(a.lastMess?.createdAt) -
+                  new Date(b.lastMess?.createdAt)
                 );
               })
               ?.map((item) => {
-                console.log("item:")
-                console.log(item)
                 return (
                   <div
                     key={item.conversationId}
@@ -528,10 +526,10 @@ const Layout = ({ children }) => {
                             : item?.user?.name + ": ")}
                         {/* {item.type === "group" &&
                           (item.lastMess?.senderId === currentUser?.uid
-                            ? "Bạn: "
+                            ? t("You")
                             : item?.member.find(
                                 (i) => i._id === item.lastMess.senderId
-                              ).name + ": ")}
+                              ).name + ": ")} */}
                         {item.lastMess?.content.text
                           ? item.lastMess?.content.text
                           : item.lastMess?.content.file
