@@ -16,6 +16,7 @@ const ModalSettingGroup = ({ visible, onCancel, conversationId }) => {
   const router = useRouter();
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [disbandModalVisible, setDisbandModalVisible] = useState(false);
+  const [outGroupModalVisible, setOutGroupModalVisible] = useState(false);
   const [memberModalVisible, setMemberModalVisible] = useState(false);
   const [members, setMembers] = useState([]);
   const [pendingMembers, setPendingMembers] = useState([
@@ -378,6 +379,44 @@ const ModalSettingGroup = ({ visible, onCancel, conversationId }) => {
       </Modal>
     );
   };
+  const OutGroupModal = ({ visible, onCancel, onOk, conversationId }) => {
+    const handleOutGroupModal = async () => {
+      try {
+        await Group.memberOutGroup(conversationId);
+        router.push("/tinNhan");
+        // console.log(conversationId);
+        window.location.reload();
+        console.log("Out group successfully");
+        onOk();
+        notification.success({
+          description: "Đã rời khỏi nhóm.",
+        });
+      } catch (error) {
+        console.error("Error out group:", error);
+        notification.error({
+          description: "Lỗi. Vui lòng thử lại sau.",
+        });
+      }
+    };
+
+    return (
+      <Modal
+        visible={visible}
+        onCancel={onCancel}
+        footer={[
+          <Button key="cancel" onClick={onCancel}>
+            Hủy
+          </Button>,
+          <Button key="confirm" type="danger" onClick={handleOutGroupModal}>
+            Xác nhận
+          </Button>,
+        ]}
+        title="Rời khỏi nhóm"
+      >
+        <p>Bạn có chắc chắn muốn rời khỏi nhóm?</p>
+      </Modal>
+    );
+  };
   return (
     <Modal
       visible={visible}
@@ -466,6 +505,14 @@ const ModalSettingGroup = ({ visible, onCancel, conversationId }) => {
             Giải tán nhóm
           </Button>
         </div>
+        <div>
+          <Button
+            style={{ border: "none", padding: "0px", background: "#fff" }}
+            onClick={() => setOutGroupModalVisible(true)}
+          >
+            Rời khỏi nhóm
+          </Button>
+        </div>
       </div>
       <EditGroupInfoModal
         visible={editModalVisible}
@@ -486,6 +533,12 @@ const ModalSettingGroup = ({ visible, onCancel, conversationId }) => {
         visible={disbandModalVisible}
         onCancel={() => setDisbandModalVisible(false)}
         onOk={() => setDisbandModalVisible(false)}
+        conversationId={conversationId}
+      />
+      <OutGroupModal
+        visible={outGroupModalVisible}
+        onCancel={() => setOutGroupModalVisible(false)}
+        onOk={() => setOutGroupModalVisible(false)}
         conversationId={conversationId}
       />
     </Modal>
