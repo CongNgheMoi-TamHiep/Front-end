@@ -131,6 +131,11 @@ const FriendRequestPage = () => {
         ))}
       </div>
 
+      {friendRequestReceived?.length === 0 &&
+        friendRequestSend?.length === 0 && (
+          <h4 className="pTitleFR">Request empty</h4>
+        )}
+
       <Modal
         title={<h3>{openModel?.status == 2 ? "Cancel request" : "Confirm"}</h3>}
         open={openModel && true}

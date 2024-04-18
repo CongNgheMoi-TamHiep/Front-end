@@ -45,6 +45,7 @@ const Layout = ({ children }) => {
   const { socket } = useSocket();
   const [newConversation, setNewConversation] = useState(null);
   const [showModalProfile, setShowModalProfile] = useState(false);
+  const [friends, setFriends] = useState([]);
 
   const handleRouteToDetailConversation = (item) => {
     setCurrentConversation(item);
@@ -63,6 +64,10 @@ const Layout = ({ children }) => {
     // console.log(userConversations.conversations);
     const user1 = await userApis.getUserById(currentUser.uid);
     setUser(user1);
+
+    const users = await FriendApi.getFriends(currentUser.uid);
+    // console.log(users);
+    setFriends(users);
   };
 
   useEffect(() => {
@@ -313,7 +318,7 @@ const Layout = ({ children }) => {
           >
             <h4>{item?.name}</h4>
             {findGroup ? (
-              <p>In group a</p>
+              <p>Phone: {item.number}</p>
             ) : (
               <p>
                 Phone number: <span>{number}</span>
@@ -328,7 +333,7 @@ const Layout = ({ children }) => {
               alignItems: "center",
             }}
           >
-            {checkFriendState(item.state)}
+            {checkFriendState(findGroup ? "nofriend" : item.state)}
           </Col>
         </Row>
       </Button>
@@ -338,6 +343,10 @@ const Layout = ({ children }) => {
   const handleCloseModal = () => {
     setShowModalProfile(false);
   };
+
+  const filterPhoneBook = phoneBook?.filter(
+    (item) => !friends.map((f) => f.userId).includes(item.userId)
+  );
 
   return (
     <>
@@ -555,6 +564,23 @@ const Layout = ({ children }) => {
                     item: userFind,
                   })}
                 </div>
+              </div>
+            )}
+            {(filterPhoneBook !== undefined ||
+              filterPhoneBook?.length == 0) && (
+              <div>
+                <p>You may know</p>
+                {filterPhoneBook?.map((phone, index) => {
+                  return (
+                    <div>
+                      {buttonAddFriend({
+                        key: Date.now().toString() + index,
+                        findGroup: true,
+                        item: phone,
+                      })}
+                    </div>
+                  );
+                })}
               </div>
             )}
             {/* <div>
