@@ -12,6 +12,7 @@ axiosPrivate.interceptors.request.use(
     async (config) => {
         // Do something before request is sent
         const token = await auth.currentUser?.getIdToken();
+        console.log(token)
         config.headers["Authorization"] = `Bearer ${token}`;
         return config;
     },
