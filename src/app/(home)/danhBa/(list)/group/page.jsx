@@ -1,12 +1,13 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import "./styles.scss";
 import FilterAltOutlinedIcon from "@mui/icons-material/FilterAltOutlined";
 import SearchIcon from "@mui/icons-material/Search";
 import SwapVertIcon from "@mui/icons-material/SwapVert";
-import Image from "next/image";
+import { useTranslation } from "react-i18next";
 
 const GroupPage = () => {
+  const { t } = useTranslation();
   const [groups, setGroups] = useState([
     {
       id: 21,
@@ -53,14 +54,16 @@ const GroupPage = () => {
 
   return (
     <div className="friend">
-      <h3>Nhóm ({filteredGroups.length})</h3>
+      <h3>
+        {t("Groups")} ({filteredGroups.length})
+      </h3>
       <div className="contentF">
         <div className="timLoc">
           <div className="timKiem">
             <SearchIcon sx={{ color: "#858585" }} />
             <input
               type="text"
-              placeholder="Tìm kiếm nhóm"
+              placeholder={t("Search groups")}
               value={searchTerm}
               onChange={handleSearchChange}
             />
@@ -74,15 +77,15 @@ const GroupPage = () => {
                 onChange={handleSortChange}
                 value={sortOrder}
               >
-                <option value={0}>Tên (A - Z)</option>
-                <option value={1}>Tên (Z - A)</option>
+                <option value={0}>{t("Name (A - Z)")}</option>
+                <option value={1}>{t("Name (Z - A)")}</option>
               </select>
             </div>
             <div className="selectLoc">
               <FilterAltOutlinedIcon />
               <select name="locType" id="locType">
-                <option value={0}>Tất cả</option>
-                <option value={1}>Phân loại</option>
+                <option value={0}>{t("All")}</option>
+                <option value={1}>{t("Categorized")}</option>
               </select>
             </div>
           </div>

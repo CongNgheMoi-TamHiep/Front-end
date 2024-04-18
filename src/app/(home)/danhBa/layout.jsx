@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 
 const Layout = ({ children }) => {
   const items = [
-    { id: 1, title: "Friend Lists", icon: <PersonIcon className="icon" /> } ,
+    { id: 1, title: "Friend Lists", icon: <PersonIcon className="icon" /> },
     { id: 2, title: "Joined Groups", icon: <GroupIcon className="icon" /> },
     { id: 3, title: "Friend Requests", icon: <DraftsIcon className="icon" /> },
   ];
@@ -37,12 +37,12 @@ const Layout = ({ children }) => {
 
   useEffect(() => {
     router.push(changePageChildren(active));
-  }, [active])
+  }, [active]);
 
   return (
     <div className="danhBa">
       <div className="itemL">
-        <div className="search">Search</div>
+        <div className="search"></div>
         <div className="items">
           {items.map((item) => (
             <div

@@ -12,40 +12,14 @@ import { Modal } from "antd";
 import Button from "@/components/Button";
 import openNotificationWithIcon from "@/components/OpenNotificationWithIcon";
 import { set } from "date-fns";
+import { useTranslation } from "react-i18next";
 
 const FriendRequestPage = () => {
-  // const items = [
-  //   {
-  //     id: 1,
-  //     name: "Lê Thanh Tùng",
-  //     image:
-  //       "https://media.licdn.com/dms/image/D4E0BAQG-i2j7Q2WFIA/company-logo_200_200/0/1694593112031/img_logo?e=2147483647&v=beta&t=o1304VK0Zbh3CBA-8_LNYNZZCNrQjMIBS-nwKrAMzbY",
-  //   },
-  //   {
-  //     id: 2,
-  //     name: "Lê Hữu Hiệp",
-  //     image:
-  //       "https://media.licdn.com/dms/image/D4E0BAQG-i2j7Q2WFIA/company-logo_200_200/0/1694593112031/img_logo?e=2147483647&v=beta&t=o1304VK0Zbh3CBA-8_LNYNZZCNrQjMIBS-nwKrAMzbY",
-  //   },
-  //   {
-  //     id: 3,
-  //     name: "Nguyễn Khánh An",
-  //     image:
-  //       "https://media.licdn.com/dms/image/D4E0BAQG-i2j7Q2WFIA/company-logo_200_200/0/1694593112031/img_logo?e=2147483647&v=beta&t=o1304VK0Zbh3CBA-8_LNYNZZCNrQjMIBS-nwKrAMzbY",
-  //   },
-  //   {
-  //     id: 4,
-  //     name: "Lò Văn Tủn",
-  //     image:
-  //       "https://media.licdn.com/dms/image/D4E0BAQG-i2j7Q2WFIA/company-logo_200_200/0/1694593112031/img_logo?e=2147483647&v=beta&t=o1304VK0Zbh3CBA-8_LNYNZZCNrQjMIBS-nwKrAMzbY",
-  //   },
-  // ];
-
+  const { t } = useTranslation();
   const [friendRequestReceived, setFriendRequestReceived] = useState([]);
   const [friendRequestSend, setFriendRequestSend] = useState([]);
   const [openModel, setOpenModel] = useState(undefined);
   const currentUser = useContext(AuthContext);
-  // console.log(currentUser);
 
   useEffect(() => {
     const fetch = async () => {
@@ -66,7 +40,7 @@ const FriendRequestPage = () => {
     <div>
       {friendRequestReceived.length !== 0 && (
         <h4 className="pTitleFR">
-          Request received ({friendRequestReceived.length})
+          {t("Request received")} ({friendRequestReceived.length})
         </h4>
       )}
       <div className="containerFR">
@@ -81,20 +55,22 @@ const FriendRequestPage = () => {
               <p className="nameFR">{item.name}</p>
             </div>
             <div className="bottomItemFR">
-              <span>Xin chào, mình là {item.name}. Kết bạn cùng mình nhé!</span>
+              <span>
+                {t("Hello, I'm")} {item.name}. {t("Let's be friends!")}
+              </span>
             </div>
             <div className="buttonItemFR">
               <button
                 className="btn declineFR"
                 onClick={() => setOpenModel({ status: 0, id: item._id })}
               >
-                Decline
+                {t("Decline")}
               </button>
               <button
                 className="btn acceptFR"
                 onClick={() => setOpenModel({ status: 1, id: item._id })}
               >
-                Accept
+                {t("Accept")}
               </button>
             </div>
           </div>
@@ -102,7 +78,9 @@ const FriendRequestPage = () => {
       </div>
 
       {friendRequestSend.length !== 0 && (
-        <h4 className="pTitleFR">Request send ({friendRequestSend.length})</h4>
+        <h4 className="pTitleFR">
+          {t("Request send")} ({friendRequestSend.length})
+        </h4>
       )}
       <div className="containerFR">
         {friendRequestSend.map((item, index) => (
@@ -116,7 +94,7 @@ const FriendRequestPage = () => {
               <p className="nameFR">{item.name}</p>
             </div>
             <div className="bottomItemFR">
-              <span>Invitation has been sent to this person</span>
+              <span>{t("Invitation has been sent to this person")}</span>
             </div>
             <div className="buttonItemFR">
               <button
@@ -124,7 +102,7 @@ const FriendRequestPage = () => {
                 style={{ backgroundColor: "#A9ACB0", border: "none" }}
                 onClick={() => setOpenModel({ status: 2, id: item._id })}
               >
-                Cancel request
+                {t("Cancel request")}
               </button>
             </div>
           </div>
@@ -137,24 +115,25 @@ const FriendRequestPage = () => {
         )}
 
       <Modal
-        title={<h3>{openModel?.status == 2 ? "Cancel request" : "Confirm"}</h3>}
+        title={
+          <h3>{openModel?.status == 2 ? t("Cancel request") : t("Confirm")}</h3>
+        }
         open={openModel && true}
         footer={null}
         onCancel={() => setOpenModel(undefined)}
       >
         <p
           style={{
-            // padding: "10px 0",
             paddingTop: "10px",
             fontSize: "16px",
             borderTop: "1px solid #A9ACB0",
           }}
         >
           {openModel?.status == 2
-            ? "Are you sure you want to cancel this request"
+            ? t("Are you sure you want to cancel this request")
             : openModel?.status == 1
-            ? "Are you sure you want to accept this request"
-            : "Are you sure you want to decline this request"}
+            ? t("Are you sure you want to accept this request")
+            : t("Are you sure you want to decline this request")}
         </p>
         <div
           style={{
@@ -172,7 +151,7 @@ const FriendRequestPage = () => {
                 bgColor="#EAEDF0"
                 onClick={() => setOpenModel(undefined)}
               >
-                No
+                {t("No")}
               </Button>
               <Button
                 padding="10px 15px"
@@ -192,13 +171,13 @@ const FriendRequestPage = () => {
                     "success",
                     "Success",
                     `Success ${
-                      openModel?.status == 0 ? "decline" : "accept"
-                    } request to friend`
+                      openModel?.status == 0 ? t("decline") : t("accept")
+                    } ${t("request to friend")}`
                   );
                   setOpenModel(undefined);
                 }}
               >
-                {openModel?.status == 0 ? "Decline" : "Accept"}
+                {openModel?.status == 0 ? t("Decline") : t("Accept")}
               </Button>
             </>
           ) : (
@@ -209,7 +188,7 @@ const FriendRequestPage = () => {
                 bgColor="#EAEDF0"
                 onClick={() => setOpenModel(undefined)}
               >
-                No
+                {t("No")}
               </Button>
               <Button
                 padding="10px 15px"
@@ -226,12 +205,12 @@ const FriendRequestPage = () => {
                   openNotificationWithIcon(
                     "success",
                     "Cancel request",
-                    "Cancel request to friend"
+                    t("Cancel request to friend")
                   );
                   setOpenModel(undefined);
                 }}
               >
-                Delete
+                {t("Delete")}
               </Button>
             </>
           )}

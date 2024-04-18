@@ -10,10 +10,11 @@ import ModalChangePassword from "./modolChangePassword/page";
 import "./modalInfo/style.scss";
 import { Badge, Image, Tooltip, Upload } from "antd";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
-import openNotificationWithIcon from "@/components/OpenNotificationWithIcon";
+import { useTranslation } from "react-i18next";
 
 const page = () => {
-  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const { t } = useTranslation();
+
   const currentUser = useContext(AuthContext);
   const [userId, setUserId] = useState(null);
 
@@ -127,7 +128,11 @@ const page = () => {
               customRequest={handleImgChange}
               showUploadList={false}
             >
-              <Tooltip placement="right" title="Đổi ảnh đại diện" arrow={false}>
+              <Tooltip
+                placement="right"
+                title={t("change_avatar")}
+                arrow={false}
+              >
                 <div
                   style={{
                     display: "flex",
@@ -166,22 +171,22 @@ const page = () => {
               marginLeft: "40px",
             }}
           >
-            <h3>Thông tin cá nhân</h3>
+            <h3>{t("personal_info")}</h3>
             <div style={{ display: "flex", gap: "20px", marginTop: "10px" }}>
-              <p>Giới tính: </p>
-              <p>{userId.gender ? userId.gender : "Chưa có thông tin"}</p>
+              <p>{t("gender")}: </p>
+              <p>{userId.gender ? userId.gender : t("no_info")}</p>
             </div>
             <div style={{ display: "flex", gap: "20px", marginTop: "10px" }}>
-              <p>Ngày sinh: </p>
+              <p>{t("date_of_birth")}: </p>
               <p>
                 {userId.dateOfBirth
                   ? format(new Date(userId.dateOfBirth), "dd/MM/yyyy")
-                  : "Chưa có thông tin"}
+                  : t("no_info")}
               </p>
             </div>
             <div style={{ display: "flex", gap: "20px", marginTop: "10px" }}>
-              <p>Điện thoại: </p>
-              <p>{userId.number ? userId.number : "Chưa có thông tin"}</p>
+              <p>{t("phone")}: </p>
+              <p>{userId.number ? userId.number : t("no_info")}</p>
             </div>
           </div>
         ) : (
@@ -210,7 +215,7 @@ const page = () => {
             cursor: "pointer",
           }}
           type="button"
-          value={"Thay đổi thông tin"}
+          value={t("change_info")}
           onClick={handleShowChangeInfoModal}
         />
         <input
@@ -225,7 +230,7 @@ const page = () => {
             cursor: "pointer",
           }}
           type="button"
-          value={"Đổi mật khẩu"}
+          value={t("change_password")}
           onClick={handleOpenChangePasswordModal}
         />
       </div>

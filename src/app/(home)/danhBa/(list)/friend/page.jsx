@@ -1,6 +1,7 @@
 "use client";
 import React, { useContext, useEffect, useState } from "react";
 import "./styles.scss";
+import { useTranslation } from "react-i18next";
 import FilterAltOutlinedIcon from "@mui/icons-material/FilterAltOutlined";
 import SearchIcon from "@mui/icons-material/Search";
 import SwapVertIcon from "@mui/icons-material/SwapVert";
@@ -17,6 +18,7 @@ const FriendPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOrder, setSortOrder] = useState(0);
   const [filterType, setFilterType] = useState(0);
+  const { t } = useTranslation();
   const currentUser = useContext(AuthContext);
   const router = useRouter();
 
@@ -72,14 +74,16 @@ const FriendPage = () => {
 
   return (
     <div className="friend">
-      <h3>Bạn bè ({filteredFriends.length})</h3>
+      <h3>
+        {t("Friends")} ({filteredFriends.length})
+      </h3>
       <div className="contentF">
         <div className="timLoc">
           <div className="timKiem">
             <SearchIcon sx={{ color: "#858585" }} />
             <input
               type="text"
-              placeholder="Tìm kiếm bạn bè"
+              placeholder={t("Search friends")}
               value={searchTerm}
               onChange={handleSearchChange}
             />
@@ -93,8 +97,8 @@ const FriendPage = () => {
                 onChange={handleSortChange}
                 value={sortOrder}
               >
-                <option value={0}>Tên (A - Z)</option>
-                <option value={1}>Tên (Z - A)</option>
+                <option value={0}>{t("Name (A - Z)")}</option>
+                <option value={1}>{t("Name (Z - A)")}</option>
               </select>
             </div>
             <div className="selectLoc">
@@ -105,8 +109,8 @@ const FriendPage = () => {
                 onChange={handleFilterChange}
                 value={filterType}
               >
-                <option value={0}>Tất cả</option>
-                <option value={1}>Phân loại</option>
+                <option value={0}>{t("All")}</option>
+                <option value={1}>{t("Categorized")}</option>
               </select>
             </div>
           </div>

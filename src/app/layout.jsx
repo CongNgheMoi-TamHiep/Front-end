@@ -5,6 +5,7 @@ import AuthProvider from "@/context/AuthProvider";
 import SocketProvider from "@/context/SocketProvider";
 import { QueryClient, QueryClientProvider } from "react-query";
 const inter = Inter({ subsets: ["latin"] });
+import "../i18n/i18n";
 
 // export const metadata = {
 //   title: "Create Next App",
