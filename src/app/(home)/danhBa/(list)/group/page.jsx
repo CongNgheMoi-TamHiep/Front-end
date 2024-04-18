@@ -41,9 +41,9 @@ const GroupPage = () => {
 
   const sortedGroups = groups.sort((a, b) => {
     if (sortOrder === 0) {
-      return a.name.localeCompare(b.name);
+      return a.name?.localeCompare(b.name);
     } else {
-      return b.name.localeCompare(a.name);
+      return b.name?.localeCompare(a.name);
     }
   });
 

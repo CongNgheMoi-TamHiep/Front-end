@@ -155,11 +155,11 @@ const page = ({ params }) => {
         setConversation(conversationResponse);
       } else {
         userNhan1 = await userApis.getUserById(receiverId);
-        conversationId1 = CombineUserId(currentUser?.uid, userNhan1._id);
+        conversationId1 = CombineUserId(currentUser?.uid, userNhan1?._id);
         setConversationId(conversationId1);
       }
 
-      userNhan1 = await userApis.getUserById(userNhan1._id);
+      userNhan1 = await userApis.getUserById(userNhan1?._id);
       // console.log(userNhan1);
 
       me1 = await userApis.getUserById(currentUser?.uid);
@@ -485,12 +485,12 @@ const page = ({ params }) => {
 
   const dataFriends = friends
     .sort((a, b) =>
-      (a?.name || a.user?.name).localeCompare(b?.name || b.user?.name)
+      (a?.name || a.user?.name)?.localeCompare(b?.name || b.user?.name)
     )
     .filter((friend) => {
       return (friend?.name || friend.user?.name)
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase());
+        ?.toLowerCase()
+        ?.includes(searchTerm.toLowerCase());
     });
 
   const handleCallVideo = (conversationId) => {
