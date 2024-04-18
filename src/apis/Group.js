@@ -19,6 +19,7 @@ const Group = {
   async transferAdmin(conversationId, userId) {
     return axiosPrivate.patch(`/group/transferAdmin/${conversationId}`, userId);
   },
+  // console.log("");
 };
 
 export default Group;
