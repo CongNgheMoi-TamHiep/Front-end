@@ -155,8 +155,7 @@ const Layout = ({ children }) => {
 
   const filteredConversations = conversations
     ?.sort(
-      (b, a) =>
-        new Date(a.lastMess?.createdAt) - new Date(b.lastMess?.createdAt)
+      (b, a) => new Date(a.lastMess.createdAt) - new Date(b.lastMess.createdAt)
     )
     ?.filter((item) => {
       const searchValue = searchTerm.toLowerCase();
