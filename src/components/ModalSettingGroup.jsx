@@ -369,7 +369,14 @@ const ModalSettingGroup = ({ visible, onCancel, conversationId }) => {
           <Button key="cancel" onClick={onCancel}>
             Hủy
           </Button>,
-          <Button key="confirm" type="danger" onClick={handleConfirmDisband}>
+          <Button
+            style={{
+              border: "1px solid #ccc",
+            }}
+            key="confirm"
+            type="danger"
+            onClick={handleConfirmDisband}
+          >
             Xác nhận
           </Button>,
         ]}
@@ -407,7 +414,14 @@ const ModalSettingGroup = ({ visible, onCancel, conversationId }) => {
           <Button key="cancel" onClick={onCancel}>
             Hủy
           </Button>,
-          <Button key="confirm" type="danger" onClick={handleOutGroupModal}>
+          <Button
+            style={{
+              border: "1px solid #ccc",
+            }}
+            key="confirm"
+            type="danger"
+            onClick={handleOutGroupModal}
+          >
             Xác nhận
           </Button>,
         ]}
