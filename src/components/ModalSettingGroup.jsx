@@ -8,6 +8,7 @@ import {
   Select,
   Checkbox,
   notification,
+  Flex,
 } from "antd";
 import React, { useContext, useEffect, useState } from "react";
 import Group from "@/apis/Group";
@@ -35,6 +36,16 @@ const ModalSettingGroup = ({ visible, onCancel, conversationId }) => {
     const fetchMembers = async () => {
       try {
         const response = await Group.getMembers(conversationId);
+        response.some((member) => {
+          if (
+            (member.role === "admin" || member.role === "deputy") &&
+            member._id === currentUser.uid
+          ) {
+            setRoleCurrentUser(member.role);
+            return true;
+          }
+          return false;
+        });
         setMembers(response);
       } catch (error) {
         console.error("Error fetching members:", error);
@@ -256,7 +267,12 @@ const ModalSettingGroup = ({ visible, onCancel, conversationId }) => {
               <List.Item
                 key={member._id}
                 actions={[
-                  <Button onClick={() => handleRemoveMember(member._id)}>
+                  <Button
+                    style={{
+                      display: roleCurrentUser === "" ? "none" : "block",
+                    }}
+                    onClick={() => handleRemoveMember(member._id)}
+                  >
                     Xóa
                   </Button>,
                 ]}
@@ -272,7 +288,18 @@ const ModalSettingGroup = ({ visible, onCancel, conversationId }) => {
                       borderRadius: "50%",
                     }}
                   />
-                  <span style={{ flexGrow: 1 }}>{member.name}</span>
+                  <Flex style={{ flexGrow: 1 }} vertical={true}>
+                    <span style={{ fontSize: "16px", fontWeight: "500" }}>
+                      {member.name}
+                    </span>
+                    <span style={{ color: "gray" }}>
+                      {member.role === "admin"
+                        ? "Quản trị viên"
+                        : member.role === "member"
+                        ? "Thành viên"
+                        : "Phó nhóm"}
+                    </span>
+                  </Flex>
                 </div>
               </List.Item>
             )}
@@ -545,7 +572,7 @@ const ModalSettingGroup = ({ visible, onCancel, conversationId }) => {
               border: "none",
               padding: "0px",
               background: "#fff",
-              display: roleCurrentUser === "" ? "none" : "block",
+              display: roleCurrentUser === "admin" ? "block" : "none",
             }}
             onClick={() => setDisbandModalVisible(true)}
           >

@@ -16,6 +16,14 @@ const Page = (conversationId) => {
     setVideoCall(true);
   }, [conversationId]);
 
+  useEffect(() => {
+    socket.on("decline-call", (data) => {
+      console.log("data", data);
+      setVideoCall(false);
+      window.location.href = `${window.location.origin}/tinNhan/${conversationId.params.id}`;
+    });
+  }, []);
+
   const rtcProps = {
     appId: "5a55004d2d524938a0edde0ecd2349ae",
     channel: conversationId.params.id,

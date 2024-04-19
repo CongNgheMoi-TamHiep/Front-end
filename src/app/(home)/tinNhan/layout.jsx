@@ -64,7 +64,7 @@ const Layout = ({ children }) => {
 
   const handleRouteToDetailConversation = (item) => {
     setCurrentConversation(item);
-    router.push(`/tinNhan/${item.conversationId}`);
+    router.push(`/tinNhan/${item._id || item.lastMess.conversationId}`);
   };
 
   const { mutate: getPhoneBook, data: phoneBook } = useMutation(
@@ -86,6 +86,11 @@ const Layout = ({ children }) => {
   };
 
   useEffect(() => {
+    fetchData();
+    getPhoneBook(currentUser?.uid);
+  }, []);
+
+  useEffect(() => {
     socket.on("getMessage", (chat) => {
       console.log("getMessage", chat);
       setChatReceived(chat);
@@ -93,11 +98,10 @@ const Layout = ({ children }) => {
     socket.on("newConversation", (conversation) => {
       console.log("newConversation: ");
       console.log(conversation);
+      // setConversations([conversation, ...conversations]);
+      socket.emit("joinRoom", conversation.conversationId || conversation._id);
       setNewConversation(conversation);
     });
-
-    fetchData();
-    getPhoneBook(currentUser?.uid);
   }, []);
 
   // Chuyển socket ra ngoài
@@ -119,10 +123,14 @@ const Layout = ({ children }) => {
     // console.log(chatReceived);
     if (chatReceived) {
       console.log(chatReceived);
+      console.log("conversations: ", conversations);
       const conversation = conversations.find(
-        (item) => item.conversationId === chatReceived.conversationId
+        (item) =>
+          (item.conversationId || item._id) ===
+          (chatReceived.conversationId || chatReceived._id)
       );
 
+      console.log("conversation: ", conversation);
       conversation.lastMess.content = chatReceived.content;
       conversation.lastMess.createdAt = chatReceived.createdAt;
       conversation.lastMess.senderId = chatReceived.senderInfo._id;
@@ -130,7 +138,9 @@ const Layout = ({ children }) => {
       setConversations([
         conversation,
         ...conversations.filter(
-          (item) => item.conversationId !== chatReceived.conversationId
+          (item) =>
+            (item.conversationId || item._id) !==
+            (chatReceived.conversationId || chatReceived._id)
         ),
       ]);
     }
@@ -227,9 +237,10 @@ const Layout = ({ children }) => {
         members: membersWithId,
       };
 
-      const response = await await Group.create(newGroup);
-      console.log("New group created:", response);
-      router.push(`/tinNhan/${response?._id}`);
+      const response = await Group.create(newGroup);
+      // console.log("New group created:", response);
+      // setConversations([{}, ...conversations]);
+      // router.push(`/tinNhan/${response?._id}`);
 
       // console.log("newGroup:", newGroup);
       notification.success({

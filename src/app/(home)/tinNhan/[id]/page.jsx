@@ -561,148 +561,151 @@ const page = ({ params }) => {
 
       <div className="containerChat" ref={containerRef}>
         <div className="chats">
-          {chats !== undefined && chats?.map((item, index) => {
-            if (item.deletedFor?.includes(currentUser?.uid))
+          {chats !== undefined &&
+            chats?.map((item, index) => {
+              if (item.deletedFor?.includes(currentUser?.uid))
+                return (
+                  <div
+                    key={
+                      item._id || Date.parse(item.createdAt).toString() + index
+                    }
+                    style={{ display: "none" }}
+                  />
+                );
               return (
                 <div
                   key={
                     item._id || Date.parse(item.createdAt).toString() + index
                   }
-                  style={{ display: "none" }}
-                />
-              );
-            return (
-              <div
-                key={item._id || Date.parse(item.createdAt).toString() + index}
-                className={`chatContent ${
-                  item.senderId === me?._id ? "myChat" : "yourChat"
-                }`}
-              >
-                {item.senderId !== me?._id && (
-                  <div className="imgSender">
-                    {(index === 0 ||
-                      item.senderId != chats[index - 1]?.senderId) && (
-                      <img
-                        src={item.senderInfo?.avatar}
-                        className="imgAvtSender"
-                        onClick={() => handleOpenModal(item.senderId)}
-                      />
-                    )}
-                  </div>
-                )}
-                <Popover
-                  arrow={false}
-                  placement={
-                    item.senderId !== me?._id ? "rightBottom" : "leftBottom"
-                  }
-                  content={
-                    <Popover
-                      arrow={false}
-                      open={openPopover}
-                      placement={
-                        item.senderId !== me?._id ? "topLeft" : "topRight"
-                      }
-                      content={() => showFunctionChat(item)}
-                      onOpenChange={(newOpen) => setOpenPopover(newOpen)}
-                      trigger="click"
-                    >
-                      <MoreHoriz
-                        style={{
-                          padding: "1px",
-                          backgroundColor: "transparent",
-                          height: "20px",
-                        }}
-                        fontSize="small"
-                      />
-                    </Popover>
-                  }
+                  className={`chatContent ${
+                    item.senderId === me?._id ? "myChat" : "yourChat"
+                  }`}
                 >
-                  <div
-                    className="chat"
-                    color={"#2db7f5"}
-                    style={{
-                      backgroundColor:
-                        item.senderId === me?._id ? "#E5EFFF" : "white",
-                    }}
-                  >
-                    <div>
-                      {item.senderId !== me?._id && (
-                        <p className="chatName">{item.senderInfo?.name}</p>
-                      )}
-                      {item.content.text !== undefined ? (
-                        <p
-                          className="chatText"
-                          style={{ whiteSpace: "pre-wrap" }}
-                        >
-                          {item.type === "deleted"
-                            ? "Tin nhắn đã bị thu hồi"
-                            : item.content.text}
-                        </p>
-                      ) : item.content?.image ? (
+                  {item.senderId !== me?._id && (
+                    <div className="imgSender">
+                      {(index === 0 ||
+                        item.senderId != chats[index - 1]?.senderId) && (
                         <img
-                          src={item.content.image}
-                          alt="Chat"
-                          className="chatImg"
+                          src={item.senderInfo?.avatar}
+                          className="imgAvtSender"
+                          onClick={() => handleOpenModal(item.senderId)}
                         />
-                      ) : item.content?.file?.url ? (
-                        <div className="chatFile">
-                          <img
-                            src={checkIconFile(item)}
-                            alt="word"
-                            className="iconFile"
-                          />
-                          <div className="fileContent">
-                            <Text
-                              style={{
-                                maxWidth: "95%",
-                                fontSize: "14px",
-                                fontWeight: "bold",
-                              }}
-                              ellipsis={{
-                                suffix: item.content?.file.name
-                                  .slice(-6)
-                                  .trim(),
-                                tooltip: (
-                                  <div style={{ fontSize: "10px" }}>
-                                    {item.content?.file.name}
-                                  </div>
-                                ),
-                              }}
-                            >
-                              {item.content?.file.name.slice(
-                                0,
-                                item.content?.file.name.length - 6
-                              )}
-                            </Text>
-                            <p>{formatSizeFile(item.content?.file.size)}</p>
-                          </div>
-                          <a href={item.content?.file.url} download>
-                            <FileDownloadOutlinedIcon className="iconT" />
-                          </a>
-                        </div>
-                      ) : item.content?.video ? (
-                        <ReactPlayer
-                          url={item.content.video}
-                          controls={true}
-                          maxWidth="300px"
-                          style={{ resize: "cover" }}
-                        />
-                      ) : (
-                        showManyImage(item.content.images)
                       )}
-                      {/* check hour, giờ, userSend */}
-                      <p className="chatTime">
-                        {new Date(item.createdAt).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </p>
                     </div>
-                  </div>
-                </Popover>
-              </div>
-            );
-          })}
+                  )}
+                  <Popover
+                    arrow={false}
+                    placement={
+                      item.senderId !== me?._id ? "rightBottom" : "leftBottom"
+                    }
+                    content={
+                      <Popover
+                        arrow={false}
+                        open={openPopover}
+                        placement={
+                          item.senderId !== me?._id ? "topLeft" : "topRight"
+                        }
+                        content={() => showFunctionChat(item)}
+                        onOpenChange={(newOpen) => setOpenPopover(newOpen)}
+                        trigger="click"
+                      >
+                        <MoreHoriz
+                          style={{
+                            padding: "1px",
+                            backgroundColor: "transparent",
+                            height: "20px",
+                          }}
+                          fontSize="small"
+                        />
+                      </Popover>
+                    }
+                  >
+                    <div
+                      className="chat"
+                      color={"#2db7f5"}
+                      style={{
+                        backgroundColor:
+                          item.senderId === me?._id ? "#E5EFFF" : "white",
+                      }}
+                    >
+                      <div>
+                        {item.senderId !== me?._id && (
+                          <p className="chatName">{item.senderInfo?.name}</p>
+                        )}
+                        {item.content.text !== undefined ? (
+                          <p
+                            className="chatText"
+                            style={{ whiteSpace: "pre-wrap" }}
+                          >
+                            {item.type === "deleted"
+                              ? "Tin nhắn đã bị thu hồi"
+                              : item.content.text}
+                          </p>
+                        ) : item.content?.image ? (
+                          <img
+                            src={item.content.image}
+                            alt="Chat"
+                            className="chatImg"
+                          />
+                        ) : item.content?.file?.url ? (
+                          <div className="chatFile">
+                            <img
+                              src={checkIconFile(item)}
+                              alt="word"
+                              className="iconFile"
+                            />
+                            <div className="fileContent">
+                              <Text
+                                style={{
+                                  maxWidth: "95%",
+                                  fontSize: "14px",
+                                  fontWeight: "bold",
+                                }}
+                                ellipsis={{
+                                  suffix: item.content?.file.name
+                                    .slice(-6)
+                                    .trim(),
+                                  tooltip: (
+                                    <div style={{ fontSize: "10px" }}>
+                                      {item.content?.file.name}
+                                    </div>
+                                  ),
+                                }}
+                              >
+                                {item.content?.file.name.slice(
+                                  0,
+                                  item.content?.file.name.length - 6
+                                )}
+                              </Text>
+                              <p>{formatSizeFile(item.content?.file.size)}</p>
+                            </div>
+                            <a href={item.content?.file.url} download>
+                              <FileDownloadOutlinedIcon className="iconT" />
+                            </a>
+                          </div>
+                        ) : item.content?.video ? (
+                          <ReactPlayer
+                            url={item.content.video}
+                            controls={true}
+                            maxWidth="300px"
+                            style={{ resize: "cover" }}
+                          />
+                        ) : (
+                          showManyImage(item.content.images)
+                        )}
+                        {/* check hour, giờ, userSend */}
+                        <p className="chatTime">
+                          {new Date(item.createdAt).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                  </Popover>
+                </div>
+              );
+            })}
           {/* {img.map((chat, index) => (
          <img
            key={index}
