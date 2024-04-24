@@ -102,7 +102,10 @@ const Layout = ({ children }) => {
       socket.emit("joinRoom", conversation.conversationId || conversation._id);
       setNewConversation(conversation);
     });
-  }, []);
+    socket.on("deleteConversation", groupId => {
+      socket.emit("leaveRoom", groupId);
+    })
+  }, [socket]);
 
   // Chuyển socket ra ngoài
   useEffect(() => {
@@ -111,7 +114,7 @@ const Layout = ({ children }) => {
         if (!item?.deleted) socket.emit("joinRoom", item.conversationId);
       });
     }
-  }, [conversations, socket]);
+  }, [conversations.length]);
 
   useEffect(() => {
     if (newConversation) {

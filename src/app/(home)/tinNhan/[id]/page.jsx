@@ -94,7 +94,7 @@ const page = ({ params }) => {
   const [forwardSelected, setForwardSelected] = useState([]);
   const [friends, setFriends] = useState([]);
   const [itemForward, setItemForward] = useState();
-
+  const [recallChatId, setRecallChatId] = useState(null);
   // Xử lý sự kiện click để mở modal thông tin của userNhan
   const handleOpenModal = async (id) => {
     //check group/couple
@@ -178,10 +178,14 @@ const page = ({ params }) => {
     getFriends(currentUser?.uid);
   }, []);
 
-  //chuyển socket joiiRoom ra trang ngoài
-  // useEffect(() => {
-  //   socket.emit("joinRoom", conversationId);
-  // }, [conversationId, isFirst, socket]);
+  // thêm socket joinroom
+  useEffect(() => {
+    if(conversation) { 
+      if(conversation?.deleted == true || conversation?.state=='deleted')
+        return;
+      socket.emit("joinRoom", conversationId);
+    }
+  }, [conversationId, conversation, socket]);
 
   useEffect(() => {
     socket.on("getMessage", (chat) => {
@@ -195,24 +199,39 @@ const page = ({ params }) => {
         router.push(`/VideoCall/${data.channel}`);
       }
     });
-  }, []);
+    socket.on("deleteMessage", (chatId) => {
+      setRecallChatId(chatId);
+    })
+  }, [socket]);
 
   useEffect(() => {
     if (chatReceived?.conversationId !== conversationId) return;
-    if (chatReceived) setChat((prevChats) => [...prevChats, chatReceived]);
+    if (chatReceived) {
+      setChat((prevChats) => [...prevChats, chatReceived]);
+      setChatReceived(null); 
+    }
   }, [chatReceived]);
 
+  useEffect(() => {
+    if(recallChatId) {
+      const newChats = chats.map((message) => {
+        if (message._id === recallChatId) {
+          return {
+            ...message,
+            type: 'deleted',
+            content : { 
+              text: "Tin nhắn đã bị thu hồi",
+            },
+          };
+        }
+        return message;
+      });
+
+      setChat(newChats);
+    }
+  }, [recallChatId]);
+
   const handleSend = async () => {
-    // socket.emit("sendMessage", {
-    //   conversationId,
-    //   senderInfo: {
-    //     _id: currentUser?.uid,
-    //     name: me.name,
-    //     avatar: me.avatar,
-    //   },
-    //   content: text == "" ? { text: "👍" } : { text },
-    //   createdAt: new Date(),
-    // });
     setText("");
     await axiosPrivate.post(`/chat`, {
       ...(isFirst ? { receiverId } : { conversationId }),
@@ -271,7 +290,7 @@ const page = ({ params }) => {
             <ContentCopyOutlinedIcon style={{ marginRight: "8px" }} /> Copy text
           </Button>
         ) : (
-          <a href={`${item.content.file.url}`} download>
+          <a href={`${item.content.file?.url}`} download>
             <Button width={"100%"} onClick={() => setOpenPopover(false)}>
               <FileDownloadOutlinedIcon style={{ marginRight: "8px" }} />
               Download
@@ -295,9 +314,9 @@ const page = ({ params }) => {
           color="red"
           onClick={async () => {
             const response = await ChatApi.recallMessage(item._id);
-            setChat((prev) =>
-              prev.map((chat) => (chat._id === item._id ? response : chat))
-            );
+            // setChat((prev) =>
+            //   prev.map((chat) => (chat._id === item._id ? response : chat))
+            // );
             openNotificationWithIcon("success", "Recall message success");
             setOpenPopover(false);
           }}
@@ -422,17 +441,6 @@ const page = ({ params }) => {
                 "You can only send a maximum of 20MB"
               )
             );
-          // socket.emit("sendMessage", {
-          //   conversationId,
-          //   senderId: currentUser?.uid,
-          //   content: { image: reader.result },
-          //   senderInfo: {
-          //     _id: currentUser?.uid,
-          //     name: me.name,
-          //     avatar: me.avatar,
-          //   },
-          //   createdAt: new Date(),
-          // });
         };
         reader.readAsDataURL(info.file);
       }
