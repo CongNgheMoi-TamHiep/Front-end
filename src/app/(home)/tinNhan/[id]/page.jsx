@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 /* eslint-disable @next/next/no-img-element */
 "use client";
-import React, { useContext, useEffect, useRef, useState } from "react";
+import React, { useCallback, useContext, useEffect, useRef, useState } from "react";
 import "./styles.scss";
 import { useRouter } from "next/navigation";
 import BookmarkBorderIcon from "@mui/icons-material/BookmarkBorder";
@@ -95,12 +95,20 @@ const page = ({ params }) => {
   const [friends, setFriends] = useState([]);
   const [itemForward, setItemForward] = useState();
   const [recallChatId, setRecallChatId] = useState(null);
+  const [startTime, setStartTime] = useState(null);
+  const [endTime, setEndTime] = useState(null);
+
+
+  useEffect(() => {
+    console.log("time send chat: ",(endTime - startTime)/1000, " s");
+  }, [endTime])
+
   // Xử lý sự kiện click để mở modal thông tin của userNhan
   const handleOpenModal = async (id) => {
     //check group/couple
     if (typeof id === "object") setUserProfile(userNhan);
     else {
-      const user = await userApis.getUserById(id);
+      const user = await userApis.getShortInfoUser(id);
       setUserProfile(user);
     }
     setShowModalProfile(true);
@@ -125,27 +133,45 @@ const page = ({ params }) => {
     setOpenModalSettingGroup(false);
   };
 
-  const { mutate: getFriends } = useMutation(
-    "friends",
-    UserConversationApi.getUserConversationByUserId,
-    {
-      onSuccess: (data) => {
-        setFriends(data.conversations);
-      },
-      onError: (error) => {
-        console.log(error);
-      },
-    }
-  );
+
+  const getConversations = async () => {
+    const userConversations =
+      await UserConversationApi.getUserConversationByUserId(currentUser?.uid);
+    let convs = userConversations.conversations;
+    convs = convs.sort((a, b) =>
+      (a?.name || a.user?.name)?.localeCompare(b?.name || b.user?.name)
+    )
+    .filter((friend) => {
+      if(friend.state === 'deleted')
+        return false;
+      return (friend?.name || friend.user?.name)
+        ?.toLowerCase()
+        ?.includes(searchTerm.toLowerCase());
+    });
+    setFriends(convs);
+    return convs; 
+  }
+
+  // const { mutate: getFriends } = useMutation(
+  //   "friends",
+  //   FriendApi.getFriends,
+  //   {
+  //     onSuccess: (data) => {
+  //       setFriends(data);
+  //     },
+  //     onError: (error) => {
+  //       console.log(error);
+  //     },
+  //   }
+  // );
   useEffect(() => {
     const fetchData = async () => {
       //fetch user
-      const conversationResponse = await ConversationApi.getConversationById(
-        conversationId
-      );
+      const conversationResponse = await ConversationApi.getConversationById(conversationId);
       let userNhan1 = null;
       let conversationId1 = null;
       let me1 = null;
+      
       if (conversationResponse?._id) {
         userNhan1 = await conversationResponse?.members.filter(
           (value) => value._id !== currentUser?.uid
@@ -154,28 +180,21 @@ const page = ({ params }) => {
         setIsFirst(false);
         setConversation(conversationResponse);
       } else {
-        userNhan1 = await userApis.getUserById(receiverId);
+        userNhan1 = await userApis.getShortInfoUser(receiverId);
         conversationId1 = CombineUserId(currentUser?.uid, userNhan1?._id);
         setConversationId(conversationId1);
       }
 
-      userNhan1 = await userApis.getUserById(userNhan1?._id);
-      // console.log(userNhan1);
-
-      me1 = await userApis.getUserById(currentUser?.uid);
+      userNhan1 = await userApis.getShortInfoUser(userNhan1?._id);
+      me1 = await userApis.getShortInfoUser(currentUser?.uid);
       setUserNhan(userNhan1);
       setMe(me1);
-      const chatReponse = await ChatApi.getChatByConversationId(
-        conversationId1
-      );
+      const chatReponse = await ChatApi.getChatByConversationId(conversationId1);
       setChat(chatReponse);
-      // setChat(chatReponse.sort((a, b) => {
-      //     return new Date(a.createdAt) - new Date(b.createdAt);
-      // }));
       setIsGroupConversation(conversationResponse?.type === "group");
     };
     fetchData();
-    getFriends(currentUser?.uid);
+    // getFriends(currentUser?.uid);
   }, []);
 
   // thêm socket joinroom
@@ -189,8 +208,7 @@ const page = ({ params }) => {
 
   useEffect(() => {
     socket.on("getMessage", (chat) => {
-      // console.log("chat socket: ");
-      // console.log(chat);
+      setEndTime(performance.now());
       setChatReceived(chat);
     });
     socket.on("receive-call", (data) => {
@@ -233,12 +251,14 @@ const page = ({ params }) => {
 
   const handleSend = async () => {
     setText("");
+    setStartTime(performance.now());
     await axiosPrivate.post(`/chat`, {
       ...(isFirst ? { receiverId } : { conversationId }),
       senderId: currentUser?.uid,
       content: text == "" ? { text: "👍" } : { text },
     });
     setIsFirst(false);
+    
   };
 
   const downloadFile = (e) => {
@@ -277,6 +297,7 @@ const page = ({ params }) => {
       <div style={{ display: "flex", flexDirection: "column" }}>
         <Button
           onClick={() => {
+            getConversations();
             setOpenModalForward(true);
             setOpenPopover(false);
             setItemForward(item.content);
@@ -491,15 +512,15 @@ const page = ({ params }) => {
     );
   };
 
-  const dataFriends = friends
-    .sort((a, b) =>
-      (a?.name || a.user?.name)?.localeCompare(b?.name || b.user?.name)
-    )
-    .filter((friend) => {
-      return (friend?.name || friend.user?.name)
-        ?.toLowerCase()
-        ?.includes(searchTerm.toLowerCase());
-    });
+  // const dataFriends = friends
+  //   .sort((a, b) =>
+  //     (a?.name || a.user?.name)?.localeCompare(b?.name || b.user?.name)
+  //   )
+  //   .filter((friend) => {
+  //     return (friend?.name || friend.user?.name)
+  //       ?.toLowerCase()
+  //       ?.includes(searchTerm.toLowerCase());
+  //   });
 
   const handleCallVideo = (conversationId) => {
     console.log("object: ", {
@@ -520,7 +541,7 @@ const page = ({ params }) => {
         <div className="contentTitle">
           <Button className="imgCon" onClick={handleOpenModal}>
             <img
-              src={conversation?.image || userNhan?.avatar}
+              src={ conversation?.type=='group' ? conversation?.image : userNhan?.avatar}
               className="imgAvt"
               alt=""
               width={50}
@@ -793,10 +814,10 @@ const page = ({ params }) => {
             <Button className="btnGui" onClick={handleSend}>
               {text == "" ? <ThumbUpOutlinedIcon color="primary" /> : "Send"}
             </Button>
-            <EmojiPicker
+            {/* <EmojiPicker
               onEmojiClick={hanldeEmojiClick}
               className={`blockEmoji ${isOpenEmoji ? "" : "hiddenBlock"}`}
-            />
+            /> */}
           </div>
         </div>
       </div>
@@ -864,7 +885,7 @@ const page = ({ params }) => {
               gap={5}
             >
               {friends.length == 0 && <p>Empty</p>}
-              {dataFriends.map((item, index) => (
+              {friends.map((item, index) => (
                 <Checkbox
                   key={index}
                   // style={{ width: "100%" }}
@@ -879,7 +900,7 @@ const page = ({ params }) => {
                       height={45}
                       style={{ borderRadius: "50%" }}
                     />
-                    <p>{item?.name || item.user.name}</p>
+                    <p>{item?.name || item?.user.name}</p>
                   </Flex>
                 </Checkbox>
               ))}

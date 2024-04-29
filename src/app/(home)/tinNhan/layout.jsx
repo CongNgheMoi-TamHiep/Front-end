@@ -64,7 +64,7 @@ const Layout = ({ children }) => {
 
   const handleRouteToDetailConversation = (item) => {
     setCurrentConversation(item);
-    router.push(`/tinNhan/${item._id || item.lastMess.conversationId}`);
+        router.push(`/tinNhan/${item._id || item.lastMess.conversationId}`);
   };
 
   const { mutate: getPhoneBook, data: phoneBook } = useMutation(
@@ -92,12 +92,12 @@ const Layout = ({ children }) => {
 
   useEffect(() => {
     socket.on("getMessage", (chat) => {
-      console.log("getMessage", chat);
+      // console.log("getMessage", chat);
       setChatReceived(chat);
     });
     socket.on("newConversation", (conversation) => {
-      console.log("newConversation: ");
-      console.log(conversation);
+      // console.log("newConversation: ");
+      // console.log(conversation);
       // setConversations([conversation, ...conversations]);
       socket.emit("joinRoom", conversation.conversationId || conversation._id);
       setNewConversation(conversation);
@@ -125,15 +125,15 @@ const Layout = ({ children }) => {
     // console.log(conversations);
     // console.log(chatReceived);
     if (chatReceived) {
-      console.log(chatReceived);
-      console.log("conversations: ", conversations);
+      // console.log(chatReceived);
+      // console.log("conversations: ", conversations);
       const conversation = conversations.find(
         (item) =>
           (item.conversationId || item._id) ===
           (chatReceived.conversationId || chatReceived._id)
       );
 
-      console.log("conversation: ", conversation);
+      // console.log("conversation: ", conversation);
       conversation.lastMess.content = chatReceived.content;
       conversation.lastMess.createdAt = chatReceived.createdAt;
       conversation.lastMess.senderId = chatReceived.senderInfo._id;
@@ -475,10 +475,10 @@ const Layout = ({ children }) => {
               ?.map((item) => {
                 return (
                   <div
-                    key={item.conversationId}
+                    key={item.conversationId || item._id}
                     className={`userConversation ${
                       currentConversation &&
-                      currentConversation.conversationId === item.conversationId
+                      currentConversation.conversationId === item.conversationId || item._id
                         ? "active"
                         : ""
                     }`}
