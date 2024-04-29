@@ -97,7 +97,7 @@ const page = ({ params }) => {
   const [recallChatId, setRecallChatId] = useState(null);
   const [startTime, setStartTime] = useState(null);
   const [endTime, setEndTime] = useState(null);
-
+  const [sending, setSending] = useState(false);
 
   useEffect(() => {
     console.log("time send chat: ",(endTime - startTime)/1000, " s");
@@ -209,6 +209,13 @@ const page = ({ params }) => {
   useEffect(() => {
     socket.on("getMessage", (chat) => {
       setEndTime(performance.now());
+      setSending(false);
+      if(chat.content.image || chat.content.file || chat.content.video || (chat.content.images && chat.content.images?.length > 0)) {
+        setChatReceived(chat);
+        return; 
+      }
+      if(chat.senderId == currentUser.uid)  
+        return;
       setChatReceived(chat);
     });
     socket.on("receive-call", (data) => {
@@ -252,13 +259,18 @@ const page = ({ params }) => {
   const handleSend = async () => {
     setText("");
     setStartTime(performance.now());
-    await axiosPrivate.post(`/chat`, {
+    setSending(true);
+    const dataChat = {
       ...(isFirst ? { receiverId } : { conversationId }),
       senderId: currentUser?.uid,
       content: text == "" ? { text: "👍" } : { text },
-    });
+    }
+    setChat((prevChats) => [...prevChats, {
+      ...dataChat,
+      createdAt: new Date(),
+    }]);
+    await axiosPrivate.post(`/chat`,dataChat);
     setIsFirst(false);
-    
   };
 
   const downloadFile = (e) => {
@@ -589,6 +601,7 @@ const page = ({ params }) => {
       />
 
       <div className="containerChat" ref={containerRef}>
+        
         <div className="chats">
           {chats !== undefined &&
             chats?.map((item, index) => {
@@ -735,15 +748,16 @@ const page = ({ params }) => {
                 </div>
               );
             })}
-          {/* {img.map((chat, index) => (
-         <img
-           key={index}
-           src={chat}
-           alt="Chat"
-           className="chatContent myChat imgChat"
-           // style={{ width: "30px" }}
-         />
-       ))} */}
+            <div style={{
+                color: "gray",
+                fontSize: "10px",
+                marginBottom: "10px",
+                marginLeft: "calc(100% - 60px)",
+              }}>
+              {chats[chats.length - 1]?.senderId === currentUser?.uid && 
+                (sending ? <p>đang gửi...</p> : <p>đã gửi ✔</p>)
+              }
+            </div>
         </div>
         <div ref={endRef} />
       </div>
