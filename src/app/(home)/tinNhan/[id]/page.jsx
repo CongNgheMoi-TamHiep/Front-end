@@ -210,13 +210,15 @@ const page = ({ params }) => {
     socket.on("getMessage", (chat) => {
       setEndTime(performance.now());
       setSending(false);
-      if(chat.content.image || chat.content.file || chat.content.video || (chat.content.images && chat.content.images?.length > 0)) {
+      if( chat.senderId != currentUser.uid || chat.content.image || chat.content.file || chat.content.video || (chat.content.images && chat.content.images?.length > 0)) {
         setChatReceived(chat);
         return; 
       }
-      if(chat.senderId == currentUser.uid)  
-        return;
-      setChatReceived(chat);
+      setChat((prevChats) => {
+        prevChats.pop();
+        return [...prevChats, chat];
+      });
+
     });
     socket.on("receive-call", (data) => {
       console.log(data);
