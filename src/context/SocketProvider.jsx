@@ -15,9 +15,11 @@ const SocketProvider = ({children}) => {
     useEffect(() => {
         socket.on('connect', () => {
             setSocketValue(socket);
+            console.log("socket connected: ",socket.id); 
+            if(currentUser?.uid) {
+                socket.emit('addUser', currentUser?.uid);
+            }
         })
-        if(currentUser?.uid)
-            socket.emit('addUser', currentUser?.uid);
     }, [currentUser?.uid])
     return (
         <SocketContext.Provider value={{socket:socketValue}}>
