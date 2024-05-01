@@ -830,10 +830,10 @@ const page = ({ params }) => {
             <Button className="btnGui" onClick={handleSend}>
               {text == "" ? <ThumbUpOutlinedIcon color="primary" /> : "Send"}
             </Button>
-            {/* <EmojiPicker
+            <EmojiPicker
               onEmojiClick={hanldeEmojiClick}
               className={`blockEmoji ${isOpenEmoji ? "" : "hiddenBlock"}`}
-            /> */}
+            />
           </div>
         </div>
       </div>
