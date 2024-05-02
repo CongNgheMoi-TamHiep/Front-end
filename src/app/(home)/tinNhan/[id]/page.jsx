@@ -210,15 +210,16 @@ const page = ({ params }) => {
     socket.on("getMessage", (chat) => {
       setEndTime(performance.now());
       setSending(false);
-      if( chat.senderId != currentUser.uid || chat.content.image || chat.content.file || chat.content.video || (chat.content.images && chat.content.images?.length > 0)) {
+      if((chat.content.images && chat.content.images?.length > 0)) {
         setChatReceived(chat);
         return; 
       }
+
+      // wait for 1 second
       setChat((prevChats) => {
         prevChats.pop();
         return [...prevChats, chat];
       });
-
     });
     socket.on("receive-call", (data) => {
       console.log(data);
@@ -428,6 +429,7 @@ const page = ({ params }) => {
     const videoExtensions = ["mp4", "mov", "avi", "wmv", "flv", "mkv", "webm"];
 
     if (info.file) {
+      setSending(true);
       const reader = new FileReader();
       reader.onloadend = () => {
         console.log(info.file);
@@ -436,6 +438,19 @@ const page = ({ params }) => {
         // console.log(videoExtensions.includes(type) ? "video" : "file");
         const fmData = new FormData();
         fmData.append("file", info.file);
+        const dataChat = {
+          conversationId, 
+          senderId: currentUser?.uid,
+          content: {
+            file: {
+              url: reader.result,
+              size: formatFileSize(info?.file.size) || 35,
+              name: info?.file.name || "text.txt",
+            },
+          },
+          createdAt: new Date(),
+        }
+        setChat((prevChats) => [...prevChats, dataChat]);
         ChatApi.sendFile(
           fmData,
           // "file",
@@ -460,11 +475,21 @@ const page = ({ params }) => {
 
   const handleImgChange = async (info) => {
     try {
+      setSending(true);
       if (info.file) {
         const reader = new FileReader();
         reader.onloadend = () => {
           const fmData = new FormData();
           fmData.append("file", info.file);
+          const dataChat = {
+            conversationId,
+            senderId: currentUser?.uid,
+            content: {
+              image: reader.result,
+            },
+            createdAt: new Date(),
+          }
+          setChat((prevChats) => [...prevChats, dataChat]);
           ChatApi.sendFile(fmData, "image", conversationId, currentUser?.uid)
             .then((data) => {
               console.log(data);
@@ -515,7 +540,7 @@ const page = ({ params }) => {
     // const te = [{}, {}, {}, {}, {}, {}, {}, {}, {}, {},];
     return (
       <Row gutter={[4, 4]} style={{ width: "360px" }}>
-        {images.map((value, index) => {
+        {images?.length>0 && images.map((value, index) => {
           return (
             <Col span={8} key={index}>
               <Image src={value.url} height={120} width={120} />
