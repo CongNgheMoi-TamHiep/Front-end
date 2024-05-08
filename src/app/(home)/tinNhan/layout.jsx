@@ -77,7 +77,7 @@ const Layout = ({ children }) => {
       await UserConversationApi.getUserConversationByUserId(currentUser?.uid);
     setConversations(userConversations.conversations);
     // console.log(userConversations.conversations);
-    const user1 = await userApis.getUserById(currentUser.uid);
+    const user1 = await userApis.getShortInfoUser(currentUser.uid);
     setUser(user1);
 
     const users = await FriendApi.getFriends(currentUser.uid);

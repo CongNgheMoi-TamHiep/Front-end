@@ -98,6 +98,9 @@ const page = ({ params }) => {
   const [startTime, setStartTime] = useState(null);
   const [endTime, setEndTime] = useState(null);
   const [sending, setSending] = useState(false);
+  const [offset, setOffset] = useState(0);
+  const [isLoadingChats, setIsLoadingChats] = useState(false);
+  const [isAllChat, setIsAllChat] = useState(false);
 
   useEffect(() => {
     console.log("time send chat: ",(endTime - startTime)/1000, " s");
@@ -170,7 +173,6 @@ const page = ({ params }) => {
       const conversationResponse = await ConversationApi.getConversationById(conversationId);
       let userNhan1 = null;
       let conversationId1 = null;
-      let me1 = null;
       
       if (conversationResponse?._id) {
         userNhan1 = await conversationResponse?.members.filter(
@@ -186,16 +188,30 @@ const page = ({ params }) => {
       }
 
       userNhan1 = await userApis.getShortInfoUser(userNhan1?._id);
-      me1 = await userApis.getShortInfoUser(currentUser?.uid);
       setUserNhan(userNhan1);
-      setMe(me1);
-      const chatReponse = await ChatApi.getChatByConversationId(conversationId1);
-      setChat(chatReponse);
+      // setMe(me1);
+      // const chatReponse = await ChatApi.getChatByConversationId(conversationId1);
+      // setChat(chatReponse);
       setIsGroupConversation(conversationResponse?.type === "group");
     };
     fetchData();
     // getFriends(currentUser?.uid);
   }, []);
+
+  useEffect(() => {
+    (async() => { 
+      if(isAllChat) {
+        setIsLoadingChats(false);
+        return;
+      }
+      setIsLoadingChats(true);
+      const chatReponse = await ChatApi.getChatByConversationId(conversationId, offset);
+      if(chatReponse.length < 20) 
+        setIsAllChat(true);
+      setChat((prevChats) => [...chatReponse,...prevChats]);
+      setIsLoadingChats(false);
+    })(); 
+  }, [offset, conversationId])
 
   // thêm socket joinroom
   useEffect(() => {
@@ -215,10 +231,10 @@ const page = ({ params }) => {
         return; 
       }
 
-      // wait for 1 second
       setChat((prevChats) => {
-        prevChats.pop();
-        return [...prevChats, chat];
+        // prevChats.pop();
+        const filteredChats = prevChats.filter((c) => c._id);
+        return [...filteredChats, chat];
       });
     });
     socket.on("receive-call", (data) => {
@@ -573,6 +589,14 @@ const page = ({ params }) => {
     router.push(`/VideoCall/${conversationId}`);
   };
 
+  const handleScroll = (e) => {
+    if(e.target.clientHeight-e.target.scrollHeight==e.target.scrollTop) {
+      console.log("loading chat...")
+      setOffset((prevOffset) => prevOffset + 1);
+    }
+  }
+
+
   return (
     <div className="conversationChat">
       {/* <Spin spinning={false}> */}
@@ -627,8 +651,7 @@ const page = ({ params }) => {
         conversationId={conversationId}
       />
 
-      <div className="containerChat" ref={containerRef}>
-        
+      <div className="containerChat" ref={containerRef} onScroll={handleScroll}>
         <div className="chats">
           {chats !== undefined &&
             chats?.map((item, index) => {
@@ -647,10 +670,10 @@ const page = ({ params }) => {
                     item._id || Date.parse(item.createdAt).toString() + index
                   }
                   className={`chatContent ${
-                    item.senderId === me?._id ? "myChat" : "yourChat"
+                    item.senderId === currentUser?.uid ? "myChat" : "yourChat"
                   }`}
                 >
-                  {item.senderId !== me?._id && (
+                  {item.senderId !== currentUser?.uid && (
                     <div className="imgSender">
                       {(index === 0 ||
                         item.senderId != chats[index - 1]?.senderId) && (
@@ -665,14 +688,14 @@ const page = ({ params }) => {
                   <Popover
                     arrow={false}
                     placement={
-                      item.senderId !== me?._id ? "rightBottom" : "leftBottom"
+                      item.senderId !== currentUser?.uid ? "rightBottom" : "leftBottom"
                     }
                     content={
                       <Popover
                         arrow={false}
                         open={openPopover}
                         placement={
-                          item.senderId !== me?._id ? "topLeft" : "topRight"
+                          item.senderId !== currentUser?.uid ? "topLeft" : "topRight"
                         }
                         content={() => showFunctionChat(item)}
                         onOpenChange={(newOpen) => setOpenPopover(newOpen)}
@@ -694,11 +717,11 @@ const page = ({ params }) => {
                       color={"#2db7f5"}
                       style={{
                         backgroundColor:
-                          item.senderId === me?._id ? "#E5EFFF" : "white",
+                          item.senderId === currentUser?.uid ? "#E5EFFF" : "white",
                       }}
                     >
                       <div>
-                        {item.senderId !== me?._id && (
+                        {item.senderId !== currentUser?.uid && (
                           <p className="chatName">{item.senderInfo?.name}</p>
                         )}
                         {item.content.text !== undefined ? (
@@ -785,6 +808,11 @@ const page = ({ params }) => {
                 (sending ? <p>đang gửi...</p> : <p>đã gửi ✔</p>)
               }
             </div>
+        </div>
+        <div style={{
+          textAlign: "center",
+        }}>
+          {isLoadingChats && <p>Loading...</p>}
         </div>
         <div ref={endRef} />
       </div>
