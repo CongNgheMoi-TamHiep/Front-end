@@ -77,31 +77,33 @@
     }, [Active, isAuthenticated]);
 
     useEffect(() => {
-      socket.on("receiveFriendRequest", (data) => {
-        console.log("Socket connected received", data);
-        openNotificationWithIcon(
-          "success",
-          t("notification"),
-          `${data.name} ${t("friend_request_notification")}`
-        );
-      });
-      socket.on("acceptFriendRequest", (data) => {
-        console.log("Socket connected accept", data);
-        openNotificationWithIcon(
-          "success",
-          t("notification"),
-          `${data.name} ${t("accept_friend_request_notification")}`
-        );
-      });
-      socket.on("cancelFriendRequest", (data) => {
-        console.log("Socket connected cancel", data);
-        openNotificationWithIcon(
-          "success",
-          t("notification"),
-          `${data.name} ${t("cancel_friend_request_notification")}`
-        );
-      });
-    });
+      if(socket) { 
+        socket.on("receiveFriendRequest", (data) => {
+          console.log("Socket connected received", data);
+          openNotificationWithIcon(
+            "success",
+            t("notification"),
+            `${data.name} ${t("friend_request_notification")}`
+          );
+        });
+        socket.on("acceptFriendRequest", (data) => {
+          console.log("Socket connected accept", data);
+          openNotificationWithIcon(
+            "success",
+            t("notification"),
+            `${data.name} ${t("accept_friend_request_notification")}`
+          );
+        });
+        socket.on("cancelFriendRequest", (data) => {
+          console.log("Socket connected cancel", data);
+          openNotificationWithIcon(
+            "success",
+            t("notification"),
+            `${data.name} ${t("cancel_friend_request_notification")}`
+          );
+        });
+      }
+    }, [socket]);
 
     if (isLoading) return <Loading />;
     return (

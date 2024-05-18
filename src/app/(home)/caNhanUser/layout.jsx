@@ -81,19 +81,21 @@ const Layout = ({ children }) => {
   };
 
   useEffect(() => {
-    socket.on("getMessage", (chat) => {
-      console.log("getMessage", chat);
-      setChatReceived(chat);
-    });
-    socket.on("newConversation", (conversation) => {
-      console.log("newConversation: ");
-      console.log(conversation);
-      setNewConversation(conversation);
-    });
+    if(socket) { 
+      socket.on("getMessage", (chat) => {
+        console.log("getMessage", chat);
+        setChatReceived(chat);
+      });
+      socket.on("newConversation", (conversation) => {
+        console.log("newConversation: ");
+        console.log(conversation);
+        setNewConversation(conversation);
+      });
+    }
 
     fetchData();
     getPhoneBook(currentUser?.uid);
-  }, []);
+  }, [socket]);
 
   useEffect(() => {
     if (newConversation) {

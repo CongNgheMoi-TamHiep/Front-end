@@ -37,15 +37,11 @@ import ContentCopyOutlinedIcon from "@mui/icons-material/ContentCopyOutlined";
 import ReplayOutlinedIcon from "@mui/icons-material/ReplayOutlined";
 import { MoreHoriz, Search } from "@mui/icons-material";
 import ReplyIcon from "@mui/icons-material/Reply";
-import ThumbUpIcon from "@mui/icons-material/ThumbUp";
 import Divider from "@mui/material/Divider";
-import { AuthContext } from "@/context/AuthProvider";
+import {useCurrentUser } from "@/context/AuthProvider";
 import ConversationApi from "@/apis/ConversationApi";
 import ChatApi from "@/apis/ChatApi";
 import EmojiPicker from "emoji-picker-react";
-import { io } from "socket.io-client";
-import { SocketContext } from "@/context/SocketProvider";
-import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";
 import formatFileSize from "@/utils/formatFileSize";
 import userApis from "@/apis/userApis";
 import CombineUserId from "@/utils/CombineUserId";
@@ -55,10 +51,6 @@ import UserConversationApi from "@/apis/userConversationApi";
 import ModalProfileUser from "@/components/ModalProfileUser";
 import { useSocket } from "@/context/SocketProvider";
 import openNotificationWithIcon from "@/components/OpenNotificationWithIcon";
-import { useMutation } from "react-query";
-import FriendApi from "@/apis/FriendApi";
-import imageDefault from "@/constants/imgDefault";
-import { set } from "date-fns";
 import ModalSettingGroup from "@/components/ModalSettingGroup";
 
 const lastTime = "Truy cập 1 phút trước";
@@ -66,14 +58,14 @@ const lastTime = "Truy cập 1 phút trước";
 const page = ({ params }) => {
   const receiverId = params.id;
   const router = useRouter();
-  const currentUser = useContext(AuthContext);
+  const currentUser = useCurrentUser(); 
 
   const { Text } = Typography;
   const endRef = useRef();
   // const inputPhotoRef = useRef();
   // const inputFileRef = useRef();
   const containerRef = useRef();
-  const { socket } = useSocket();
+  const { socket, emit } = useSocket();
 
   const [conversationId, setConversationId] = useState(params.id);
   const [currentConversation, setCurrentConversation] = useState(null);
@@ -155,18 +147,8 @@ const page = ({ params }) => {
     return convs; 
   }
 
-  // const { mutate: getFriends } = useMutation(
-  //   "friends",
-  //   FriendApi.getFriends,
-  //   {
-  //     onSuccess: (data) => {
-  //       setFriends(data);
-  //     },
-  //     onError: (error) => {
-  //       console.log(error);
-  //     },
-  //   }
-  // );
+ 
+
   useEffect(() => {
     const fetchData = async () => {
       //fetch user
@@ -189,13 +171,9 @@ const page = ({ params }) => {
 
       userNhan1 = await userApis.getShortInfoUser(userNhan1?._id);
       setUserNhan(userNhan1);
-      // setMe(me1);
-      // const chatReponse = await ChatApi.getChatByConversationId(conversationId1);
-      // setChat(chatReponse);
       setIsGroupConversation(conversationResponse?.type === "group");
     };
     fetchData();
-    // getFriends(currentUser?.uid);
   }, []);
 
   useEffect(() => {
@@ -223,29 +201,31 @@ const page = ({ params }) => {
   }, [conversationId, conversation, socket]);
 
   useEffect(() => {
-    socket.on("getMessage", (chat) => {
-      setEndTime(performance.now());
-      setSending(false);
-      if((chat.content.images && chat.content.images?.length > 0)) {
-        setChatReceived(chat);
-        return; 
-      }
-
-      setChat((prevChats) => {
-        // prevChats.pop();
-        const filteredChats = prevChats.filter((c) => c._id);
-        return [...filteredChats, chat];
+    if(socket) { 
+      socket.on("getMessage", (chat) => {
+        setEndTime(performance.now());
+        setSending(false);
+        if((chat.content.images && chat.content.images?.length > 0)) {
+          setChatReceived(chat);
+          return; 
+        }
+  
+        setChat((prevChats) => {
+          // prevChats.pop();
+          const filteredChats = prevChats.filter((c) => c._id);
+          return [...filteredChats, chat];
+        });
       });
-    });
-    socket.on("receive-call", (data) => {
-      console.log(data);
-      if (data.caller != currentUser?.uid) {
-        router.push(`/VideoCall/${data.channel}`);
-      }
-    });
-    socket.on("deleteMessage", (chatId) => {
-      setRecallChatId(chatId);
-    })
+      socket.on("receive-call", (data) => {
+        console.log(data);
+        if (data.caller != currentUser?.uid) {
+          router.push(`/VideoCall/${data.channel}`);
+        }
+      });
+      socket.on("deleteMessage", (chatId) => {
+        setRecallChatId(chatId);
+      })
+    }
   }, [socket]);
 
   useEffect(() => {
@@ -288,7 +268,7 @@ const page = ({ params }) => {
       ...dataChat,
       createdAt: new Date(),
     }]);
-    await axiosPrivate.post(`/chat`,dataChat);
+    await ChatApi.sendChat(dataChat, emit);
     setIsFirst(false);
   };
 
@@ -531,11 +511,11 @@ const page = ({ params }) => {
 
   const hanldForward = async () => {
     for (let item of forwardSelected) {
-      await axiosPrivate.post(`/chat`, {
+      await ChatApi.sendChat({
         conversationId: item.conversationId,
         senderId: currentUser?.uid,
         content: itemForward,
-      });
+      }, emit);
     }
 
     setOpenModalForward(false);

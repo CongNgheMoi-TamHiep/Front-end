@@ -91,30 +91,34 @@ const Layout = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    socket.on("getMessage", (chat) => {
-      // console.log("getMessage", chat);
-      setChatReceived(chat);
-    });
-    socket.on("newConversation", (conversation) => {
-      // console.log("newConversation: ");
-      // console.log(conversation);
-      // setConversations([conversation, ...conversations]);
-      socket.emit("joinRoom", conversation.conversationId || conversation._id);
-      setNewConversation(conversation);
-    });
-    socket.on("deleteConversation", groupId => {
-      socket.emit("leaveRoom", groupId);
-    })
+    if(socket) { 
+      console.log("socket2:",socket)
+  
+      socket.on("getMessage", (chat) => {
+        // console.log("getMessage", chat);
+        setChatReceived(chat);
+      });
+      socket.on("newConversation", (conversation) => {
+        socket.emit("joinRoom", conversation.conversationId || conversation._id);
+        setNewConversation(conversation);
+      });
+      socket.on("deleteConversation", groupId => {
+        socket.emit("leaveRoom", groupId);
+      })
+    }
   }, [socket]);
 
   // Chuyển socket ra ngoài
   useEffect(() => {
-    if (conversations) {
+    console.log("socket3:",socket)
+
+    if (conversations && socket) {
       conversations.map((item) => {
-        if (!item?.deleted) socket.emit("joinRoom", item.conversationId);
+        if (!item?.deleted) 
+          socket.emit("joinRoom", item.conversationId);
       });
     }
-  }, [conversations.length]);
+  }, [conversations.length, socket]);
 
   useEffect(() => {
     if (newConversation) {
@@ -265,7 +269,14 @@ const Layout = ({ children }) => {
     setSearchTerm(event.target.value);
   };
 
-  const checkFriendState = (state) => {
+  const checkFriendState = (state, itemUserFind) => {
+    let userF = userFind; 
+    if(itemUserFind) {
+      userF = {
+        ...itemUserFind, 
+        _id: itemUserFind?._id || itemUserFind?.userId,
+      };
+    }
     switch (state) {
       case "pending1":
         return (
@@ -278,8 +289,8 @@ const Layout = ({ children }) => {
             fontSize="14px"
             onClick={(e) => {
               e.stopPropagation();
-              FriendRequest.cancalRequest(currentUser.uid + "-" + userFind._id);
-              setUserFind({ ...userFind, state: "nofriend" });
+              FriendRequest.cancalRequest(currentUser.uid + "-" + userF._id);
+              setUserFind({ ...userF, state: "nofriend" });
               openNotificationWithIcon(
                 "success",
                 t("Cancel request"),
@@ -314,6 +325,8 @@ const Layout = ({ children }) => {
         return "";
       case "declined2":
       case "nofriend":
+        // console.log("userF: ");
+        // console.log(userF);
         return (
           <Button
             padding="5px 18px"
@@ -323,13 +336,13 @@ const Layout = ({ children }) => {
             color="#0068FF"
             onClick={(e) => {
               e.stopPropagation();
+              setUserFind({ ...userF, state: "pending1" });
               setOpenModalConfirmAddFriend(true);
             }}
           >
             {t("Add friend")}
           </Button>
         );
-
       case "accepted":
         return (
           <Button
@@ -403,7 +416,7 @@ const Layout = ({ children }) => {
               alignItems: "center",
             }}
           >
-            {checkFriendState(findGroup ? "nofriend" : item.state)}
+            {checkFriendState(findGroup ? "nofriend" : item.state, item)}
           </Col>
         </Row>
       </Button>

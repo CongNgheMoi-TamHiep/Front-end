@@ -2,6 +2,12 @@ import axiosPrivate from "./axios";
 import UserConversationApi from "./userConversationApi";
 
 const ChatApi = {
+
+  sendChat(dataChat, emit) {
+    emit("sendMessage", dataChat);
+    // return axiosPrivate.post(`/chat`, data);
+  },
+
   getChatByConversationId(id, offset=0) {
     return axiosPrivate(`/chat/${id}`, {
       params: {
