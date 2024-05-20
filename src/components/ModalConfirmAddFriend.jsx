@@ -1,8 +1,12 @@
 import React from "react";
 import { Modal, Row, Col, Input, Flex, Image } from "antd";
 import Button from "@/components/Button";
+import FriendRequest from "@/apis/friendRequest";
+import openNotificationWithIcon from "@/components/OpenNotificationWithIcon";
+import { useTranslation } from "react-i18next";
 
 const ModalConfirmAddFriend = (props) => {
+  const { t } = useTranslation();
   const { TextArea } = Input;
   const {
     children,
@@ -11,14 +15,29 @@ const ModalConfirmAddFriend = (props) => {
     height = "55vh",
     show = true,
     handleClose,
-    handleOK,
     user,
+    userFind,
+    setUserFind,
   } = props;
+
+  const handleOK =
+    props.handleOK ||
+    (async () => {
+      console.log(user, userFind);
+      await FriendRequest.addFriend(user, userFind);
+      setUserFind({ ...userFind, state: "pending1" });
+      handleClose();
+      openNotificationWithIcon(
+        "success",
+        t("Success"),
+        t("Add friend success")
+      );
+    });
 
   return (
     <Modal
       open={show}
-      title={<h3>Confirm</h3>}
+      title={<h3>{t("Confirm")}</h3>}
       onCancel={handleClose}
       onOk={handleOK}
       footer={null}
@@ -44,8 +63,8 @@ const ModalConfirmAddFriend = (props) => {
             <Image
               className="avatar-img"
               src={
-                "https://images.pexels.com/photos/6534399/pexels-photo-6534399.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
-                //   user.img
+                userFind?.avatar ||
+                "https://firebasestorage.googleapis.com/v0/b/zalo-78227.appspot.com/o/avatarDefault.jpg?alt=media&token=2b2922bb-ada3-4000-b5f7-6d97ff87becd"
               }
               alt=""
               width={80}
@@ -55,8 +74,8 @@ const ModalConfirmAddFriend = (props) => {
           </Col>
           <Col flex={"auto"}>
             <h3>
-              {/* {user.name} */}
-              Name Test
+              {userFind?.name}
+              {/* Name Test */}
             </h3>
           </Col>
         </Flex>
@@ -65,7 +84,7 @@ const ModalConfirmAddFriend = (props) => {
           maxLength={100}
           onChange={setMessage}
           value={message}
-          placeholder="Enter your message here..."
+          placeholder={t("Enter your message here...")}
           style={{
             height: 120,
             resize: "none",
@@ -88,7 +107,7 @@ const ModalConfirmAddFriend = (props) => {
             color="black"
             padding="10px 25px"
           >
-            CANCAL
+            {t("CANCAL")}
           </Button>
           <Button
             key="submit"
@@ -98,7 +117,7 @@ const ModalConfirmAddFriend = (props) => {
             padding="10px 25px"
             onClick={handleOK}
           >
-            ADD FRIEND
+            {t("ADD FRIEND")}
           </Button>
         </Flex>
       </Flex>

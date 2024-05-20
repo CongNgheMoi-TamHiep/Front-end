@@ -1,8 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Modal, Typography, Image } from "antd";
+import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 
 const ModalProfileUser = ({ isOpen, onClose, user }) => {
+  const { t } = useTranslation();
+
   return (
     <Modal
       visible={isOpen}
@@ -13,7 +16,7 @@ const ModalProfileUser = ({ isOpen, onClose, user }) => {
       // maskStyle={{ backgroundColor: "rgba(0, 0, 0, 0)" }}
     >
       <div>
-        <Typography.Title level={4}>Cá nhân</Typography.Title>
+        <Typography.Title level={4}>{t("personal_info")}</Typography.Title>
         <img
           src="https://cdn2.cellphones.com.vn/1200x400/https://cdn.sforum.vn/sforum/wp-content/uploads/2023/10/zalo-video-thumbnail.jpg"
           alt=""
@@ -31,8 +34,11 @@ const ModalProfileUser = ({ isOpen, onClose, user }) => {
           }}
         >
           <Image
-            src={user.avatar}
-            alt={user.name}
+            src={
+              user?.avatar ||
+              "https://firebasestorage.googleapis.com/v0/b/zalo-78227.appspot.com/o/avatarDefault.jpg?alt=media&token=2b2922bb-ada3-4000-b5f7-6d97ff87becd"
+            }
+            alt={user?.name}
             width={60}
             height={60}
             style={{ borderRadius: "50%" }}
@@ -41,7 +47,7 @@ const ModalProfileUser = ({ isOpen, onClose, user }) => {
             level={4}
             style={{ fontSize: "20px", marginTop: "14px" }}
           >
-            {user.name}
+            {user?.name}
           </Typography.Title>
         </div>
         <div
@@ -53,22 +59,23 @@ const ModalProfileUser = ({ isOpen, onClose, user }) => {
             flexDirection: "column",
           }}
         >
-          <Typography.Title level={5}>Thông tin cá nhân</Typography.Title>
+          <Typography.Title level={5}>{t("personal_info")}</Typography.Title>
 
           <Typography.Text style={{ fontSize: "16px" }}>
-            Giới tính: <span style={{ marginLeft: "39px" }}>{user.gender}</span>
+            {t("gender")}:{" "}
+            <span style={{ marginLeft: "39px" }}>{user?.gender}</span>
           </Typography.Text>
           <Typography.Text style={{ fontSize: "16px" }}>
-            Ngày sinh:{" "}
+            {t("date_of_birth")}:{" "}
             <span style={{ marginLeft: "30px" }}>
-              {user.dateOfBirth
-                ? format(new Date(user.dateOfBirth), "dd/MM/yyyy")
-                : "Chưa có thông tin"}
+              {user?.dateOfBirth
+                ? format(new Date(user?.dateOfBirth), "dd/MM/yyyy")
+                : t("no_info")}
             </span>
           </Typography.Text>
           <Typography.Text style={{ fontSize: "16px" }}>
-            Số điện thoại:{" "}
-            <span style={{ marginLeft: "6px" }}>{user.number}</span>
+            {t("phone")}:{" "}
+            <span style={{ marginLeft: "6px" }}>{user?.number}</span>
           </Typography.Text>
         </div>
         <div
@@ -78,9 +85,9 @@ const ModalProfileUser = ({ isOpen, onClose, user }) => {
             marginTop: "10px",
           }}
         >
-          <Typography.Title level={5}>Ảnh</Typography.Title>
+          <Typography.Title level={5}>{t("change_avatar")}</Typography.Title>
           <Typography.Text style={{ fontSize: "16px" }}>
-            Không có hình ảnh
+            {t("no_info")}
           </Typography.Text>
         </div>
       </div>

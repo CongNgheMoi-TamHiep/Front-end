@@ -23,8 +23,12 @@ const userApis = {
                 "Accept": 'application/json',
             },
         });
-    }
+    },
 
+    async getShortInfoUser (id) {
+        const user = await axiosPrivate(`/user/short-info/${id}`);
+        return user; 
+    }
 }
 
 export default userApis;

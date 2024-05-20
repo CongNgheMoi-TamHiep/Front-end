@@ -1,6 +1,7 @@
 "use client";
 import React, { useContext, useEffect, useState } from "react";
 import "./styles.scss";
+import { useTranslation } from "react-i18next";
 import FilterAltOutlinedIcon from "@mui/icons-material/FilterAltOutlined";
 import SearchIcon from "@mui/icons-material/Search";
 import SwapVertIcon from "@mui/icons-material/SwapVert";
@@ -10,19 +11,22 @@ import { AuthContext } from "@/context/AuthProvider";
 import { useRouter } from "next/navigation";
 import CombineUserId from "@/utils/CombineUserId";
 import ConversationApi from "@/apis/ConversationApi";
+import FriendApi from "@/apis/FriendApi";
 
 const FriendPage = () => {
   const [friends, setFriends] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOrder, setSortOrder] = useState(0);
   const [filterType, setFilterType] = useState(0);
+  const { t } = useTranslation();
   const currentUser = useContext(AuthContext);
   const router = useRouter();
 
   useEffect(() => {
     const fetchdata = async () => {
-      const users = await userApis.getAllUsers();
-      setFriends(users.filter((user) => user._id !== currentUser?.uid));
+      const users = await FriendApi.getFriends(currentUser.uid);
+      // console.log(users);
+      setFriends(users);
     };
     fetchdata();
   }, [currentUser?.uid]);
@@ -49,9 +53,9 @@ const FriendPage = () => {
 
   const sortedFriends = friends.sort((a, b) => {
     if (sortOrder === 0) {
-      return a.name.localeCompare(b.name);
+      return a.name?.localeCompare(b.name);
     } else {
-      return b.name.localeCompare(a.name);
+      return b.name?.localeCompare(a.name);
     }
   });
 
@@ -70,14 +74,16 @@ const FriendPage = () => {
 
   return (
     <div className="friend">
-      <h3>Bạn bè ({filteredFriends.length})</h3>
+      <h3>
+        {t("Friends")} ({filteredFriends.length})
+      </h3>
       <div className="contentF">
         <div className="timLoc">
           <div className="timKiem">
             <SearchIcon sx={{ color: "#858585" }} />
             <input
               type="text"
-              placeholder="Tìm kiếm bạn bè"
+              placeholder={t("Search friends")}
               value={searchTerm}
               onChange={handleSearchChange}
             />
@@ -91,8 +97,8 @@ const FriendPage = () => {
                 onChange={handleSortChange}
                 value={sortOrder}
               >
-                <option value={0}>Tên (A - Z)</option>
-                <option value={1}>Tên (Z - A)</option>
+                <option value={0}>{t("Name (A - Z)")}</option>
+                <option value={1}>{t("Name (Z - A)")}</option>
               </select>
             </div>
             <div className="selectLoc">
@@ -103,19 +109,19 @@ const FriendPage = () => {
                 onChange={handleFilterChange}
                 value={filterType}
               >
-                <option value={0}>Tất cả</option>
-                <option value={1}>Phân loại</option>
+                <option value={0}>{t("All")}</option>
+                <option value={1}>{t("Categorized")}</option>
               </select>
             </div>
           </div>
         </div>
 
         <div className="listF">
-          {filteredFriends.map((item) => (
+          {filteredFriends.map((item, index) => (
             <div
-              key={item._id}
+              key={item.userId + index}
               className="itemF"
-              onClick={() => handleDirectToConversation(item._id)}
+              onClick={() => handleDirectToConversation(item.userId)}
             >
               <img
                 className="avatar-img"

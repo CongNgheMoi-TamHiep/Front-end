@@ -1,13 +1,17 @@
-// import "style.scss";
-
 import React, { useState } from "react";
 import { Modal } from "antd";
 import { Box, Grid, TextField, Button } from "@mui/material";
 import openNotificationWithIcon from "@/components/OpenNotificationWithIcon";
-import { EmailAuthProvider, reauthenticateWithCredential, updatePassword } from "firebase/auth";
+import {
+  EmailAuthProvider,
+  reauthenticateWithCredential,
+  updatePassword,
+} from "firebase/auth";
 import { useCurrentUser } from "@/context/AuthProvider";
+import { useTranslation } from "react-i18next";
 
 const ModalChangePassword = ({ show, handleClose }) => {
+  const { t } = useTranslation();
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -16,6 +20,7 @@ const ModalChangePassword = ({ show, handleClose }) => {
   const [isInValidConfirmPassword, setIsInValidConfirmPassword] =
     useState(false);
   const currentUser = useCurrentUser();
+
   const handleSubmit = (e) => {
     e.preventDefault();
     handleUpdatePassword(password);
@@ -23,7 +28,7 @@ const ModalChangePassword = ({ show, handleClose }) => {
 
   const handleUpdatePassword = async () => {
     if (oldPassword === "" || newPassword === "" || confirmPassword === "") {
-      openNotificationWithIcon("error", "Error", "Please fill all fields");
+      openNotificationWithIcon("error", t("error"), t("fill_all_fields"));
       setIsInValidOldPassword(oldPassword === "");
       setIsInValidNewPassword(newPassword === "");
       setIsInValidConfirmPassword(confirmPassword === "");
@@ -34,22 +39,25 @@ const ModalChangePassword = ({ show, handleClose }) => {
       isInValidNewPassword ||
       isInValidConfirmPassword
     ) {
-      openNotificationWithIcon("error", "Error", "Information is invalid");
+      openNotificationWithIcon("error", t("error"), t("invalid_information"));
       return;
     }
     try {
-      const credential = await EmailAuthProvider.credential( currentUser.email, oldPassword);
+      const credential = await EmailAuthProvider.credential(
+        currentUser.email,
+        oldPassword
+      );
       await reauthenticateWithCredential(currentUser, credential);
 
-      // old password is correct here 
+      // old password is correct here
       await updatePassword(currentUser, newPassword);
       setOldPassword("");
       setNewPassword("");
       setConfirmPassword("");
-      openNotificationWithIcon("success", "Success", "Password changed successfully");
+      openNotificationWithIcon("success", t("success"), t("password_changed"));
       handleClose();
     } catch (error) {
-      setIsInValidOldPassword(true); 
+      setIsInValidOldPassword(true);
     }
   };
 
@@ -87,7 +95,7 @@ const ModalChangePassword = ({ show, handleClose }) => {
   return (
     <Modal
       open={show}
-      title={<h3>CHANGE PASSWORD</h3>}
+      title={<h3>{t("change_password")}</h3>}
       onCancel={handleClose}
       footer={[
         <Button
@@ -96,7 +104,7 @@ const ModalChangePassword = ({ show, handleClose }) => {
           onClick={handleClose}
           style={{ marginRight: "5px" }}
         >
-          Cancel
+          {t("cancel")}
         </Button>,
         <Button
           key="submit"
@@ -105,7 +113,7 @@ const ModalChangePassword = ({ show, handleClose }) => {
           color="success"
           onClick={handleUpdatePassword}
         >
-          Update
+          {t("update")}
         </Button>,
       ]}
     >
@@ -114,11 +122,11 @@ const ModalChangePassword = ({ show, handleClose }) => {
           <Grid item xs={12}>
             <TextField
               error={isInValidOldPassword}
-              helperText={isInValidOldPassword && "Old password is incorrect"}
+              helperText={isInValidOldPassword && t("old_password_incorrect")}
               required
               fullWidth
               name="oldPassword"
-              label="Old Password"
+              label={t("old_password")}
               type="password"
               id="oldPassword"
               autoComplete="new-password"
@@ -129,14 +137,11 @@ const ModalChangePassword = ({ show, handleClose }) => {
           <Grid item xs={12}>
             <TextField
               error={isInValidNewPassword}
-              helperText={
-                isInValidNewPassword &&
-                "Password incluces 1 uppercase letter, 1 lowercase letter, and 1 number, may contain special characters (8-16 characters long)"
-              }
+              helperText={isInValidNewPassword && t("invalid_password_pattern")}
               required
               fullWidth
               name="password"
-              label="New Password"
+              label={t("new_password")}
               type="password"
               id="password"
               autoComplete="new-password"
@@ -148,12 +153,12 @@ const ModalChangePassword = ({ show, handleClose }) => {
             <TextField
               error={isInValidConfirmPassword}
               helperText={
-                isInValidConfirmPassword && "Password confirm do not match"
+                isInValidConfirmPassword && t("password_confirm_mismatch")
               }
               required
               fullWidth
               name="confirmPassword"
-              label="Confirm Password"
+              label={t("confirm_password")}
               type="password"
               id="confirmPassword"
               autoComplete="new-password"

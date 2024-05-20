@@ -2,8 +2,18 @@ import axiosPrivate from "./axios";
 import UserConversationApi from "./userConversationApi";
 
 const ChatApi = {
-  getChatByConversationId(id) {
-    return axiosPrivate(`/chat/${id}`);
+
+  sendChat(dataChat, emit) {
+    emit("sendMessage", dataChat);
+    // return axiosPrivate.post(`/chat`, data);
+  },
+
+  getChatByConversationId(id, offset=0) {
+    return axiosPrivate(`/chat/${id}`, {
+      params: {
+        offset,
+      },
+    });
   },
 
   sendFile(file, type, conversationId, senderId) {
@@ -18,6 +28,14 @@ const ChatApi = {
         Accept: "application/json",
       },
     });
+  },
+
+  deleteMessage(messageId) {
+    return axiosPrivate.post(`/chat/deleteYourSide/${messageId}`);
+  },
+
+  recallMessage(messageId) {
+    return axiosPrivate.post(`/chat/delete/${messageId}`);
   },
 };
 
