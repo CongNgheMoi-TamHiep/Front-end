@@ -38,6 +38,7 @@ import { useTranslation } from "react-i18next";
 import ConversationApi from "@/apis/ConversationApi";
 import axiosPrivate from "@/apis/axios";
 import Group from "@/apis/Group";
+import AvatarGroup from "@/components/AvatarGroupFour";
 
 const Layout = ({ children }) => {
   const { Text } = Typography;
@@ -92,8 +93,6 @@ const Layout = ({ children }) => {
 
   useEffect(() => {
     if(socket) { 
-      console.log("socket2:",socket)
-  
       socket.on("getMessage", (chat) => {
         // console.log("getMessage", chat);
         setChatReceived(chat);
@@ -110,8 +109,6 @@ const Layout = ({ children }) => {
 
   // Chuyển socket ra ngoài
   useEffect(() => {
-    console.log("socket3:",socket)
-
     if (conversations && socket) {
       conversations.map((item) => {
         if (!item?.deleted) 
@@ -137,7 +134,9 @@ const Layout = ({ children }) => {
           (chatReceived.conversationId || chatReceived._id)
       );
 
-      // console.log("conversation: ", conversation);
+      console.log("conversation: ", conversation);
+      if(!conversation.lastMess) 
+        conversation.lastMess = {}; 
       conversation.lastMess.content = chatReceived.content;
       conversation.lastMess.createdAt = chatReceived.createdAt;
       conversation.lastMess.senderId = chatReceived.senderInfo._id;
@@ -486,6 +485,7 @@ const Layout = ({ children }) => {
                 );
               })
               ?.map((item) => {
+                console.log(item)
                 return (
                   <div
                     key={item.conversationId || item._id}
@@ -498,17 +498,20 @@ const Layout = ({ children }) => {
                     onClick={() => handleRouteToDetailConversation(item)}
                   >
                     <div className="avatar">
-                      <img
-                        className="avatar-img"
-                        src={
-                          item?.user?.avatar ||
-                          item?.image ||
-                          "https://images.pexels.com/photos/6534399/pexels-photo-6534399.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
-                        }
-                        alt=""
-                        width={60}
-                        height={60}
-                      />
+                      { item.type === "couple" ? 
+                          <img
+                            className="avatar-img"
+                            src={
+                              item?.user?.avatar ||
+                              item?.image ||
+                              "https://images.pexels.com/photos/6534399/pexels-photo-6534399.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
+                            }
+                            alt=""
+                            width={60}
+                            height={60}
+                          /> : 
+                          <AvatarGroup members={item?.members} />
+                      }
                     </div>
                     <div className="info" style={{ flex: 1 }}>
                       <div

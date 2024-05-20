@@ -9,6 +9,8 @@ import UserConversationApi from "@/apis/userConversationApi";
 import { useCurrentUser } from "@/context/AuthProvider";
 import { set } from "date-fns";
 import { useRouter } from "next/navigation";
+import AvatarGroup from "@/components/AvatarGroupFour";
+
 const GroupPage = () => {
   const { t } = useTranslation();
   const currentUser = useCurrentUser();
@@ -94,13 +96,22 @@ const GroupPage = () => {
               className="itemF"
               onClick={()=> {handleDirectToConversation(item.conversationId)}}
             >
-              <img
+              
+              {/* <img
                 className="avatar-img"
                 src={item.image}
                 alt=""
                 width={50}
                 height={50}
-              />
+              /> */}
+              <div style={{
+                height: 80,
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}>
+                <AvatarGroup members={item?.members}/>
+              </div>
               <h4 className="nameF">{item.name}</h4>
             </div>
           ))}

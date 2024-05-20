@@ -111,6 +111,8 @@ const Layout = ({ children }) => {
         (item) => item.conversationId === chatReceived.conversationId
       );
 
+      if(!conversation.lastMess) 
+        conversation.lastMess = {}; 
       conversation.lastMess.content = chatReceived.content;
       conversation.lastMess.createdAt = chatReceived.createdAt;
       conversation.lastMess.senderId = chatReceived.senderInfo._id;

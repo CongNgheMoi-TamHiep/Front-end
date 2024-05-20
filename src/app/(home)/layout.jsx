@@ -94,14 +94,14 @@
             `${data.name} ${t("accept_friend_request_notification")}`
           );
         });
-        socket.on("cancelFriendRequest", (data) => {
-          console.log("Socket connected cancel", data);
-          openNotificationWithIcon(
-            "success",
-            t("notification"),
-            `${data.name} ${t("cancel_friend_request_notification")}`
-          );
-        });
+        // socket.on("cancelFriendRequest", (data) => {
+        //   console.log("Socket connected cancel", data);
+        //   openNotificationWithIcon(
+        //     "success",
+        //     t("notification"),
+        //     `${data.name} ${t("cancel_friend_request_notification")}`
+        //   );
+        // });
       }
     }, [socket]);
 
