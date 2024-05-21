@@ -38,6 +38,7 @@ import { useTranslation } from "react-i18next";
 import ConversationApi from "@/apis/ConversationApi";
 import axiosPrivate from "@/apis/axios";
 import Group from "@/apis/Group";
+import AvatarGroup from "@/components/AvatarGroupFour";
 
 const Layout = ({ children }) => {
   const { Text } = Typography;
@@ -64,7 +65,7 @@ const Layout = ({ children }) => {
 
   const handleRouteToDetailConversation = (item) => {
     setCurrentConversation(item);
-    router.push(`/tinNhan/${item._id || item.lastMess.conversationId}`);
+        router.push(`/tinNhan/${item._id || item.lastMess.conversationId}`);
   };
 
   const { mutate: getPhoneBook, data: phoneBook } = useMutation(
@@ -77,7 +78,7 @@ const Layout = ({ children }) => {
       await UserConversationApi.getUserConversationByUserId(currentUser?.uid);
     setConversations(userConversations.conversations);
     // console.log(userConversations.conversations);
-    const user1 = await userApis.getUserById(currentUser.uid);
+    const user1 = await userApis.getShortInfoUser(currentUser.uid);
     setUser(user1);
 
     const users = await FriendApi.getFriends(currentUser.uid);
@@ -91,27 +92,30 @@ const Layout = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    socket.on("getMessage", (chat) => {
-      console.log("getMessage", chat);
-      setChatReceived(chat);
-    });
-    socket.on("newConversation", (conversation) => {
-      console.log("newConversation: ");
-      console.log(conversation);
-      // setConversations([conversation, ...conversations]);
-      socket.emit("joinRoom", conversation.conversationId || conversation._id);
-      setNewConversation(conversation);
-    });
-  }, []);
+    if(socket) { 
+      socket.on("getMessage", (chat) => {
+        // console.log("getMessage", chat);
+        setChatReceived(chat);
+      });
+      socket.on("newConversation", (conversation) => {
+        socket.emit("joinRoom", conversation.conversationId || conversation._id);
+        setNewConversation(conversation);
+      });
+      socket.on("deleteConversation", groupId => {
+        socket.emit("leaveRoom", groupId);
+      })
+    }
+  }, [socket]);
 
   // Chuyển socket ra ngoài
   useEffect(() => {
-    if (conversations) {
+    if (conversations && socket) {
       conversations.map((item) => {
-        if (!item?.deleted) socket.emit("joinRoom", item.conversationId);
+        if (!item?.deleted) 
+          socket.emit("joinRoom", item.conversationId);
       });
     }
-  }, [conversations, socket]);
+  }, [conversations.length, socket]);
 
   useEffect(() => {
     if (newConversation) {
@@ -122,8 +126,8 @@ const Layout = ({ children }) => {
     // console.log(conversations);
     // console.log(chatReceived);
     if (chatReceived) {
-      console.log(chatReceived);
-      console.log("conversations: ", conversations);
+      // console.log(chatReceived);
+      // console.log("conversations: ", conversations);
       const conversation = conversations.find(
         (item) =>
           (item.conversationId || item._id) ===
@@ -131,6 +135,8 @@ const Layout = ({ children }) => {
       );
 
       console.log("conversation: ", conversation);
+      if(!conversation.lastMess) 
+        conversation.lastMess = {}; 
       conversation.lastMess.content = chatReceived.content;
       conversation.lastMess.createdAt = chatReceived.createdAt;
       conversation.lastMess.senderId = chatReceived.senderInfo._id;
@@ -262,7 +268,14 @@ const Layout = ({ children }) => {
     setSearchTerm(event.target.value);
   };
 
-  const checkFriendState = (state) => {
+  const checkFriendState = (state, itemUserFind) => {
+    let userF = userFind; 
+    if(itemUserFind) {
+      userF = {
+        ...itemUserFind, 
+        _id: itemUserFind?._id || itemUserFind?.userId,
+      };
+    }
     switch (state) {
       case "pending1":
         return (
@@ -275,8 +288,8 @@ const Layout = ({ children }) => {
             fontSize="14px"
             onClick={(e) => {
               e.stopPropagation();
-              FriendRequest.cancalRequest(currentUser.uid + "-" + userFind._id);
-              setUserFind({ ...userFind, state: "nofriend" });
+              FriendRequest.cancalRequest(currentUser.uid + "-" + userF._id);
+              setUserFind({ ...userF, state: "nofriend" });
               openNotificationWithIcon(
                 "success",
                 t("Cancel request"),
@@ -311,6 +324,8 @@ const Layout = ({ children }) => {
         return "";
       case "declined2":
       case "nofriend":
+        // console.log("userF: ");
+        // console.log(userF);
         return (
           <Button
             padding="5px 18px"
@@ -320,13 +335,13 @@ const Layout = ({ children }) => {
             color="#0068FF"
             onClick={(e) => {
               e.stopPropagation();
+              setUserFind({ ...userF, state: "pending1" });
               setOpenModalConfirmAddFriend(true);
             }}
           >
             {t("Add friend")}
           </Button>
         );
-
       case "accepted":
         return (
           <Button
@@ -400,7 +415,7 @@ const Layout = ({ children }) => {
               alignItems: "center",
             }}
           >
-            {checkFriendState(findGroup ? "nofriend" : item.state)}
+            {checkFriendState(findGroup ? "nofriend" : item.state, item)}
           </Col>
         </Row>
       </Button>
@@ -470,29 +485,33 @@ const Layout = ({ children }) => {
                 );
               })
               ?.map((item) => {
+                console.log(item)
                 return (
                   <div
-                    key={item.conversationId}
+                    key={item.conversationId || item._id}
                     className={`userConversation ${
                       currentConversation &&
-                      currentConversation.conversationId === item.conversationId
+                      currentConversation.conversationId === item.conversationId || item._id
                         ? "active"
                         : ""
                     }`}
                     onClick={() => handleRouteToDetailConversation(item)}
                   >
                     <div className="avatar">
-                      <img
-                        className="avatar-img"
-                        src={
-                          item?.user?.avatar ||
-                          item?.image ||
-                          "https://images.pexels.com/photos/6534399/pexels-photo-6534399.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
-                        }
-                        alt=""
-                        width={60}
-                        height={60}
-                      />
+                      { item.type === "couple" ? 
+                          <img
+                            className="avatar-img"
+                            src={
+                              item?.user?.avatar ||
+                              item?.image ||
+                              "https://images.pexels.com/photos/6534399/pexels-photo-6534399.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
+                            }
+                            alt=""
+                            width={60}
+                            height={60}
+                          /> : 
+                          <AvatarGroup members={item?.members} />
+                      }
                     </div>
                     <div className="info" style={{ flex: 1 }}>
                       <div

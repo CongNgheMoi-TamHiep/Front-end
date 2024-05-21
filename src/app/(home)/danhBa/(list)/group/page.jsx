@@ -1,36 +1,30 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./styles.scss";
 import FilterAltOutlinedIcon from "@mui/icons-material/FilterAltOutlined";
 import SearchIcon from "@mui/icons-material/Search";
 import SwapVertIcon from "@mui/icons-material/SwapVert";
 import { useTranslation } from "react-i18next";
+import UserConversationApi from "@/apis/userConversationApi";
+import { useCurrentUser } from "@/context/AuthProvider";
+import { set } from "date-fns";
+import { useRouter } from "next/navigation";
+import AvatarGroup from "@/components/AvatarGroupFour";
 
 const GroupPage = () => {
   const { t } = useTranslation();
-  const [groups, setGroups] = useState([
-    {
-      id: 21,
-      image:
-        "https://designs.vn/wp-content/images/06-08-2013/logo_lagi_2_resize.jpg",
-      name: "Nhóm CMN",
-    },
-    {
-      id: 22,
-      image:
-        "https://designs.vn/wp-content/images/09-08-2013/logo_lagi_4_resize.jpg",
-      name: "Nhóm KT",
-    },
-    {
-      id: 23,
-      image:
-        "https://designs.vn/wp-content/images/09-08-2013/logo_lagi_6_resize.jpg",
-      name: "Nhóm của tôi",
-    },
-  ]);
+  const currentUser = useCurrentUser();
+  const [groups, setGroups] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOrder, setSortOrder] = useState(0); // 0: A-Z, 1: Z-A
-
+  const router = useRouter();
+  useEffect(() => { 
+    (async() => { 
+      const conv = await UserConversationApi.getUserConversationByUserId(currentUser.uid); 
+      const groups = conv.conversations.filter((group) => group.type === "group");
+      setGroups(groups)
+    })()
+  }, [])
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
   };
@@ -51,6 +45,10 @@ const GroupPage = () => {
     const searchValue = searchTerm.toLowerCase();
     return group.name.toLowerCase().includes(searchValue);
   });
+  console.log(filteredGroups)
+  const handleDirectToConversation = (convId) => { 
+    router.push(`/tinNhan/${convId}`);
+  }
 
   return (
     <div className="friend">
@@ -93,14 +91,27 @@ const GroupPage = () => {
 
         <div className="listF">
           {filteredGroups.map((item) => (
-            <div key={item.id} className="itemF">
-              <img
+            <div 
+              key={item.conversationId} 
+              className="itemF"
+              onClick={()=> {handleDirectToConversation(item.conversationId)}}
+            >
+              
+              {/* <img
                 className="avatar-img"
                 src={item.image}
                 alt=""
                 width={50}
                 height={50}
-              />
+              /> */}
+              <div style={{
+                height: 80,
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}>
+                <AvatarGroup members={item?.members}/>
+              </div>
               <h4 className="nameF">{item.name}</h4>
             </div>
           ))}

@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 /* eslint-disable @next/next/no-img-element */
 "use client";
-import React, { useContext, useEffect, useRef, useState } from "react";
+import React, { useCallback, useContext, useEffect, useRef, useState } from "react";
 import "./styles.scss";
 import { useRouter } from "next/navigation";
 import BookmarkBorderIcon from "@mui/icons-material/BookmarkBorder";
@@ -37,15 +37,11 @@ import ContentCopyOutlinedIcon from "@mui/icons-material/ContentCopyOutlined";
 import ReplayOutlinedIcon from "@mui/icons-material/ReplayOutlined";
 import { MoreHoriz, Search } from "@mui/icons-material";
 import ReplyIcon from "@mui/icons-material/Reply";
-import ThumbUpIcon from "@mui/icons-material/ThumbUp";
 import Divider from "@mui/material/Divider";
-import { AuthContext } from "@/context/AuthProvider";
+import {useCurrentUser } from "@/context/AuthProvider";
 import ConversationApi from "@/apis/ConversationApi";
 import ChatApi from "@/apis/ChatApi";
 import EmojiPicker from "emoji-picker-react";
-import { io } from "socket.io-client";
-import { SocketContext } from "@/context/SocketProvider";
-import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";
 import formatFileSize from "@/utils/formatFileSize";
 import userApis from "@/apis/userApis";
 import CombineUserId from "@/utils/CombineUserId";
@@ -55,10 +51,6 @@ import UserConversationApi from "@/apis/userConversationApi";
 import ModalProfileUser from "@/components/ModalProfileUser";
 import { useSocket } from "@/context/SocketProvider";
 import openNotificationWithIcon from "@/components/OpenNotificationWithIcon";
-import { useMutation } from "react-query";
-import FriendApi from "@/apis/FriendApi";
-import imageDefault from "@/constants/imgDefault";
-import { set } from "date-fns";
 import ModalSettingGroup from "@/components/ModalSettingGroup";
 
 const lastTime = "Truy cập 1 phút trước";
@@ -66,14 +58,14 @@ const lastTime = "Truy cập 1 phút trước";
 const page = ({ params }) => {
   const receiverId = params.id;
   const router = useRouter();
-  const currentUser = useContext(AuthContext);
+  const currentUser = useCurrentUser(); 
 
   const { Text } = Typography;
   const endRef = useRef();
   // const inputPhotoRef = useRef();
   // const inputFileRef = useRef();
   const containerRef = useRef();
-  const { socket } = useSocket();
+  const { socket, emit } = useSocket();
 
   const [conversationId, setConversationId] = useState(params.id);
   const [currentConversation, setCurrentConversation] = useState(null);
@@ -94,13 +86,24 @@ const page = ({ params }) => {
   const [forwardSelected, setForwardSelected] = useState([]);
   const [friends, setFriends] = useState([]);
   const [itemForward, setItemForward] = useState();
+  const [recallChatId, setRecallChatId] = useState(null);
+  const [startTime, setStartTime] = useState(null);
+  const [endTime, setEndTime] = useState(null);
+  const [sending, setSending] = useState(false);
+  const [offset, setOffset] = useState(0);
+  const [isLoadingChats, setIsLoadingChats] = useState(false);
+  const [isAllChat, setIsAllChat] = useState(false);
+
+  useEffect(() => {
+    console.log("time send chat: ",(endTime - startTime)/1000, " s");
+  }, [endTime])
 
   // Xử lý sự kiện click để mở modal thông tin của userNhan
   const handleOpenModal = async (id) => {
     //check group/couple
     if (typeof id === "object") setUserProfile(userNhan);
     else {
-      const user = await userApis.getUserById(id);
+      const user = await userApis.getShortInfoUser(id);
       setUserProfile(user);
     }
     setShowModalProfile(true);
@@ -125,27 +128,34 @@ const page = ({ params }) => {
     setOpenModalSettingGroup(false);
   };
 
-  const { mutate: getFriends } = useMutation(
-    "friends",
-    UserConversationApi.getUserConversationByUserId,
-    {
-      onSuccess: (data) => {
-        setFriends(data.conversations);
-      },
-      onError: (error) => {
-        console.log(error);
-      },
-    }
-  );
+
+  const getConversations = async () => {
+    const userConversations =
+      await UserConversationApi.getUserConversationByUserId(currentUser?.uid);
+    let convs = userConversations.conversations;
+    convs = convs.sort((a, b) =>
+      (a?.name || a.user?.name)?.localeCompare(b?.name || b.user?.name)
+    )
+    .filter((friend) => {
+      if(friend.state === 'deleted')
+        return false;
+      return (friend?.name || friend.user?.name)
+        ?.toLowerCase()
+        ?.includes(searchTerm.toLowerCase());
+    });
+    setFriends(convs);
+    return convs; 
+  }
+
+ 
+
   useEffect(() => {
     const fetchData = async () => {
       //fetch user
-      const conversationResponse = await ConversationApi.getConversationById(
-        conversationId
-      );
+      const conversationResponse = await ConversationApi.getConversationById(conversationId);
       let userNhan1 = null;
       let conversationId1 = null;
-      let me1 = null;
+      
       if (conversationResponse?._id) {
         userNhan1 = await conversationResponse?.members.filter(
           (value) => value._id !== currentUser?.uid
@@ -154,71 +164,111 @@ const page = ({ params }) => {
         setIsFirst(false);
         setConversation(conversationResponse);
       } else {
-        userNhan1 = await userApis.getUserById(receiverId);
+        userNhan1 = await userApis.getShortInfoUser(receiverId);
         conversationId1 = CombineUserId(currentUser?.uid, userNhan1?._id);
         setConversationId(conversationId1);
       }
 
-      userNhan1 = await userApis.getUserById(userNhan1?._id);
-      // console.log(userNhan1);
-
-      me1 = await userApis.getUserById(currentUser?.uid);
+      userNhan1 = await userApis.getShortInfoUser(userNhan1?._id);
       setUserNhan(userNhan1);
-      setMe(me1);
-      const chatReponse = await ChatApi.getChatByConversationId(
-        conversationId1
-      );
-      setChat(chatReponse);
-      // setChat(chatReponse.sort((a, b) => {
-      //     return new Date(a.createdAt) - new Date(b.createdAt);
-      // }));
       setIsGroupConversation(conversationResponse?.type === "group");
     };
     fetchData();
-    getFriends(currentUser?.uid);
   }, []);
-
-  //chuyển socket joiiRoom ra trang ngoài
-  // useEffect(() => {
-  //   socket.emit("joinRoom", conversationId);
-  // }, [conversationId, isFirst, socket]);
 
   useEffect(() => {
-    socket.on("getMessage", (chat) => {
-      // console.log("chat socket: ");
-      // console.log(chat);
-      setChatReceived(chat);
-    });
-    socket.on("receive-call", (data) => {
-      console.log(data);
-      if (data.caller != currentUser?.uid) {
-        router.push(`/VideoCall/${data.channel}`);
+    (async() => { 
+      if(isAllChat) {
+        setIsLoadingChats(false);
+        return;
       }
-    });
-  }, []);
+      setIsLoadingChats(true);
+      const chatReponse = await ChatApi.getChatByConversationId(conversationId, offset);
+      if(chatReponse.length < 20) 
+        setIsAllChat(true);
+      setChat((prevChats) => [...chatReponse,...prevChats]);
+      setIsLoadingChats(false);
+    })(); 
+  }, [offset, conversationId])
+
+  // thêm socket joinroom
+  useEffect(() => {
+    if(conversation) { 
+      if(conversation?.deleted == true || conversation?.state=='deleted')
+        return;
+      socket.emit("joinRoom", conversationId);
+    }
+  }, [conversationId, conversation, socket]);
+
+  useEffect(() => {
+    if(socket) { 
+      socket.on("getMessage", (chat) => {
+        setEndTime(performance.now());
+        setSending(false);
+        if((chat.content.images && chat.content.images?.length > 0)) {
+          setChatReceived(chat);
+          return; 
+        }
+  
+        setChat((prevChats) => {
+          // prevChats.pop();
+          const filteredChats = prevChats.filter((c) => c._id);
+          return [...filteredChats, chat];
+        });
+      });
+      socket.on("receive-call", (data) => {
+        console.log(data);
+        if (data.caller != currentUser?.uid) {
+          router.push(`/VideoCall/${data.channel}`);
+        }
+      });
+      socket.on("deleteMessage", (chatId) => {
+        setRecallChatId(chatId);
+      })
+    }
+  }, [socket]);
 
   useEffect(() => {
     if (chatReceived?.conversationId !== conversationId) return;
-    if (chatReceived) setChat((prevChats) => [...prevChats, chatReceived]);
+    if (chatReceived) {
+      setChat((prevChats) => [...prevChats, chatReceived]);
+      setChatReceived(null); 
+    }
   }, [chatReceived]);
 
+  useEffect(() => {
+    if(recallChatId) {
+      const newChats = chats.map((message) => {
+        if (message._id === recallChatId) {
+          return {
+            ...message,
+            type: 'deleted',
+            content : { 
+              text: "Tin nhắn đã bị thu hồi",
+            },
+          };
+        }
+        return message;
+      });
+
+      setChat(newChats);
+    }
+  }, [recallChatId]);
+
   const handleSend = async () => {
-    // socket.emit("sendMessage", {
-    //   conversationId,
-    //   senderInfo: {
-    //     _id: currentUser?.uid,
-    //     name: me.name,
-    //     avatar: me.avatar,
-    //   },
-    //   content: text == "" ? { text: "👍" } : { text },
-    //   createdAt: new Date(),
-    // });
     setText("");
-    await axiosPrivate.post(`/chat`, {
+    setStartTime(performance.now());
+    setSending(true);
+    const dataChat = {
       ...(isFirst ? { receiverId } : { conversationId }),
       senderId: currentUser?.uid,
       content: text == "" ? { text: "👍" } : { text },
-    });
+    }
+    setChat((prevChats) => [...prevChats, {
+      ...dataChat,
+      createdAt: new Date(),
+    }]);
+    await ChatApi.sendChat(dataChat, emit);
     setIsFirst(false);
   };
 
@@ -258,6 +308,7 @@ const page = ({ params }) => {
       <div style={{ display: "flex", flexDirection: "column" }}>
         <Button
           onClick={() => {
+            getConversations();
             setOpenModalForward(true);
             setOpenPopover(false);
             setItemForward(item.content);
@@ -271,7 +322,7 @@ const page = ({ params }) => {
             <ContentCopyOutlinedIcon style={{ marginRight: "8px" }} /> Copy text
           </Button>
         ) : (
-          <a href={`${item.content.file.url}`} download>
+          <a href={`${item.content.file?.url}`} download>
             <Button width={"100%"} onClick={() => setOpenPopover(false)}>
               <FileDownloadOutlinedIcon style={{ marginRight: "8px" }} />
               Download
@@ -295,9 +346,9 @@ const page = ({ params }) => {
           color="red"
           onClick={async () => {
             const response = await ChatApi.recallMessage(item._id);
-            setChat((prev) =>
-              prev.map((chat) => (chat._id === item._id ? response : chat))
-            );
+            // setChat((prev) =>
+            //   prev.map((chat) => (chat._id === item._id ? response : chat))
+            // );
             openNotificationWithIcon("success", "Recall message success");
             setOpenPopover(false);
           }}
@@ -374,6 +425,7 @@ const page = ({ params }) => {
     const videoExtensions = ["mp4", "mov", "avi", "wmv", "flv", "mkv", "webm"];
 
     if (info.file) {
+      setSending(true);
       const reader = new FileReader();
       reader.onloadend = () => {
         console.log(info.file);
@@ -382,6 +434,19 @@ const page = ({ params }) => {
         // console.log(videoExtensions.includes(type) ? "video" : "file");
         const fmData = new FormData();
         fmData.append("file", info.file);
+        const dataChat = {
+          conversationId, 
+          senderId: currentUser?.uid,
+          content: {
+            file: {
+              url: reader.result,
+              size: formatFileSize(info?.file.size) || 35,
+              name: info?.file.name || "text.txt",
+            },
+          },
+          createdAt: new Date(),
+        }
+        setChat((prevChats) => [...prevChats, dataChat]);
         ChatApi.sendFile(
           fmData,
           // "file",
@@ -406,11 +471,21 @@ const page = ({ params }) => {
 
   const handleImgChange = async (info) => {
     try {
+      setSending(true);
       if (info.file) {
         const reader = new FileReader();
         reader.onloadend = () => {
           const fmData = new FormData();
           fmData.append("file", info.file);
+          const dataChat = {
+            conversationId,
+            senderId: currentUser?.uid,
+            content: {
+              image: reader.result,
+            },
+            createdAt: new Date(),
+          }
+          setChat((prevChats) => [...prevChats, dataChat]);
           ChatApi.sendFile(fmData, "image", conversationId, currentUser?.uid)
             .then((data) => {
               console.log(data);
@@ -422,17 +497,6 @@ const page = ({ params }) => {
                 "You can only send a maximum of 20MB"
               )
             );
-          // socket.emit("sendMessage", {
-          //   conversationId,
-          //   senderId: currentUser?.uid,
-          //   content: { image: reader.result },
-          //   senderInfo: {
-          //     _id: currentUser?.uid,
-          //     name: me.name,
-          //     avatar: me.avatar,
-          //   },
-          //   createdAt: new Date(),
-          // });
         };
         reader.readAsDataURL(info.file);
       }
@@ -447,11 +511,11 @@ const page = ({ params }) => {
 
   const hanldForward = async () => {
     for (let item of forwardSelected) {
-      await axiosPrivate.post(`/chat`, {
+      await ChatApi.sendChat({
         conversationId: item.conversationId,
         senderId: currentUser?.uid,
         content: itemForward,
-      });
+      }, emit);
     }
 
     setOpenModalForward(false);
@@ -472,7 +536,7 @@ const page = ({ params }) => {
     // const te = [{}, {}, {}, {}, {}, {}, {}, {}, {}, {},];
     return (
       <Row gutter={[4, 4]} style={{ width: "360px" }}>
-        {images.map((value, index) => {
+        {images?.length>0 && images.map((value, index) => {
           return (
             <Col span={8} key={index}>
               <Image src={value.url} height={120} width={120} />
@@ -483,15 +547,15 @@ const page = ({ params }) => {
     );
   };
 
-  const dataFriends = friends
-    .sort((a, b) =>
-      (a?.name || a.user?.name)?.localeCompare(b?.name || b.user?.name)
-    )
-    .filter((friend) => {
-      return (friend?.name || friend.user?.name)
-        ?.toLowerCase()
-        ?.includes(searchTerm.toLowerCase());
-    });
+  // const dataFriends = friends
+  //   .sort((a, b) =>
+  //     (a?.name || a.user?.name)?.localeCompare(b?.name || b.user?.name)
+  //   )
+  //   .filter((friend) => {
+  //     return (friend?.name || friend.user?.name)
+  //       ?.toLowerCase()
+  //       ?.includes(searchTerm.toLowerCase());
+  //   });
 
   const handleCallVideo = (conversationId) => {
     console.log("object: ", {
@@ -505,6 +569,14 @@ const page = ({ params }) => {
     router.push(`/VideoCall/${conversationId}`);
   };
 
+  const handleScroll = (e) => {
+    if(e.target.clientHeight-e.target.scrollHeight==e.target.scrollTop) {
+      console.log("loading chat...")
+      setOffset((prevOffset) => prevOffset + 1);
+    }
+  }
+
+
   return (
     <div className="conversationChat">
       {/* <Spin spinning={false}> */}
@@ -512,7 +584,7 @@ const page = ({ params }) => {
         <div className="contentTitle">
           <Button className="imgCon" onClick={handleOpenModal}>
             <img
-              src={conversation?.image || userNhan?.avatar}
+              src={ conversation?.type=='group' ? conversation?.image : userNhan?.avatar}
               className="imgAvt"
               alt=""
               width={50}
@@ -559,7 +631,7 @@ const page = ({ params }) => {
         conversationId={conversationId}
       />
 
-      <div className="containerChat" ref={containerRef}>
+      <div className="containerChat" ref={containerRef} onScroll={handleScroll}>
         <div className="chats">
           {chats !== undefined &&
             chats?.map((item, index) => {
@@ -578,10 +650,10 @@ const page = ({ params }) => {
                     item._id || Date.parse(item.createdAt).toString() + index
                   }
                   className={`chatContent ${
-                    item.senderId === me?._id ? "myChat" : "yourChat"
+                    item.senderId === currentUser?.uid ? "myChat" : "yourChat"
                   }`}
                 >
-                  {item.senderId !== me?._id && (
+                  {item.senderId !== currentUser?.uid && (
                     <div className="imgSender">
                       {(index === 0 ||
                         item.senderId != chats[index - 1]?.senderId) && (
@@ -596,14 +668,14 @@ const page = ({ params }) => {
                   <Popover
                     arrow={false}
                     placement={
-                      item.senderId !== me?._id ? "rightBottom" : "leftBottom"
+                      item.senderId !== currentUser?.uid ? "rightBottom" : "leftBottom"
                     }
                     content={
                       <Popover
                         arrow={false}
                         open={openPopover}
                         placement={
-                          item.senderId !== me?._id ? "topLeft" : "topRight"
+                          item.senderId !== currentUser?.uid ? "topLeft" : "topRight"
                         }
                         content={() => showFunctionChat(item)}
                         onOpenChange={(newOpen) => setOpenPopover(newOpen)}
@@ -625,11 +697,11 @@ const page = ({ params }) => {
                       color={"#2db7f5"}
                       style={{
                         backgroundColor:
-                          item.senderId === me?._id ? "#E5EFFF" : "white",
+                          item.senderId === currentUser?.uid ? "#E5EFFF" : "white",
                       }}
                     >
                       <div>
-                        {item.senderId !== me?._id && (
+                        {item.senderId !== currentUser?.uid && (
                           <p className="chatName">{item.senderInfo?.name}</p>
                         )}
                         {item.content.text !== undefined ? (
@@ -706,15 +778,21 @@ const page = ({ params }) => {
                 </div>
               );
             })}
-          {/* {img.map((chat, index) => (
-         <img
-           key={index}
-           src={chat}
-           alt="Chat"
-           className="chatContent myChat imgChat"
-           // style={{ width: "30px" }}
-         />
-       ))} */}
+            <div style={{
+                color: "gray",
+                fontSize: "10px",
+                marginBottom: "10px",
+                marginLeft: "calc(100% - 60px)",
+              }}>
+              {chats[chats.length - 1]?.senderId === currentUser?.uid && 
+                (sending ? <p>đang gửi...</p> : <p>đã gửi ✔</p>)
+              }
+            </div>
+        </div>
+        <div style={{
+          textAlign: "center",
+        }}>
+          {isLoadingChats && <p>Loading...</p>}
         </div>
         <div ref={endRef} />
       </div>
@@ -856,7 +934,7 @@ const page = ({ params }) => {
               gap={5}
             >
               {friends.length == 0 && <p>Empty</p>}
-              {dataFriends.map((item, index) => (
+              {friends.map((item, index) => (
                 <Checkbox
                   key={index}
                   // style={{ width: "100%" }}
@@ -871,7 +949,7 @@ const page = ({ params }) => {
                       height={45}
                       style={{ borderRadius: "50%" }}
                     />
-                    <p>{item?.name || item.user.name}</p>
+                    <p>{item?.name || item?.user.name}</p>
                   </Flex>
                 </Checkbox>
               ))}
