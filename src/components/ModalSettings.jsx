@@ -1,3 +1,4 @@
+"use client";
 import React, { useState } from "react";
 import { Modal, Button, Switch, Select } from "antd";
 import { useTranslation } from "react-i18next";
