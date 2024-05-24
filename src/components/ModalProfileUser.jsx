@@ -211,6 +211,7 @@ const ModalProfileUser = ({ isOpen, onClose, user }) => {
                   key={member._id}
                   actions={[
                     <Button
+                      key={member._id}
                       style={{
                         display:
                           currentUser.role === "member" ? "none" : "block",
