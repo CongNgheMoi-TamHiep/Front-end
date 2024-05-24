@@ -18,7 +18,7 @@ const Page = (conversationId) => {
   }, [conversationId]);
 
   useEffect(() => {
-    // if (socket) {
+    if (socket) {
     socket.on("decline-call", (data) => {
       console.log("channel", data);
       if (data.channel === conversationId.params.id) {
@@ -36,7 +36,7 @@ const Page = (conversationId) => {
     });
 
     console.log("socket", socket);
-    // }
+    }
   }, [socket]);
 
   const rtcProps = {
