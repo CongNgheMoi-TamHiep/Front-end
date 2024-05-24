@@ -637,7 +637,6 @@ const ModalSettingGroup = ({ visible, onCancel, conversationId }) => {
             checkedChildren=""
             unCheckedChildren=""
             onClick={(checked) => {
-              console.log("checked", checked);
               Group.update(conversationId, { memberModeration: checked });
               openNotificationWithIcon("success", "Success", "Đã cập nhật");
             }}
