@@ -7,7 +7,6 @@ import { MuiTelInput } from "mui-tel-input";
 import FriendRequest from "@/apis/friendRequest";
 import { useTranslation } from "react-i18next";
 
-
 const ModalAddMembersGroup = ({ visible, onCancel, onAddMembers }) => {
   const [selectedMembers, setSelectedMembers] = useState([]);
   const [friends, setFriends] = useState([]);
@@ -46,6 +45,7 @@ const ModalAddMembersGroup = ({ visible, onCancel, onAddMembers }) => {
   useEffect(() => {
     const fetchData = async () => {
       const users = await FriendApi.getFriends(currentUser.uid);
+      // console.log("users", users);
       setFriends(users);
     };
     fetchData();

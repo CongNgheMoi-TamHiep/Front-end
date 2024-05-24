@@ -1,0 +1,1 @@
+export {default as ImgDefault} from './imgDefault'
