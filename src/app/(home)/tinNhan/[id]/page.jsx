@@ -1,7 +1,13 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 /* eslint-disable @next/next/no-img-element */
 "use client";
-import React, { useCallback, useContext, useEffect, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import "./styles.scss";
 import { useRouter } from "next/navigation";
 import BookmarkBorderIcon from "@mui/icons-material/BookmarkBorder";
@@ -38,7 +44,7 @@ import ReplayOutlinedIcon from "@mui/icons-material/ReplayOutlined";
 import { MoreHoriz, Search } from "@mui/icons-material";
 import ReplyIcon from "@mui/icons-material/Reply";
 import Divider from "@mui/material/Divider";
-import {useCurrentUser } from "@/context/AuthProvider";
+import { useCurrentUser } from "@/context/AuthProvider";
 import ConversationApi from "@/apis/ConversationApi";
 import ChatApi from "@/apis/ChatApi";
 import EmojiPicker from "emoji-picker-react";
@@ -52,13 +58,14 @@ import ModalProfileUser from "@/components/ModalProfileUser";
 import { useSocket } from "@/context/SocketProvider";
 import openNotificationWithIcon from "@/components/OpenNotificationWithIcon";
 import ModalSettingGroup from "@/components/ModalSettingGroup";
+import imageDefault from "@/constants/imgDefault";
 
 const lastTime = "Truy cập 1 phút trước";
 
 const page = ({ params }) => {
   const receiverId = params.id;
   const router = useRouter();
-  const currentUser = useCurrentUser(); 
+  const currentUser = useCurrentUser();
 
   const { Text } = Typography;
   const endRef = useRef();
@@ -95,15 +102,18 @@ const page = ({ params }) => {
   const [isAllChat, setIsAllChat] = useState(false);
 
   useEffect(() => {
-    console.log("time send chat: ",(endTime - startTime)/1000, " s");
-  }, [endTime])
+    console.log("time send chat: ", (endTime - startTime) / 1000, " s");
+  }, [endTime]);
 
   // Xử lý sự kiện click để mở modal thông tin của userNhan
-  const handleOpenModal = async (id) => {
+  const handleOpenModal = async (type) => {
     //check group/couple
-    if (typeof id === "object") setUserProfile(userNhan);
-    else {
-      const user = await userApis.getShortInfoUser(id);
+    if (type == "couple") {
+      setUserProfile(userNhan);
+    } else if (type == "group") {
+      setUserProfile(conversation);
+    } else {
+      const user = await userApis.getShortInfoUser(type);
       setUserProfile(user);
     }
     setShowModalProfile(true);
@@ -128,34 +138,33 @@ const page = ({ params }) => {
     setOpenModalSettingGroup(false);
   };
 
-
   const getConversations = async () => {
     const userConversations =
       await UserConversationApi.getUserConversationByUserId(currentUser?.uid);
     let convs = userConversations.conversations;
-    convs = convs.sort((a, b) =>
-      (a?.name || a.user?.name)?.localeCompare(b?.name || b.user?.name)
-    )
-    .filter((friend) => {
-      if(friend.state === 'deleted')
-        return false;
-      return (friend?.name || friend.user?.name)
-        ?.toLowerCase()
-        ?.includes(searchTerm.toLowerCase());
-    });
+    convs = convs
+      .sort((a, b) =>
+        (a?.name || a.user?.name)?.localeCompare(b?.name || b.user?.name)
+      )
+      .filter((friend) => {
+        if (friend.state === "deleted") return false;
+        return (friend?.name || friend.user?.name)
+          ?.toLowerCase()
+          ?.includes(searchTerm.toLowerCase());
+      });
     setFriends(convs);
-    return convs; 
-  }
-
- 
+    return convs;
+  };
 
   useEffect(() => {
     const fetchData = async () => {
       //fetch user
-      const conversationResponse = await ConversationApi.getConversationById(conversationId);
+      const conversationResponse = await ConversationApi.getConversationById(
+        conversationId
+      );
       let userNhan1 = null;
       let conversationId1 = null;
-      
+
       if (conversationResponse?._id) {
         userNhan1 = await conversationResponse?.members.filter(
           (value) => value._id !== currentUser?.uid
@@ -171,45 +180,48 @@ const page = ({ params }) => {
 
       userNhan1 = await userApis.getShortInfoUser(userNhan1?._id);
       setUserNhan(userNhan1);
+      console.log(userNhan1);
       setIsGroupConversation(conversationResponse?.type === "group");
     };
     fetchData();
   }, []);
 
   useEffect(() => {
-    (async() => { 
-      if(isAllChat) {
+    (async () => {
+      if (isAllChat) {
         setIsLoadingChats(false);
         return;
       }
       setIsLoadingChats(true);
-      const chatReponse = await ChatApi.getChatByConversationId(conversationId, offset);
-      if(chatReponse.length < 20) 
-        setIsAllChat(true);
-      setChat((prevChats) => [...chatReponse,...prevChats]);
+      const chatReponse = await ChatApi.getChatByConversationId(
+        conversationId,
+        offset
+      );
+      if (chatReponse.length < 20) setIsAllChat(true);
+      setChat((prevChats) => [...chatReponse, ...prevChats]);
       setIsLoadingChats(false);
-    })(); 
-  }, [offset, conversationId])
+    })();
+  }, [offset, conversationId]);
 
   // thêm socket joinroom
   useEffect(() => {
-    if(conversation) { 
-      if(conversation?.deleted == true || conversation?.state=='deleted')
+    if (conversation) {
+      if (conversation?.deleted == true || conversation?.state == "deleted")
         return;
       socket.emit("joinRoom", conversationId);
     }
   }, [conversationId, conversation, socket]);
 
   useEffect(() => {
-    if(socket) { 
+    if (socket) {
       socket.on("getMessage", (chat) => {
         setEndTime(performance.now());
         setSending(false);
-        if((chat.content.images && chat.content.images?.length > 0)) {
+        if (chat.content.images && chat.content.images?.length > 0) {
           setChatReceived(chat);
-          return; 
+          return;
         }
-  
+
         setChat((prevChats) => {
           // prevChats.pop();
           const filteredChats = prevChats.filter((c) => c._id);
@@ -224,7 +236,7 @@ const page = ({ params }) => {
       });
       socket.on("deleteMessage", (chatId) => {
         setRecallChatId(chatId);
-      })
+      });
     }
   }, [socket]);
 
@@ -232,18 +244,18 @@ const page = ({ params }) => {
     if (chatReceived?.conversationId !== conversationId) return;
     if (chatReceived) {
       setChat((prevChats) => [...prevChats, chatReceived]);
-      setChatReceived(null); 
+      setChatReceived(null);
     }
   }, [chatReceived]);
 
   useEffect(() => {
-    if(recallChatId) {
+    if (recallChatId) {
       const newChats = chats.map((message) => {
         if (message._id === recallChatId) {
           return {
             ...message,
-            type: 'deleted',
-            content : { 
+            type: "deleted",
+            content: {
               text: "Tin nhắn đã bị thu hồi",
             },
           };
@@ -263,11 +275,14 @@ const page = ({ params }) => {
       ...(isFirst ? { receiverId } : { conversationId }),
       senderId: currentUser?.uid,
       content: text == "" ? { text: "👍" } : { text },
-    }
-    setChat((prevChats) => [...prevChats, {
-      ...dataChat,
-      createdAt: new Date(),
-    }]);
+    };
+    setChat((prevChats) => [
+      ...prevChats,
+      {
+        ...dataChat,
+        createdAt: new Date(),
+      },
+    ]);
     await ChatApi.sendChat(dataChat, emit);
     setIsFirst(false);
   };
@@ -435,7 +450,7 @@ const page = ({ params }) => {
         const fmData = new FormData();
         fmData.append("file", info.file);
         const dataChat = {
-          conversationId, 
+          conversationId,
           senderId: currentUser?.uid,
           content: {
             file: {
@@ -445,7 +460,7 @@ const page = ({ params }) => {
             },
           },
           createdAt: new Date(),
-        }
+        };
         setChat((prevChats) => [...prevChats, dataChat]);
         ChatApi.sendFile(
           fmData,
@@ -484,7 +499,7 @@ const page = ({ params }) => {
               image: reader.result,
             },
             createdAt: new Date(),
-          }
+          };
           setChat((prevChats) => [...prevChats, dataChat]);
           ChatApi.sendFile(fmData, "image", conversationId, currentUser?.uid)
             .then((data) => {
@@ -511,11 +526,14 @@ const page = ({ params }) => {
 
   const hanldForward = async () => {
     for (let item of forwardSelected) {
-      await ChatApi.sendChat({
-        conversationId: item.conversationId,
-        senderId: currentUser?.uid,
-        content: itemForward,
-      }, emit);
+      await ChatApi.sendChat(
+        {
+          conversationId: item.conversationId,
+          senderId: currentUser?.uid,
+          content: itemForward,
+        },
+        emit
+      );
     }
 
     setOpenModalForward(false);
@@ -536,13 +554,14 @@ const page = ({ params }) => {
     // const te = [{}, {}, {}, {}, {}, {}, {}, {}, {}, {},];
     return (
       <Row gutter={[4, 4]} style={{ width: "360px" }}>
-        {images?.length>0 && images.map((value, index) => {
-          return (
-            <Col span={8} key={index}>
-              <Image src={value.url} height={120} width={120} />
-            </Col>
-          );
-        })}
+        {images?.length > 0 &&
+          images.map((value, index) => {
+            return (
+              <Col span={8} key={index}>
+                <Image src={value.url} height={120} width={120} />
+              </Col>
+            );
+          })}
       </Row>
     );
   };
@@ -570,21 +589,32 @@ const page = ({ params }) => {
   };
 
   const handleScroll = (e) => {
-    if(e.target.clientHeight-e.target.scrollHeight==e.target.scrollTop) {
-      console.log("loading chat...")
+    if (e.target.clientHeight - e.target.scrollHeight == e.target.scrollTop) {
+      console.log("loading chat...");
       setOffset((prevOffset) => prevOffset + 1);
     }
-  }
-
+  };
 
   return (
     <div className="conversationChat">
       {/* <Spin spinning={false}> */}
       <div className="titleHeader">
         <div className="contentTitle">
-          <Button className="imgCon" onClick={handleOpenModal}>
-            <img
-              src={ conversation?.type=='group' ? conversation?.image : userNhan?.avatar}
+          <Button
+            className="imgCon"
+            onClick={() =>
+              handleOpenModal(
+                conversation?.type == "group" ? "group" : "couple"
+              )
+            }
+          >
+            <Image
+              preview={false}
+              src={
+                (conversation?.type == "group"
+                  ? conversation?.image
+                  : userNhan?.avatar) || imageDefault
+              }
               className="imgAvt"
               alt=""
               width={50}
@@ -668,14 +698,18 @@ const page = ({ params }) => {
                   <Popover
                     arrow={false}
                     placement={
-                      item.senderId !== currentUser?.uid ? "rightBottom" : "leftBottom"
+                      item.senderId !== currentUser?.uid
+                        ? "rightBottom"
+                        : "leftBottom"
                     }
                     content={
                       <Popover
                         arrow={false}
                         open={openPopover}
                         placement={
-                          item.senderId !== currentUser?.uid ? "topLeft" : "topRight"
+                          item.senderId !== currentUser?.uid
+                            ? "topLeft"
+                            : "topRight"
                         }
                         content={() => showFunctionChat(item)}
                         onOpenChange={(newOpen) => setOpenPopover(newOpen)}
@@ -697,7 +731,9 @@ const page = ({ params }) => {
                       color={"#2db7f5"}
                       style={{
                         backgroundColor:
-                          item.senderId === currentUser?.uid ? "#E5EFFF" : "white",
+                          item.senderId === currentUser?.uid
+                            ? "#E5EFFF"
+                            : "white",
                       }}
                     >
                       <div>
@@ -778,20 +814,23 @@ const page = ({ params }) => {
                 </div>
               );
             })}
-            <div style={{
-                color: "gray",
-                fontSize: "10px",
-                marginBottom: "10px",
-                marginLeft: "calc(100% - 60px)",
-              }}>
-              {chats[chats.length - 1]?.senderId === currentUser?.uid && 
-                (sending ? <p>đang gửi...</p> : <p>đã gửi ✔</p>)
-              }
-            </div>
+          <div
+            style={{
+              color: "gray",
+              fontSize: "10px",
+              marginBottom: "10px",
+              marginLeft: "calc(100% - 60px)",
+            }}
+          >
+            {chats[chats.length - 1]?.senderId === currentUser?.uid &&
+              (sending ? <p>đang gửi...</p> : <p>đã gửi ✔</p>)}
+          </div>
         </div>
-        <div style={{
-          textAlign: "center",
-        }}>
+        <div
+          style={{
+            textAlign: "center",
+          }}
+        >
           {isLoadingChats && <p>Loading...</p>}
         </div>
         <div ref={endRef} />
