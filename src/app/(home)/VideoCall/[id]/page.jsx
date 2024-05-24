@@ -4,7 +4,8 @@ import React, { useContext, useEffect, useState } from "react";
 import AgoraUIKit from "agora-react-uikit";
 import { useRouter } from "next/navigation";
 import { AuthContext } from "@/context/AuthProvider";
-import { useSocket } from "@/context/SocketProvider";
+import { useSocket } from "context/SocketProvider";
+// import { useSocket } from "../../context/SocketProvider";
 
 const Page = (conversationId) => {
   const [videoCall, setVideoCall] = useState(false);
@@ -17,25 +18,38 @@ const Page = (conversationId) => {
   }, [conversationId]);
 
   useEffect(() => {
+    // if (socket) {
     socket.on("decline-call", (data) => {
-      console.log("data", data);
-      setVideoCall(false);
-      window.location.href = `${window.location.origin}/tinNhan/${conversationId.params.id}`;
+      console.log("channel", data);
+      if (data.channel === conversationId.params.id) {
+        setVideoCall(false);
+        window.location.href = `${window.location.origin}/tinNhan/${conversationId.params.id}`;
+      }
     });
-  }, []);
+
+    socket.on("end-call", (data) => {
+      console.log("data", data?.channel);
+      if (data?.channel == conversationId.params.id) {
+        setVideoCall(false);
+        window.location.href = `${window.location.origin}/tinNhan/${conversationId.params.id}`;
+      }
+    });
+
+    console.log("socket", socket);
+    // }
+  }, [socket]);
 
   const rtcProps = {
     appId: "5a55004d2d524938a0edde0ecd2349ae",
     channel: conversationId.params.id,
   };
-  // console.log(conversationId.params.id);
 
   const callbacks = {
     EndCall: () => {
-      setVideoCall(false);
       socket.emit("end-call", {
         channel: conversationId.params.id,
       });
+      setVideoCall(false);
       window.location.href = `${window.location.origin}/tinNhan/${conversationId.params.id}`;
       // window.location.reload();
     },
