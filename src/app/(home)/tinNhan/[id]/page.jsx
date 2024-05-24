@@ -44,7 +44,7 @@ import ReplayOutlinedIcon from "@mui/icons-material/ReplayOutlined";
 import { MoreHoriz, Search } from "@mui/icons-material";
 import ReplyIcon from "@mui/icons-material/Reply";
 import Divider from "@mui/material/Divider";
-import {useCurrentUser } from "@/context/AuthProvider";
+import { useCurrentUser } from "@/context/AuthProvider";
 import ConversationApi from "@/apis/conversationApi";
 import ChatApi from "@/apis/chatApi";
 import EmojiPicker from "emoji-picker-react";
@@ -228,12 +228,12 @@ const page = ({ params }) => {
           return [...filteredChats, chat];
         });
       });
-      socket.on("receive-call", (data) => {
-        console.log(data);
-        if (data.caller != currentUser?.uid) {
-          router.push(`/VideoCall/${data.channel}`);
-        }
-      });
+      // socket.on("receive-call", (data) => {
+      //   console.log(data);
+      //   if (data.caller != currentUser?.uid) {
+      //     router.push(`/VideoCall/${data.channel}`);
+      //   }
+      // });
       socket.on("deleteMessage", (chatId) => {
         setRecallChatId(chatId);
       });

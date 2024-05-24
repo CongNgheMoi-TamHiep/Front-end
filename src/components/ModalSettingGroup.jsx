@@ -89,16 +89,22 @@ const ModalSettingGroup = ({ visible, onCancel, conversationId }) => {
   };
 
   const handleApproveMember = (member) => {
-    setPendingMembers((prevPendingMembers) =>
-      prevPendingMembers.filter((m) => m !== member)
-    );
-    setMembers((prevMembers) => [...prevMembers, member]);
+    Group.ChapNhan(conversationId, member._id).then(() => {
+      openNotificationWithIcon("success", "Success", "Duyệt thành công");
+      setPendingMembers((prevPendingMembers) =>
+        prevPendingMembers.filter((m) => m !== member)
+      );
+      setMembers((prevMembers) => [...prevMembers, member]);
+    });
   };
 
   const handleRejectMember = (member) => {
-    setPendingMembers((prevPendingMembers) =>
-      prevPendingMembers.filter((m) => m !== member)
-    );
+    Group.deleteMember(conversationId, member._id).then(() => {
+      openNotificationWithIcon("success", "Success", "Từ chối thành công");
+      setPendingMembers((prevPendingMembers) =>
+        prevPendingMembers.filter((m) => m !== member)
+      );
+    });
   };
   const EditGroupInfoModal = ({ visible, onCancel, onOk }) => {
     const [groupName, setGroupName] = useState("");
@@ -278,8 +284,7 @@ const ModalSettingGroup = ({ visible, onCancel, conversationId }) => {
               value: item.userId,
             }))}
           />
-          {roleCurrentUser != "" && (
-            //  && pendingMembers.length > 0
+          {roleCurrentUser != "" && pendingMembers.length > 0 && (
             <>
               <h3 style={{ marginTop: "5px" }}>Thành viên đang chờ duyệt:</h3>
               <div
@@ -637,7 +642,6 @@ const ModalSettingGroup = ({ visible, onCancel, conversationId }) => {
             checkedChildren=""
             unCheckedChildren=""
             onClick={(checked) => {
-              console.log("checked", checked);
               Group.update(conversationId, { memberModeration: checked });
               openNotificationWithIcon("success", "Success", "Đã cập nhật");
             }}

@@ -37,6 +37,11 @@ const Group = {
   async getGroup(conversationId) {
     return axiosPrivate.get(`/group/${conversationId}`);
   },
+  async ChapNhan(conversationId, userId) {
+    return axiosPrivate.post(`/group/addMember/${conversationId}`, {
+      userId: userId,
+    });
+  },
 };
 
 export default Group;
