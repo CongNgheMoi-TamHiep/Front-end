@@ -39,7 +39,7 @@ import { MoreHoriz, Search } from "@mui/icons-material";
 import ReplyIcon from "@mui/icons-material/Reply";
 import Divider from "@mui/material/Divider";
 import {useCurrentUser } from "@/context/AuthProvider";
-import ConversationApi from "@/apis/ConversationApi";
+import ConversationApi from "@/apis/conversationApi";
 import ChatApi from "@/apis/ChatApi";
 import EmojiPicker from "emoji-picker-react";
 import formatFileSize from "@/utils/formatFileSize";

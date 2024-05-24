@@ -32,10 +32,10 @@ import ModalProfileUser from "@/components/ModalProfileUser";
 import ModalAddMembersGroup from "@/components/ModalAddMembersGroup";
 import { set } from "date-fns";
 import { useMutation } from "react-query";
-import FriendApi from "@/apis/FriendApi";
+import FriendApi from "@/apis/friendApi";
 import { Typography } from "antd";
 import { useTranslation } from "react-i18next";
-import ConversationApi from "@/apis/ConversationApi";
+import ConversationApi from "@/apis/conversationApi";
 import axiosPrivate from "@/apis/axios";
 import Group from "@/apis/Group";
 
