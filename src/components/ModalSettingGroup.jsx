@@ -15,7 +15,7 @@ import React, { useContext, useEffect, useState } from "react";
 import Group from "@/apis/Group";
 import { useRouter } from "next/navigation";
 import { AuthContext } from "@/context/AuthProvider";
-import FriendApi from "@/apis/FriendApi";
+import FriendApi from "@/apis/friendApi";
 import openNotificationWithIcon from "./OpenNotificationWithIcon";
 const ModalSettingGroup = ({ visible, onCancel, conversationId }) => {
   const router = useRouter();
