@@ -96,6 +96,22 @@ const Layout = ({ children, params }) => {
           `${data.name} ${t("accept_friend_request_notification")}`
         );
       });
+
+      socket.on("receive-call", async (data) => {
+        if (data.caller != currentUser.user.uid) {
+          // playSound();
+          // const user = await axiosPrivate(`/user/${data.caller}`);
+          userApis.getUserById(data.caller).then((data) => {
+            console.log("data: ", data);
+            // setDataReviverCall(data);
+            // setCaller(user);
+          });
+
+          // setCaller(user);
+          console.log("data: ", data);
+          // setDataReviverCall(data);
+        }
+      });
       // socket.on("cancelFriendRequest", (data) => {
       //   console.log("Socket connected cancel", data);
       //   openNotificationWithIcon(
@@ -163,13 +179,6 @@ const Layout = ({ children, params }) => {
       </div>
       <div style={{ height: "100vh" }}>{children}</div>
       <ModalVideoCall />
-      <Modal
-        title="Video call"
-        style={{ height: "80%", width: "40%" }}
-        open={true}
-      >
-        <div>Video call content</div>
-      </Modal>
     </div>
   );
 };
