@@ -4,8 +4,6 @@ import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
 import CssBaseline from "@mui/material/CssBaseline";
 import TextField from "@mui/material/TextField";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Checkbox from "@mui/material/Checkbox";
 import Link from "@mui/material/Link";
 import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
@@ -19,9 +17,6 @@ import { useState, useEffect, useRef, useContext } from "react";
 import { auth } from "@/firebase";
 import {
   RecaptchaVerifier,
-  signInWithPhoneNumber,
-  EmailAuthProvider,
-  linkWithCredential,
   PhoneAuthProvider,
   signInWithCredential,
   updatePassword,
@@ -29,15 +24,9 @@ import {
 import "./styles.scss";
 import { AuthContext } from "@/context/AuthProvider";
 import Loading from "@/components/Loading";
-import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import formatPhoneNumber from "@/utils/formatPhoneNumber";
-import { format } from "path";
-import axiosPrivate from "@/apis/axios";
-import authApis from "@/apis/authApis";
-import firebase from "firebase/app";
-import { red } from "@mui/material/colors";
-import { notification } from "antd";
+import axiosPrivate from "../../../apis/axios";
 function Copyright(props) {
   return (
     <Typography
