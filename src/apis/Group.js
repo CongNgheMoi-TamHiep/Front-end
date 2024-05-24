@@ -32,7 +32,7 @@ const Group = {
     return axiosPrivate.patch(`/group/outGroup/${conversationId}`);
   },
   async addMember(conversationId, userId) {
-    return axiosPrivate.post(`/gro  up/addMember/${conversationId}`, userId);
+    return axiosPrivate.post(`/group/addMember/${conversationId}`, userId);
   },
   async getGroup(conversationId) {
     return axiosPrivate.get(`/group/${conversationId}`);
