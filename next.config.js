@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const path = require('path');
+// const __dirname = new URL('.', import.meta.url).pathname;
 const nextConfig = {
     images: {
         remotePatterns: [
@@ -29,11 +30,16 @@ const nextConfig = {
             },
         ],
     },
-    webpack: (config) => {
-        config.resolve.alias = {
-          ...config.resolve.alias,
-          '@': path.resolve(__dirname, './src'),
-        };
+    // webpack: (config) => {
+    //     config.resolve.alias = {
+    //       ...config.resolve.alias,
+    //       '@': path.resolve(__dirname, 'src'),
+    //     };
+    //     return config;
+    // },
+    output: 'standalone',
+    webpack: (config, { isServer }) => {
+        config.resolve.alias['@'] = path.join(__dirname, 'src');
         return config;
     },
     reactStrictMode: false,
