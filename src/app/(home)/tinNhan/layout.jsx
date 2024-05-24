@@ -65,7 +65,7 @@ const Layout = ({ children }) => {
 
   const handleRouteToDetailConversation = (item) => {
     setCurrentConversation(item);
-        router.push(`/tinNhan/${item._id || item.lastMess.conversationId}`);
+    router.push(`/tinNhan/${item._id || item.lastMess.conversationId}`);
   };
 
   const { mutate: getPhoneBook, data: phoneBook } = useMutation(
@@ -92,18 +92,21 @@ const Layout = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    if(socket) { 
+    if (socket) {
       socket.on("getMessage", (chat) => {
         // console.log("getMessage", chat);
         setChatReceived(chat);
       });
       socket.on("newConversation", (conversation) => {
-        socket.emit("joinRoom", conversation.conversationId || conversation._id);
+        socket.emit(
+          "joinRoom",
+          conversation.conversationId || conversation._id
+        );
         setNewConversation(conversation);
       });
-      socket.on("deleteConversation", groupId => {
+      socket.on("deleteConversation", (groupId) => {
         socket.emit("leaveRoom", groupId);
-      })
+      });
     }
   }, [socket]);
 
@@ -111,8 +114,7 @@ const Layout = ({ children }) => {
   useEffect(() => {
     if (conversations && socket) {
       conversations.map((item) => {
-        if (!item?.deleted) 
-          socket.emit("joinRoom", item.conversationId);
+        if (!item?.deleted) socket.emit("joinRoom", item.conversationId);
       });
     }
   }, [conversations.length, socket]);
@@ -135,8 +137,7 @@ const Layout = ({ children }) => {
       );
 
       console.log("conversation: ", conversation);
-      if(!conversation.lastMess) 
-        conversation.lastMess = {}; 
+      if (!conversation.lastMess) conversation.lastMess = {};
       conversation.lastMess.content = chatReceived.content;
       conversation.lastMess.createdAt = chatReceived.createdAt;
       conversation.lastMess.senderId = chatReceived.senderInfo._id;
@@ -194,14 +195,14 @@ const Layout = ({ children }) => {
 
   const [currentTime, setCurrentTime] = useState(new Date());
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 10000); // 10000 milliseconds = 10 seconds
+  // useEffect(() => {
+  //   const timer = setInterval(() => {
+  //     setCurrentTime(new Date());
+  //   }, 10000); // 10000 milliseconds = 10 seconds
 
-    // Hủy bỏ timer khi component unmount
-    return () => clearInterval(timer);
-  }, []);
+  //   // Hủy bỏ timer khi component unmount
+  //   return () => clearInterval(timer);
+  // }, []);
 
   const formatTimeDifference = (createdAt) => {
     const currentTime = new Date();
@@ -269,10 +270,10 @@ const Layout = ({ children }) => {
   };
 
   const checkFriendState = (state, itemUserFind) => {
-    let userF = userFind; 
-    if(itemUserFind) {
+    let userF = userFind;
+    if (itemUserFind) {
       userF = {
-        ...itemUserFind, 
+        ...itemUserFind,
         _id: itemUserFind?._id || itemUserFind?.userId,
       };
     }
@@ -484,34 +485,37 @@ const Layout = ({ children }) => {
                   new Date(b.lastMess?.createdAt)
                 );
               })
-              ?.map((item) => {
-                console.log(item)
+              ?.map((item, i) => {
                 return (
                   <div
                     key={item.conversationId || item._id}
                     className={`userConversation ${
-                      currentConversation &&
-                      currentConversation.conversationId === item.conversationId || item._id
+                      (currentConversation &&
+                        currentConversation.conversationId ===
+                          item.conversationId) ||
+                      item._id
                         ? "active"
                         : ""
                     }`}
                     onClick={() => handleRouteToDetailConversation(item)}
                   >
                     <div className="avatar">
-                      { item.type === "couple" ? 
-                          <img
-                            className="avatar-img"
-                            src={
-                              item?.user?.avatar ||
-                              item?.image ||
-                              "https://images.pexels.com/photos/6534399/pexels-photo-6534399.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
-                            }
-                            alt=""
-                            width={60}
-                            height={60}
-                          /> : 
-                          <AvatarGroup members={item?.members} />
-                      }
+                      {item.type === "couple" ? (
+                        //  || item?.image
+                        <img
+                          className="avatar-img"
+                          src={
+                            item?.user?.avatar ||
+                            item?.image ||
+                            "https://images.pexels.com/photos/6534399/pexels-photo-6534399.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
+                          }
+                          alt=""
+                          width={60}
+                          height={60}
+                        />
+                      ) : (
+                        <AvatarGroup members={item?.members} />
+                      )}
                     </div>
                     <div className="info" style={{ flex: 1 }}>
                       <div

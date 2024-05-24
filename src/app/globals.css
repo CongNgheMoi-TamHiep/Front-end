@@ -31,3 +31,17 @@ a {
   background-color: #fff;  
   color: #111; 
 }
+
+.nonScroll{
+  scrollbar-width: none; /* For Firefox */
+    -ms-overflow-style: none;
+}
+
+.nonScroll{
+  scrollbar-width: none !important; /* For Firefox */
+    -ms-overflow-style: none !important;
+}
+
+.nonScroll::-webkit-scrollbar {
+  display: none !important; /* For Chrome, Safari and Opera */
+}
