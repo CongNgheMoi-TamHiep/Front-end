@@ -10,8 +10,8 @@ import Image from "next/image";
 import { AuthContext } from "@/context/AuthProvider";
 import { useRouter } from "next/navigation";
 import CombineUserId from "@/utils/CombineUserId";
-import ConversationApi from "@/apis/ConversationApi";
-import FriendApi from "@/apis/FriendApi";
+import ConversationApi from "@/apis/conversationApi";
+import FriendApi from "@/apis/friendApi";
 
 const FriendPage = () => {
   const [friends, setFriends] = useState([]);
