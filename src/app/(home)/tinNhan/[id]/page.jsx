@@ -217,16 +217,16 @@ const page = ({ params }) => {
       socket.on("getMessage", (chat) => {
         setEndTime(performance.now());
         setSending(false);
-        if (chat.content.images && chat.content.images?.length > 0) {
+        if (chat.content.images && chat.content.images?.length > 0 && chat.conversationId==conversationId) {
           setChatReceived(chat);
           return;
         }
-
-        setChat((prevChats) => {
-          // prevChats.pop();
-          const filteredChats = prevChats.filter((c) => c._id);
-          return [...filteredChats, chat];
-        });
+        if (chat.conversationId == conversationId) {
+          setChat((prevChats) => {
+            const filteredChats = prevChats.filter((c) => c._id);
+            return [...filteredChats, chat];
+          });
+        }
       });
       // socket.on("receive-call", (data) => {
       //   console.log(data);
