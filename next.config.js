@@ -30,18 +30,14 @@ const nextConfig = {
             },
         ],
     },
-    // webpack: (config) => {
-    //     config.resolve.alias = {
-    //       ...config.resolve.alias,
-    //       '@': path.resolve(__dirname, 'src'),
-    //     };
-    //     return config;
-    // },
-    output: 'standalone',
-    webpack: (config, { isServer }) => {
-        config.resolve.alias['@'] = path.join(__dirname, 'src');
+    webpack: (config) => {
+        config.resolve.alias = {
+          ...config.resolve.alias,
+          '@': path.resolve(__dirname, 'src'),
+        };
         return config;
     },
+
     reactStrictMode: false,
 }
 
