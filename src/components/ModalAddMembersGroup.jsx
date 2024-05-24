@@ -1,6 +1,7 @@
+"use client";
 import React, { useContext, useEffect, useState } from "react";
 import { Modal, Button, Checkbox, Input, notification } from "antd";
-import FriendApi from "@/apis/FriendApi";
+import FriendApi from "@/apis/friendApi";
 import { AuthContext } from "../context/AuthProvider";
 import { MuiTelInput } from "mui-tel-input";
 import FriendRequest from "@/apis/friendRequest";

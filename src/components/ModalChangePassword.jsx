@@ -1,3 +1,4 @@
+"use client";
 import React, { useState } from "react";
 import { Modal } from "antd";
 import { Box, Grid, TextField, Button } from "@mui/material";
