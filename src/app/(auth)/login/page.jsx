@@ -45,7 +45,8 @@ function Copyright(props) {
 const defaultTheme = createTheme();
 
 export default function SignIn() {
-    const [number, setNumber] = useState("");
+    const [number, setNumber] = useState("+84876407991");
+    const [password, setPassword] = useState("Hiep@123"); 
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
@@ -59,7 +60,7 @@ export default function SignIn() {
             const userCredential = await signInWithEmailAndPassword(
                 auth,
                 `${formatPhoneNumber(number)}@gmail.com`,
-                data.get("password")
+                password
             );
             
             setIsAuthenticated(true);
@@ -135,6 +136,8 @@ export default function SignIn() {
                             type="password"
                             id="password"
                             autoComplete="current-password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
                         />
                         {/* <FormControlLabel
                             control={
