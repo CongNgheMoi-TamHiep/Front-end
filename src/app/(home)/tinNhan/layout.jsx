@@ -171,7 +171,7 @@ const Layout = ({ children }) => {
   // useEffect(() => {
   //   const timer = setTimeout(() => {
   //     getUserFriend();
-  //   }, 300);
+  //   }, 10000);
   //   return () => clearTimeout(timer);
   // }, [number]);
 
@@ -195,19 +195,21 @@ const Layout = ({ children }) => {
 
   const [currentTime, setCurrentTime] = useState(new Date());
 
-  // useEffect(() => {
-  //   const timer = setInterval(() => {
-  //     setCurrentTime(new Date());
-  //   }, 10000); // 10000 milliseconds = 10 seconds
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 10000); // 10000 milliseconds = 10 seconds
 
-  //   // Hủy bỏ timer khi component unmount
-  //   return () => clearInterval(timer);
-  // }, []);
+    // Hủy bỏ timer khi component unmount
+    return () => clearInterval(timer);
+  }, []);
 
   const formatTimeDifference = (createdAt) => {
     const currentTime = new Date();
     const differenceInSeconds = Math.floor((currentTime - createdAt) / 1000);
-    if (differenceInSeconds < 60) {
+    if (differenceInSeconds < 0) {
+      return `3 ${t("seconds")}`;
+    } else if (differenceInSeconds < 60) {
       return `${differenceInSeconds} ${t("seconds")}`;
     } else if (differenceInSeconds < 3600) {
       const minutes = Math.floor(differenceInSeconds / 60);
